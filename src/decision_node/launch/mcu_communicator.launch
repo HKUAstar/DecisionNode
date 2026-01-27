@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="serial_port" default="/dev/ttyUSB0" doc="Serial port device"/>
+    <arg name="baudrate" default="115200" doc="Serial port baudrate"/>
+    <arg name="output" default="screen" doc="Launch output target"/>
+    
+    <!-- MCU通讯节点 - 接收下位机数据并发布ROS Topics -->
+    <node name="mcu_communicator" pkg="decision_node" type="mcu_communicator" output="$(arg output)">
+        <!-- 串口配置 -->
+        <param name="serial_port" value="$(arg serial_port)" />
+        <param name="baudrate" value="$(arg baudrate)" />
+    </node>
+    
+    <!-- 日志提示 -->
+    <node name="launch_info" pkg="rostopic" type="rostopic" args="pub /launch_info std_msgs/String 'data: MCU Communicator Started' -l 1" />
+    
+</launch>

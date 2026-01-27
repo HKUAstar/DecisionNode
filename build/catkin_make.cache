@@ -1,2 +1,2 @@
-decision_node:message_generation
+decision_node
 -DCATKIN_DEVEL_PREFIX=/mnt/d/decision_ws/devel -DCMAKE_INSTALL_PREFIX=/mnt/d/decision_ws/install -G Unix Makefiles

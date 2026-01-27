@@ -289,19 +289,6 @@ gtest_main/fast:
 .PHONY : gtest_main/fast
 
 #=============================================================================
-# Target rules for targets named _catkin_empty_exported_target
-
-# Build rule for target.
-_catkin_empty_exported_target: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 _catkin_empty_exported_target
-.PHONY : _catkin_empty_exported_target
-
-# fast build rule for target.
-_catkin_empty_exported_target/fast:
-	$(MAKE) $(MAKESILENT) -f message_generation/CMakeFiles/_catkin_empty_exported_target.dir/build.make message_generation/CMakeFiles/_catkin_empty_exported_target.dir/build
-.PHONY : _catkin_empty_exported_target/fast
-
-#=============================================================================
 # Target rules for targets named roscpp_generate_messages_cpp
 
 # Build rule for target.
@@ -717,6 +704,32 @@ continuous_forwarder/fast:
 	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/continuous_forwarder.dir/build.make decision_node/CMakeFiles/continuous_forwarder.dir/build
 .PHONY : continuous_forwarder/fast
 
+#=============================================================================
+# Target rules for targets named mcu_communicator
+
+# Build rule for target.
+mcu_communicator: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mcu_communicator
+.PHONY : mcu_communicator
+
+# fast build rule for target.
+mcu_communicator/fast:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_communicator.dir/build.make decision_node/CMakeFiles/mcu_communicator.dir/build
+.PHONY : mcu_communicator/fast
+
+#=============================================================================
+# Target rules for targets named mcu_simulator
+
+# Build rule for target.
+mcu_simulator: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mcu_simulator
+.PHONY : mcu_simulator
+
+# fast build rule for target.
+mcu_simulator/fast:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_simulator.dir/build.make decision_node/CMakeFiles/mcu_simulator.dir/build
+.PHONY : mcu_simulator/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -730,7 +743,6 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... test"
-	@echo "... _catkin_empty_exported_target"
 	@echo "... actionlib_msgs_generate_messages_cpp"
 	@echo "... actionlib_msgs_generate_messages_eus"
 	@echo "... actionlib_msgs_generate_messages_lisp"
@@ -771,6 +783,8 @@ help:
 	@echo "... gmock_main"
 	@echo "... gtest"
 	@echo "... gtest_main"
+	@echo "... mcu_communicator"
+	@echo "... mcu_simulator"
 	@echo "... strategy_node"
 .PHONY : help
 
