@@ -47,8 +47,8 @@ public:
         pub_blue_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_dead", 1);
         
         // 上位机命令
-        sub_motion_ = nh_.subscribe<std_msgs::UInt8>("/cmd/motion", 1, 
-                                                     &MCUCommunicator::motionCallback, this);
+        // sub_motion_ = nh_.subscribe<std_msgs::UInt8>("/cmd/motion", 1, 
+        //                                              &MCUCommunicator::motionCallback, this);
         
         sub_nav_cmd_ = nh_.subscribe<geometry_msgs::Twist>("/cmd/nav", 1,
                                                            &MCUCommunicator::navCallback, this);
@@ -123,7 +123,7 @@ private:
     ros::Publisher pub_blue_dead_;
     
     // ROS 订阅者
-    ros::Subscriber sub_motion_;
+    // ros::Subscriber sub_motion_;
     ros::Subscriber sub_nav_cmd_;
     
     // 发送缓冲
@@ -136,10 +136,10 @@ private:
     std::thread recv_thread_;
     
     // Motion回调函数
-    void motionCallback(const std_msgs::UInt8::ConstPtr& msg)
-    {
-        sendMotionCommand(msg->data);
-    }
+    // void motionCallback(const std_msgs::UInt8::ConstPtr& msg)
+    // {
+    //     sendMotionCommand(msg->data);
+    // }
     
     // 导航命令回调函数
     void navCallback(const geometry_msgs::Twist::ConstPtr& msg)
@@ -185,38 +185,38 @@ private:
         }
     }
     
-    // 发送Motion命令到下位机
-    void sendMotionCommand(uint8_t motion_mode)
-    {
-        // 构建Motion命令帧
-        MotionCommandFrame frame;
-        frame.sof = MOTION_FRAME_SOF;   // 0x92
-        frame.motion_mode_up = motion_mode;
-        frame.eof = MCU_FRAME_EOF;      // 0xFE
-        
-        // CRC8校验
-        uint8_t crc_data[2] = {frame.sof, frame.motion_mode_up};
-        frame.crc8 = calculateCRC8(crc_data, 2);
-        
-    
-        try
-        {
-            if (serial_.isOpen())
-            {
-                serial_.write((uint8_t*)&frame, sizeof(frame));
-                ROS_DEBUG("Motion command sent: motion_mode_up=%u (frame size=%zu)", 
-                         motion_mode, sizeof(frame));
-            }
-            else
-            {
-                ROS_WARN("Serial port is not open, cannot send motion command");
-            }
-        }
-        catch (const serial::SerialException& e)
-        {
-            ROS_ERROR("Failed to send motion command: %s", e.what());
-        }
-    }
+    // 发送Motion命令到下位机 (已注释)
+    // void sendMotionCommand(uint8_t motion_mode)
+    // {
+    //     // 构建Motion命令帧
+    //     MotionCommandFrame frame;
+    //     frame.sof = MOTION_FRAME_SOF;   // 0x92
+    //     frame.motion_mode_up = motion_mode;
+    //     frame.eof = MCU_FRAME_EOF;      // 0xFE
+    //     
+    //     // CRC8校验
+    //     uint8_t crc_data[2] = {frame.sof, frame.motion_mode_up};
+    //     frame.crc8 = calculateCRC8(crc_data, 2);
+    //     
+    // 
+    //     try
+    //     {
+    //         if (serial_.isOpen())
+    //         {
+    //             serial_.write((uint8_t*)&frame, sizeof(frame));
+    //             ROS_DEBUG("Motion command sent: motion_mode_up=%u (frame size=%zu)", 
+    //                      motion_mode, sizeof(frame));
+    //         }
+    //         else
+    //         {
+    //             ROS_WARN("Serial port is not open, cannot send motion command");
+    //         }
+    //     }
+    //     catch (const serial::SerialException& e)
+    //     {
+    //         ROS_ERROR("Failed to send motion command: %s", e.what());
+    //     }
+    // }
     
     // CRC8校验函数
     uint8_t calculateCRC8(const uint8_t* data, size_t length)
