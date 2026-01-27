@@ -45,6 +45,8 @@ add_executable(mcu_communicator src/mcu_communicator.cpp)
 
 add_executable(mcu_simulator src/mcu_simulator.cpp)
 
+add_executable(nav_cmd_publisher src/nav_cmd_publisher.cpp)
+
 target_link_libraries(strategy_node
     ${catkin_LIBRARIES}
     ${behaviortree_cpp_v3_LIBRARIES}
@@ -56,10 +58,12 @@ target_link_libraries(mcu_communicator ${catkin_LIBRARIES})
 
 target_link_libraries(mcu_simulator ${catkin_LIBRARIES})
 
+target_link_libraries(nav_cmd_publisher ${catkin_LIBRARIES})
+
 # 安装规则 mcu_communicator
 install(DIRECTORY config launch
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(TARGETS strategy_node continuous_forwarder mcu_communicator mcu_simulator
+install(TARGETS strategy_node continuous_forwarder mcu_communicator mcu_simulator nav_cmd_publisher
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
