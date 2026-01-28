@@ -5,4 +5,4 @@ Description: Description of decision_node
 Version: 0.1.0
 Cflags: -I${prefix}/include
 Libs: -L${prefix}/lib 
-Requires: roscpp std_msgs geometry_msgs nav_msgs
+Requires: roscpp std_msgs geometry_msgs nav_msgs serial

@@ -141,6 +141,7 @@ strategy_node_EXTERNAL_OBJECTS =
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4
+/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libserial.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libbehaviortree_cpp_v3.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libroslib.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librospack.so
@@ -162,6 +163,7 @@ strategy_node_EXTERNAL_OBJECTS =
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libcpp_common.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4
+/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libserial.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libbehaviortree_cpp_v3.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libroslib.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librospack.so

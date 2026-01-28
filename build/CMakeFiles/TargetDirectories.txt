@@ -35,14 +35,6 @@
 /mnt/d/decision_ws/build/gtest/googletest/CMakeFiles/install.dir
 /mnt/d/decision_ws/build/gtest/googletest/CMakeFiles/install/local.dir
 /mnt/d/decision_ws/build/gtest/googletest/CMakeFiles/install/strip.dir
-/mnt/d/decision_ws/build/message_generation/CMakeFiles/_catkin_empty_exported_target.dir
-/mnt/d/decision_ws/build/message_generation/CMakeFiles/test.dir
-/mnt/d/decision_ws/build/message_generation/CMakeFiles/edit_cache.dir
-/mnt/d/decision_ws/build/message_generation/CMakeFiles/rebuild_cache.dir
-/mnt/d/decision_ws/build/message_generation/CMakeFiles/list_install_components.dir
-/mnt/d/decision_ws/build/message_generation/CMakeFiles/install.dir
-/mnt/d/decision_ws/build/message_generation/CMakeFiles/install/local.dir
-/mnt/d/decision_ws/build/message_generation/CMakeFiles/install/strip.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/roscpp_generate_messages_cpp.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/roscpp_generate_messages_eus.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/roscpp_generate_messages_lisp.dir
@@ -75,6 +67,8 @@
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/actionlib_msgs_generate_messages_py.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/strategy_node.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/continuous_forwarder.dir
+/mnt/d/decision_ws/build/decision_node/CMakeFiles/mcu_communicator.dir
+/mnt/d/decision_ws/build/decision_node/CMakeFiles/mcu_simulator.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/test.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/edit_cache.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/rebuild_cache.dir
