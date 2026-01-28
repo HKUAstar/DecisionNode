@@ -33,11 +33,12 @@ public:
   }
 };
 
-class SetMotionFlagToOne : public BT::SyncActionNode
+// CheckAttacked: Checks if the robot is currently under attack
+class CheckAttacked : public BT::ConditionNode
 {
 public:
-  SetMotionFlagToOne(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::SyncActionNode(name, config)
+  CheckAttacked(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::ConditionNode(name, config)
   {
   }
 
@@ -47,18 +48,73 @@ public:
   {
     auto bb = config().blackboard;
     
-    // 检查冷却时间是否仍在进行
-    ros::Time cooldown_end = bb->get<ros::Time>("attack_cooldown_end_time");
+    // Check if motion_flag is 1 (under attack state)
+    try
+    {
+      int motion_flag = bb->get<int>("motion_flag");
+      bool is_under_attack = (motion_flag == 1);
+      // ROS_DEBUG("CheckAttacked: motion_flag=%d, under_attack=%d", motion_flag, is_under_attack);
+      return is_under_attack ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    }
+    catch (...)
+    {
+      return BT::NodeStatus::FAILURE;
+    }
+  }
+};
+
+// SetMotionFlag: Universal motion flag setter with 5-second cooldown check
+// Input port "target_motion" specifies the target motion_flag value (0, 1, or 2)
+class SetMotionFlag : public BT::SyncActionNode
+{
+public:
+  explicit SetMotionFlag(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {BT::InputPort<int>("target_motion")};
+  }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    
+    auto target_motion = getInput<int>("target_motion");
+    if (!target_motion)
+    {
+      ROS_WARN("SetMotionFlag: Failed to get target_motion input");
+      return BT::NodeStatus::FAILURE;
+    }
+    
+    int target = target_motion.value();
+    
+    // Check cooldown time
+    ros::Time cooldown_end;
+    try
+    {
+      cooldown_end = bb->get<ros::Time>("attack_cooldown_end_time");
+    }
+    catch (...)
+    {
+      cooldown_end = ros::Time(0);
+      bb->set("attack_cooldown_end_time", cooldown_end);
+    }
+    
     bool cooldown_finished = (cooldown_end.toSec() == 0) || (ros::Time::now() >= cooldown_end);
     
     if (!cooldown_finished)
     {
-      // ROS_INFO("SetMotionFlagToOne: Still in cooldown, NOT setting motion_flag to 1");
-      return BT::NodeStatus::SUCCESS;  // 在冷却中，不改变motion_flag
+      // Still in cooldown, don't change motion_flag
+      // ROS_DEBUG("SetMotionFlag: target=%d, still in cooldown, skipping", target);
+      return BT::NodeStatus::SUCCESS;
     }
     
-    bb->set("motion_flag", 1);
-    // ROS_INFO("SetMotionFlagToOne: set motion_flag to 1");
+    // Cooldown finished, set motion_flag to target value
+    bb->set("motion_flag", target);
+    ROS_DEBUG("SetMotionFlag: Cooldown finished, motion_flag set to %d", target);
     return BT::NodeStatus::SUCCESS;
   }
 };
@@ -150,7 +206,12 @@ public:
 void RegisterMotionChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* motion_pub, bool* publish_on_change_only)
 {
   factory.registerNodeType<CheckArrived>("CheckArrived");
-  factory.registerNodeType<SetMotionFlagToOne>("SetMotionFlagToOne");
+  factory.registerNodeType<CheckAttacked>("CheckAttacked");
+  
+  factory.registerBuilder<SetMotionFlag>(
+      "SetMotionFlag", [](const std::string& name, const BT::NodeConfiguration& config) {
+        return std::make_unique<SetMotionFlag>(name, config);
+      });
   
   factory.registerBuilder<SetMotion>(
       "SetMotion", [](const std::string& name, const BT::NodeConfiguration& config) {

@@ -25,27 +25,6 @@
           <SetAction action="SUPPLY" />
         </Sequence>
 
-        <Sequence name="ToPushThenOccupyWhenArrived">
-          <IsAction value="PUSH" />
-          <CheckArrived />
-          <SetAction action="OCCUPY" />
-        </Sequence>
-
-        <Sequence name="ToPushWhenOccupiedEnough">
-          <Sequence>
-            <AccumulateCentralOccupiable 
-              occupy_status="{ref.occupy_status}"
-              threshold="{occupy_threshold}"
-              accumulated_count="{occupy_count}"
-              reached_threshold="{occupy_reached}" />
-            <TriggerOnThreshold 
-              reached_threshold="{occupy_reached}"
-              reset_condition="{is_enemy_occupied}" />
-          </Sequence>
-          <SetAction action="PUSH" />
-          <ResetAccumulator />
-        </Sequence>
-
         <Sequence name="ToOccupyWhenNeeded">
           <Fallback>
             <NotBulletSufficient />
@@ -67,7 +46,7 @@
         </Sequence>
         -->
 
-        <SetAction action="PUSH" />
+        <SetAction action="OCCUPY" />
       </ReactiveFallback>
 
       <ReactiveFallback name="ExecuteAction">
@@ -76,15 +55,6 @@
           <SetMotion input_port="STAY_IN_PLACE" />
           <PublishMotion />
           <ClearGoal />
-        </Sequence>
-
-        <Sequence>
-          <IsAction value="PUSH" />
-          <SetMotionFlagToOne />
-          <SetMotion input_port="PUSH" />
-          <PublishMotion />
-          <SetGoalFromParams ns="occupy" />
-          <PublishGoalPoint topic="clicked_point" />
         </Sequence>
 
         <Sequence>
@@ -110,6 +80,20 @@
           <PublishMotion />
           <SetGoalFromParams ns="supply" />
           <PublishGoalPoint topic="clicked_point" />
+          <Fallback>
+            <Sequence>
+              <CheckArrived />
+              <SetBulletUp value="1" />
+            </Sequence>
+            <AlwaysSuccess />
+          </Fallback>
+          <Fallback>
+            <Sequence>
+              <IsBulletFull max_bullet="999" />
+              <SetBulletUp value="0" />
+            </Sequence>
+            <AlwaysSuccess />
+          </Fallback>
         </Sequence>
 
         <!-- RADICAL Mode: Chase enemy execution -->

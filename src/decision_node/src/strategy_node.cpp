@@ -183,57 +183,6 @@ public:
     bb->set("is_in_danger", is_in_danger);
     bb->set("bullet_sufficient", bullet_sufficient);
 
-    // Handle motion flag and attack cooldown
-    int motion_flag = 0;
-    ros::Time attack_time;
-    try {
-      motion_flag = bb->get<int>("motion_flag");
-    } catch (...) {
-      motion_flag = 0;
-      bb->set("motion_flag", motion_flag);
-    }
-    
-    try {
-      attack_time = bb->get<ros::Time>("attack_cooldown_end_time");
-    } catch (...) {
-      attack_time = ros::Time(0);
-      bb->set("attack_cooldown_end_time", attack_time);
-    }
-
-    // Check if under attack (HP decreased from last frame)
-    static int last_hp = -1;  // -1 表示第一次
-    bool under_attack = false;
-    
-    if (last_hp == -1)
-    {
-      // 第一次收到 HP 数据，初始化为当前值
-      last_hp = remain_hp;
-      under_attack = false;
-      // ROS_INFO("UpdateDerivedFlags: First HP update, initialized last_hp=%d", last_hp);
-    }
-    else
-    {
-      // 之后的循环，检查是否下降
-      under_attack = (remain_hp < last_hp);
-      // ROS_INFO("UpdateDerivedFlags: HP check - last_hp=%d, current_hp=%d, under_attack=%d", last_hp, remain_hp, under_attack);
-      last_hp = remain_hp;
-    }
-    
-    if (under_attack)
-    {
-      motion_flag = 0;
-      bb->set("motion_flag", 0);
-      bb->set("attack_cooldown_end_time", ros::Time::now() + ros::Duration(5.0));
-      // ROS_INFO("UpdateDerivedFlags: ⚠️ UNDER ATTACK! motion_flag reset to 0, cooldown set to 5 seconds");
-    }
-    
-    // Check if cooldown expired
-    if (motion_flag == 0 && ros::Time::now() >= attack_time && attack_time.toSec() > 0)
-    {
-      // Cooldown finished, allow motion_flag to be set again
-      bb->set("attack_cooldown_end_time", ros::Time(0));
-    }
-
     // V1: aggressive / central_occupiable 先作为占位，后续接裁判/受击统计
     try
     {
@@ -812,13 +761,14 @@ int main(int argc, char** argv)
   blackboard->set("motion", std::string("STAY_IN_PLACE"));
   blackboard->set("goal.valid", false);
   blackboard->set("goal.cycle_index", 0);
-  blackboard->set("motion_flag", 0);
+  blackboard->set("motion_flag", 2);  // 默认为2
   blackboard->set("attack_cooldown_end_time", ros::Time(0));
   blackboard->set("is_aggressive", false);
   blackboard->set("central_occupiable", false);
   blackboard->set("is_enemy_occupied", false);  
   blackboard->set("central_accumulate_count", 0);
   blackboard->set("recover", 0);  // 回血标志，默认为0
+  blackboard->set("bullet_up", 0);  // 补弹标志，默认为0
   std::string bt_xml_path;
   pnh.param<std::string>("bt_xml", bt_xml_path, std::string(""));
   if (bt_xml_path.empty())

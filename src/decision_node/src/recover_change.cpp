@@ -60,6 +60,62 @@ public:
   }
 };
 
+// IsBulletFull: Check if current bullet equals max bullet
+class IsBulletFull : public BT::ConditionNode
+{
+public:
+  IsBulletFull(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::ConditionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<int>("max_bullet", 999, "Maximum bullet value"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    int bullet_remain = bb->get<int>("ref.bullet_remain");
+    
+    int max_bullet = 999;
+    (void)getInput("max_bullet", max_bullet);
+    
+    bool is_full = (bullet_remain >= max_bullet);
+    // ROS_INFO("IsBulletFull: bullet_remain=%d, max_bullet=%d, is_full=%d", bullet_remain, max_bullet, is_full);
+    return is_full ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+  }
+};
+
+// SetBulletUp: Set bullet_up flag to 0 or 1
+class SetBulletUp : public BT::SyncActionNode
+{
+public:
+  SetBulletUp(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {BT::InputPort<int>("value", 0, "BulletUp value: 0 or 1")};
+  }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    int value = 0;
+    (void)getInput("value", value);
+    
+    bb->set("bullet_up", value);
+    ROS_DEBUG("SetBulletUp: bullet_up set to %d", value);
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
 // PublishRecover: Publish recover value to ROS topic
 class PublishRecover : public BT::SyncActionNode
 {
@@ -120,6 +176,8 @@ void RegisterRecoverChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher
 {
   factory.registerNodeType<IsHealthFull>("IsHealthFull");
   factory.registerNodeType<SetRecover>("SetRecover");
+  factory.registerNodeType<IsBulletFull>("IsBulletFull");
+  factory.registerNodeType<SetBulletUp>("SetBulletUp");
   
   // recover_pub 为 nullptr 时不注册 PublishRecover（可选）
   if (recover_pub != nullptr)
