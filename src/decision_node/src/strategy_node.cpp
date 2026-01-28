@@ -27,6 +27,7 @@
 
 #include "decision_node/central_occupiable.hpp"
 #include "decision_node/motion_change.hpp"
+#include "decision_node/recover_change.hpp"
 namespace
 {
 constexpr int kDefaultTickHz = 20;
@@ -47,7 +48,7 @@ std::string toUpper(std::string s)
 // ---------------------------
 struct RefereeState
 {
-  int game_progress = 0;  // 0: not start, 1: in progress, 2: end (convention)
+  int game_progress = 0;  // 0，1，2，3: not start, 4: in progress, 5: end (convention)
   int remain_hp = 400;
   int bullet_remain = 999;
   int friendly_score = 0;
@@ -271,7 +272,7 @@ public:
   BT::NodeStatus tick() override
   {
     const int gp = config().blackboard->get<int>("ref.game_progress");
-    const bool not_start_or_end = (gp == 0 || gp == 2);
+    const bool not_start_or_end = (gp == 0 || gp == 1 || gp == 2 || gp == 3 || gp == 5);
     return not_start_or_end ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
@@ -732,6 +733,7 @@ int main(int argc, char** argv)
 
   ros::Publisher goal_pub = nh.advertise<geometry_msgs::PointStamped>("clicked_point", 1);
   ros::Publisher motion_pub = nh.advertise<std_msgs::Int32>("motion", 1);
+  ros::Publisher recover_pub = nh.advertise<std_msgs::Int32>("recover", 1);
 
   int tick_hz = kDefaultTickHz;
   pnh.param("tick_hz", tick_hz, tick_hz);
@@ -789,6 +791,8 @@ int main(int argc, char** argv)
 
   RegisterOccupationNodes(factory);
 
+  RegisterRecoverChangeNodes(factory, &recover_pub);
+
   // Blackboard defaults (can be overridden with params below)
   int danger_hp = 100;
   int sufficient_bullet = 10;
@@ -814,6 +818,7 @@ int main(int argc, char** argv)
   blackboard->set("central_occupiable", false);
   blackboard->set("is_enemy_occupied", false);  
   blackboard->set("central_accumulate_count", 0);
+  blackboard->set("recover", 0);  // 回血标志，默认为0
   std::string bt_xml_path;
   pnh.param<std::string>("bt_xml", bt_xml_path, std::string(""));
   if (bt_xml_path.empty())

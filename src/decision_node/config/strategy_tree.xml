@@ -25,6 +25,12 @@
           <SetAction action="SUPPLY" />
         </Sequence>
 
+        <Sequence name="ToPushThenOccupyWhenArrived">
+          <IsAction value="PUSH" />
+          <CheckArrived />
+          <SetAction action="OCCUPY" />
+        </Sequence>
+
         <Sequence name="ToPushWhenOccupiedEnough">
           <Sequence>
             <AccumulateCentralOccupiable 
@@ -49,6 +55,18 @@
           <SetAction action="OCCUPY" />
         </Sequence>
 
+        <!-- RADICAL Mode: Chase enemy when aggressive and bullet sufficient -->
+        <!--
+        <Sequence name="ToRadicalWhenAggressiveAndBulletSufficient">
+          <AggressiveAdvantage threshold="-999" />
+          <Fallback>
+            <NotBulletSufficient />
+            <AlwaysFailure />
+          </Fallback>
+          <SetAction action="RADICAL" />
+        </Sequence>
+        -->
+
         <SetAction action="PUSH" />
       </ReactiveFallback>
 
@@ -62,17 +80,10 @@
 
         <Sequence>
           <IsAction value="PUSH" />
-          <Fallback>
-            <Sequence>
-              <CheckArrived />
-              <AdvanceCycleIndex point_count="4" />
-            </Sequence>
-            <AlwaysSuccess />
-          </Fallback>
           <SetMotionFlagToOne />
           <SetMotion input_port="PUSH" />
           <PublishMotion />
-          <SetGoalFromParamsCyclic ns="push" point_count="4" />
+          <SetGoalFromParams ns="occupy" />
           <PublishGoalPoint topic="clicked_point" />
         </Sequence>
 
@@ -81,13 +92,14 @@
           <Fallback>
             <Sequence>
               <CheckArrived />
+              <AdvanceCycleIndex point_count="4" /> 
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
           <SetMotionFlagToOne />
           <SetMotion input_port="OCCUPY" />
           <PublishMotion />
-          <SetGoalFromParams ns="occupy" />
+          <SetGoalFromParamsCyclic ns="occupy" point_count="4" />
           <PublishGoalPoint topic="clicked_point" />
         </Sequence>
 
@@ -100,11 +112,37 @@
           <PublishGoalPoint topic="clicked_point" />
         </Sequence>
 
+        <!-- RADICAL Mode: Chase enemy execution -->
+        <!--
+        <Sequence>
+          <IsAction value="RADICAL" />
+          <SetMotionFlagToOne />
+          <SetMotion input_port="RADICAL" />
+          <PublishMotion />
+          [TODO: Chase/Pursuit node to be implemented here]
+        </Sequence>
+        -->
+
         <Sequence>
           <IsAction value="RESPAWN" />
           <SetMotion input_port="RESPAWN" />
           <PublishMotion />
-          <ClearGoal />
+          <SetGoalFromParams ns="supply" />
+          <PublishGoalPoint topic="clicked_point" />
+          <Fallback>
+            <Sequence>
+              <CheckArrived />
+              <SetRecover value="1" />
+            </Sequence>
+            <AlwaysSuccess />
+          </Fallback>
+          <Fallback>
+            <Sequence>
+              <IsHealthFull />
+              <SetRecover value="0" />
+            </Sequence>
+            <AlwaysSuccess />
+          </Fallback>
         </Sequence>
 
         <AlwaysFailure/>
