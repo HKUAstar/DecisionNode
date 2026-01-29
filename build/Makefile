@@ -730,6 +730,19 @@ mcu_simulator/fast:
 	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_simulator.dir/build.make decision_node/CMakeFiles/mcu_simulator.dir/build
 .PHONY : mcu_simulator/fast
 
+#=============================================================================
+# Target rules for targets named command_test
+
+# Build rule for target.
+command_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 command_test
+.PHONY : command_test
+
+# fast build rule for target.
+command_test/fast:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/command_test.dir/build.make decision_node/CMakeFiles/command_test.dir/build
+.PHONY : command_test/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -778,6 +791,7 @@ help:
 	@echo "... std_msgs_generate_messages_nodejs"
 	@echo "... std_msgs_generate_messages_py"
 	@echo "... tests"
+	@echo "... command_test"
 	@echo "... continuous_forwarder"
 	@echo "... gmock"
 	@echo "... gmock_main"

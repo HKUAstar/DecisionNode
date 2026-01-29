@@ -1,7 +1,7 @@
 #include <behaviortree_cpp_v3/behavior_tree.h>
 #include <behaviortree_cpp_v3/bt_factory.h>
 #include <ros/ros.h>
-#include <std_msgs/Int32.h>
+#include <std_msgs/UInt8.h>
 #include "decision_node/recover_change.hpp"
 
 // IsHealthFull: Check if current HP equals max HP
@@ -164,8 +164,8 @@ public:
       bb->set("recover_last", recover);
     }
 
-    std_msgs::Int32 msg;
-    msg.data = recover;
+    std_msgs::UInt8 msg;
+    msg.data = static_cast<uint8_t>(recover);
     ROS_DEBUG("PublishRecover: Publishing recover=%d", recover);
     publisher_->publish(msg);
     return BT::NodeStatus::SUCCESS;
@@ -220,8 +220,8 @@ public:
       bb->set("bullet_up_last", bullet_up);
     }
 
-    std_msgs::Int32 msg;
-    msg.data = bullet_up;
+    std_msgs::UInt8 msg;
+    msg.data = static_cast<uint8_t>(bullet_up);
     ROS_DEBUG("PublishBulletUp: Publishing bullet_up=%d", bullet_up);
     publisher_->publish(msg);
     return BT::NodeStatus::SUCCESS;

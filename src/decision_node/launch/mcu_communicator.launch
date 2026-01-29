@@ -11,7 +11,4 @@
         <param name="baudrate" value="$(arg baudrate)" />
     </node>
     
-    <!-- 日志提示 -->
-    <node name="launch_info" pkg="rostopic" type="rostopic" args="pub /launch_info std_msgs/String 'data: MCU Communicator Started' -l 1" />
-    
 </launch>

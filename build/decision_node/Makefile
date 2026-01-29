@@ -647,6 +647,20 @@ mcu_simulator/fast:
 	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_simulator.dir/build.make decision_node/CMakeFiles/mcu_simulator.dir/build
 .PHONY : mcu_simulator/fast
 
+# Convenience name for target.
+decision_node/CMakeFiles/command_test.dir/rule:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/command_test.dir/rule
+.PHONY : decision_node/CMakeFiles/command_test.dir/rule
+
+# Convenience name for target.
+command_test: decision_node/CMakeFiles/command_test.dir/rule
+.PHONY : command_test
+
+# fast build rule for target.
+command_test/fast:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/command_test.dir/build.make decision_node/CMakeFiles/command_test.dir/build
+.PHONY : command_test/fast
+
 src/central_occupiable.o: src/central_occupiable.cpp.o
 .PHONY : src/central_occupiable.o
 
@@ -670,6 +684,30 @@ src/central_occupiable.s: src/central_occupiable.cpp.s
 src/central_occupiable.cpp.s:
 	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/strategy_node.dir/build.make decision_node/CMakeFiles/strategy_node.dir/src/central_occupiable.cpp.s
 .PHONY : src/central_occupiable.cpp.s
+
+src/command_test.o: src/command_test.cpp.o
+.PHONY : src/command_test.o
+
+# target to build an object file
+src/command_test.cpp.o:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/command_test.dir/build.make decision_node/CMakeFiles/command_test.dir/src/command_test.cpp.o
+.PHONY : src/command_test.cpp.o
+
+src/command_test.i: src/command_test.cpp.i
+.PHONY : src/command_test.i
+
+# target to preprocess a source file
+src/command_test.cpp.i:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/command_test.dir/build.make decision_node/CMakeFiles/command_test.dir/src/command_test.cpp.i
+.PHONY : src/command_test.cpp.i
+
+src/command_test.s: src/command_test.cpp.s
+.PHONY : src/command_test.s
+
+# target to generate assembly for a file
+src/command_test.cpp.s:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/command_test.dir/build.make decision_node/CMakeFiles/command_test.dir/src/command_test.cpp.s
+.PHONY : src/command_test.cpp.s
 
 src/mcu_communicator.o: src/mcu_communicator.cpp.o
 .PHONY : src/mcu_communicator.o
@@ -742,6 +780,30 @@ src/motion_change.s: src/motion_change.cpp.s
 src/motion_change.cpp.s:
 	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/strategy_node.dir/build.make decision_node/CMakeFiles/strategy_node.dir/src/motion_change.cpp.s
 .PHONY : src/motion_change.cpp.s
+
+src/recover_change.o: src/recover_change.cpp.o
+.PHONY : src/recover_change.o
+
+# target to build an object file
+src/recover_change.cpp.o:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/strategy_node.dir/build.make decision_node/CMakeFiles/strategy_node.dir/src/recover_change.cpp.o
+.PHONY : src/recover_change.cpp.o
+
+src/recover_change.i: src/recover_change.cpp.i
+.PHONY : src/recover_change.i
+
+# target to preprocess a source file
+src/recover_change.cpp.i:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/strategy_node.dir/build.make decision_node/CMakeFiles/strategy_node.dir/src/recover_change.cpp.i
+.PHONY : src/recover_change.cpp.i
+
+src/recover_change.s: src/recover_change.cpp.s
+.PHONY : src/recover_change.s
+
+# target to generate assembly for a file
+src/recover_change.cpp.s:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/strategy_node.dir/build.make decision_node/CMakeFiles/strategy_node.dir/src/recover_change.cpp.s
+.PHONY : src/recover_change.cpp.s
 
 src/strategy_node.o: src/strategy_node.cpp.o
 .PHONY : src/strategy_node.o
@@ -834,6 +896,7 @@ help:
 	@echo "... std_msgs_generate_messages_lisp"
 	@echo "... std_msgs_generate_messages_nodejs"
 	@echo "... std_msgs_generate_messages_py"
+	@echo "... command_test"
 	@echo "... continuous_forwarder"
 	@echo "... mcu_communicator"
 	@echo "... mcu_simulator"
@@ -841,6 +904,9 @@ help:
 	@echo "... src/central_occupiable.o"
 	@echo "... src/central_occupiable.i"
 	@echo "... src/central_occupiable.s"
+	@echo "... src/command_test.o"
+	@echo "... src/command_test.i"
+	@echo "... src/command_test.s"
 	@echo "... src/mcu_communicator.o"
 	@echo "... src/mcu_communicator.i"
 	@echo "... src/mcu_communicator.s"
@@ -850,6 +916,9 @@ help:
 	@echo "... src/motion_change.o"
 	@echo "... src/motion_change.i"
 	@echo "... src/motion_change.s"
+	@echo "... src/recover_change.o"
+	@echo "... src/recover_change.i"
+	@echo "... src/recover_change.s"
 	@echo "... src/strategy_node.o"
 	@echo "... src/strategy_node.i"
 	@echo "... src/strategy_node.s"

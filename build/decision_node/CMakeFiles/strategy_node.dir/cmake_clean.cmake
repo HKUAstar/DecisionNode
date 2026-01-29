@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/strategy_node.dir/src/central_occupiable.cpp.o.d"
   "CMakeFiles/strategy_node.dir/src/motion_change.cpp.o"
   "CMakeFiles/strategy_node.dir/src/motion_change.cpp.o.d"
+  "CMakeFiles/strategy_node.dir/src/recover_change.cpp.o"
+  "CMakeFiles/strategy_node.dir/src/recover_change.cpp.o.d"
   "CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o"
   "CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o.d"
 )

@@ -49,9 +49,9 @@ public:
         // 上位机命令
         sub_motion_ = nh_.subscribe<std_msgs::UInt8>("motion", 1, 
                                                      &MCUCommunicator::motionCallback, this);
-        sub_recover_ = nh_.subscribe<std_msgs::Int32>("recover", 1,
+        sub_recover_ = nh_.subscribe<std_msgs::UInt8>("recover", 1,
                                                       &MCUCommunicator::recoverCallback, this);
-        sub_bullet_up_ = nh_.subscribe<std_msgs::Int32>("bullet_up", 1,
+        sub_bullet_up_ = nh_.subscribe<std_msgs::UInt8>("bullet_up", 1,
                                                         &MCUCommunicator::bulletUpCallback, this);
         
         try
@@ -156,14 +156,14 @@ private:
     }
     
     // Recover（回血）回调函数
-    void recoverCallback(const std_msgs::Int32::ConstPtr& msg)
+    void recoverCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_hp_up_ = (msg->data != 0) ? 1 : 0;
         sendMotionCommand(current_motion_mode_);
     }
     
     // Bullet（买弹）回调函数
-    void bulletUpCallback(const std_msgs::Int32::ConstPtr& msg)
+    void bulletUpCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_bullet_up_ = (msg->data != 0) ? 1 : 0;
         sendMotionCommand(current_motion_mode_);

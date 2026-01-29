@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <!-- MCU通讯节点 - 接收下位机数据并发布ROS Topics -->
+    <node name="mcu_communicator" pkg="decision_node" type="mcu_communicator" output="screen">
+        <!-- 串口配置 -->
+        <param name="serial_port" value="/dev/ttyUSB0" />
+        <param name="baudrate" value="115200" />
+    </node>
+    
+    <!-- 命令测试节点 - 用于手动发送motion, recover, bullet_up消息 -->
+    <node name="command_test" pkg="decision_node" type="command_test" output="screen" launch-prefix="xterm -e">
+    </node>
+</launch>

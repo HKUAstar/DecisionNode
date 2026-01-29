@@ -37,6 +37,7 @@ add_executable(strategy_node
     src/strategy_node.cpp
     src/central_occupiable.cpp
     src/motion_change.cpp
+    src/recover_change.cpp
 )
 
 add_executable(continuous_forwarder src/test.cpp)
@@ -44,6 +45,8 @@ add_executable(continuous_forwarder src/test.cpp)
 add_executable(mcu_communicator src/mcu_communicator.cpp)
 
 add_executable(mcu_simulator src/mcu_simulator.cpp)
+
+add_executable(command_test src/command_test.cpp)
 
 target_link_libraries(strategy_node
     ${catkin_LIBRARIES}
@@ -56,10 +59,12 @@ target_link_libraries(mcu_communicator ${catkin_LIBRARIES})
 
 target_link_libraries(mcu_simulator ${catkin_LIBRARIES})
 
+target_link_libraries(command_test ${catkin_LIBRARIES})
+
 # 安装规则 mcu_communicator
 install(DIRECTORY config launch
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(TARGETS strategy_node continuous_forwarder mcu_communicator mcu_simulator
+install(TARGETS strategy_node continuous_forwarder mcu_communicator mcu_simulator command_test
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 

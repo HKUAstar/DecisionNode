@@ -1174,9 +1174,11 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: \
  /opt/ros/noetic/include/std_msgs/Header.h \
  /opt/ros/noetic/include/geometry_msgs/Point.h \
  /opt/ros/noetic/include/std_msgs/Bool.h \
- /opt/ros/noetic/include/std_msgs/Int32.h /usr/include/c++/9/fstream \
+ /opt/ros/noetic/include/std_msgs/Int32.h \
+ /opt/ros/noetic/include/std_msgs/UInt8.h /usr/include/c++/9/fstream \
  /usr/include/x86_64-linux-gnu/c++/9/bits/basic_file.h \
  /usr/include/x86_64-linux-gnu/c++/9/bits/c++io.h \
  /usr/include/c++/9/bits/fstream.tcc \
  /mnt/d/decision_ws/src/decision_node/include/decision_node/central_occupiable.hpp \
- /mnt/d/decision_ws/src/decision_node/include/decision_node/motion_change.hpp
+ /mnt/d/decision_ws/src/decision_node/include/decision_node/motion_change.hpp \
+ /mnt/d/decision_ws/src/decision_node/include/decision_node/recover_change.hpp

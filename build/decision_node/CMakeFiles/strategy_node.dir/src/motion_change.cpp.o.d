@@ -1170,4 +1170,5 @@ decision_node/CMakeFiles/strategy_node.dir/src/motion_change.cpp.o: \
  /opt/ros/noetic/include/ros/node_handle.h \
  /opt/ros/noetic/include/std_msgs/Int32.h \
  /opt/ros/noetic/include/ros/message_operations.h \
+ /opt/ros/noetic/include/std_msgs/UInt8.h \
  /mnt/d/decision_ws/src/decision_node/include/decision_node/motion_change.hpp
