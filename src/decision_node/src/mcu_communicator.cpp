@@ -54,8 +54,6 @@ public:
         sub_bullet_up_ = nh_.subscribe<std_msgs::Int32>("bullet_up", 1,
                                                         &MCUCommunicator::bulletUpCallback, this);
         
-        sub_nav_cmd_ = nh_.subscribe<geometry_msgs::Twist>("/cmd/nav", 1,
-                                                           &MCUCommunicator::navCallback, this);
         try
         {
             serial_.setPort(serial_port_);
@@ -130,7 +128,6 @@ private:
     ros::Subscriber sub_motion_;
     ros::Subscriber sub_recover_;
     ros::Subscriber sub_bullet_up_;
-    ros::Subscriber sub_nav_cmd_;
     
     // 发送缓冲
     uint8_t tx_buffer_[256];
@@ -146,50 +143,6 @@ private:
     // {
     //     sendMotionCommand(msg->data);
     // }
-    
-    // 导航命令回调函数
-    void navCallback(const geometry_msgs::Twist::ConstPtr& msg)
-    {
-        sendNavCommand(msg->linear.x, msg->linear.y, msg->angular.z);
-    }
-    
-    // 发送导航命令到下位机
-    void sendNavCommand(float x_vel, float y_vel, float omega)
-    {
-        // 构建导航命令帧
-        NavCommandFrame frame;
-        frame.sof = NAV_FRAME_SOF;      // 0x4A
-        frame.x_velocity = x_vel;
-        frame.y_velocity = y_vel;
-        frame.omega = omega;
-        frame.received = 1;              // TODO: 根据实际情况设置
-        frame.arrived = 0;               // TODO: 根据实际情况设置
-        frame.eof = MCU_FRAME_EOF;       // 0xFE
-        
-        // CRC8校验（计算前14字节，不包括CRC8和EOF）
-        uint8_t crc_data[15];
-        memcpy(crc_data, &frame, 15);    // 复制sof到arrived
-        frame.crc8 = calculateCRC8(crc_data, 15);
-        
-        // 发送数据
-        try
-        {
-            if (serial_.isOpen())
-            {
-                serial_.write((uint8_t*)&frame, sizeof(frame));
-                ROS_DEBUG("Nav command sent: x_vel=%.2f, y_vel=%.2f, omega=%.2f (frame size=%zu)", 
-                         x_vel, y_vel, omega, sizeof(frame));
-            }
-            else
-            {
-                ROS_WARN("Serial port is not open, cannot send nav command");
-            }
-        }
-        catch (const serial::SerialException& e)
-        {
-            ROS_ERROR("Failed to send nav command: %s", e.what());
-        }
-    }
     
     // 存储当前的 hp_up 和 bullet_up 状态
     uint8_t current_hp_up_ = 0;

@@ -47,26 +47,10 @@ struct MotionCommandFrame
 
 static_assert(sizeof(MotionCommandFrame) == 6, "MotionCommandFrame must be exactly 6 bytes");
 
-// 上位机发送的导航命令帧结构 (共17字节)
-struct NavCommandFrame
-{
-    uint8_t  sof;           // 0x4A (字节0)
-    float    x_velocity;    // x轴速度 (字节1-4)
-    float    y_velocity;    // y轴速度 (字节5-8)
-    float    omega;         // 导航希望地盘相对于上电位置的夹角 (字节9-12)
-    uint8_t  received;      // 表示是否成功收到了板信息 (字节13)
-    uint8_t  arrived;       // 表示是否到达目的地，0:在路上，1:到了 (字节14)
-    uint8_t  crc8;          // CRC8 (字节15)
-    uint8_t  eof;           // 0xFE (字节16)
-} __attribute__((packed));
-
-static_assert(sizeof(NavCommandFrame) == 17, "NavCommandFrame must be exactly 17 bytes");
 #define MCU_FRAME_SOF 0x91          // 下位机数据帧头
 #define MOTION_FRAME_SOF 0x92       // 上位机motion命令帧头
-#define NAV_FRAME_SOF 0x4A          // 上位机导航命令帧头
 #define MCU_FRAME_EOF 0xFE
 #define MCU_FRAME_SIZE 46
-#define MOTION_FRAME_SIZE 4
-#define NAV_FRAME_SIZE 17
+#define MOTION_FRAME_SIZE 6
 
 #endif // MCU_COMM_HPP

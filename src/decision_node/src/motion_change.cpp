@@ -2,6 +2,7 @@
 #include <behaviortree_cpp_v3/bt_factory.h>
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/UInt8.h>
 #include "decision_node/motion_change.hpp"
 
 // Helper function to convert string to uppercase
@@ -195,8 +196,8 @@ public:
       bb->set("motion.last_flag", motion_flag);
     }
 
-    std_msgs::Int32 msg;
-    msg.data = motion_flag;
+    std_msgs::UInt8 msg;
+    msg.data = (uint8_t)motion_flag;
     publisher_->publish(msg);
     // ROS_INFO("PublishMotion: published motion_flag = %d", motion_flag);
     return BT::NodeStatus::SUCCESS;

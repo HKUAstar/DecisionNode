@@ -665,7 +665,7 @@ int main(int argc, char** argv)
   });
 
   ros::Publisher goal_pub = nh.advertise<geometry_msgs::PointStamped>("clicked_point", 1);
-  ros::Publisher motion_pub = nh.advertise<std_msgs::Int32>("motion", 1);
+  ros::Publisher motion_pub = nh.advertise<std_msgs::UInt8>("motion", 1);
   ros::Publisher recover_pub = nh.advertise<std_msgs::Int32>("recover", 1);
   ros::Publisher bullet_up_pub = nh.advertise<std_msgs::Int32>("bullet_up", 1);
 
