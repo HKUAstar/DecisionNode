@@ -1,6 +1,7 @@
 // continuous_forwarder.cpp
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/UInt8.h>
 #include <std_msgs/Bool.h>
 #include <iostream>
 
@@ -9,13 +10,13 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "continuous_forwarder");
     ros::NodeHandle nh;
     
-    ros::Publisher pub_game = nh.advertise<std_msgs::Int32>("/referee/game_progress", 1);
-    ros::Publisher pub_hp = nh.advertise<std_msgs::Int32>("/referee/remain_hp", 1);
-    ros::Publisher pub_bullet = nh.advertise<std_msgs::Int32>("/referee/bullet_remain", 1);
+    ros::Publisher pub_game = nh.advertise<std_msgs::UInt8>("/referee/game_progress", 1);
+    ros::Publisher pub_hp = nh.advertise<std_msgs::UInt8>("/referee/remain_hp", 1);
+    ros::Publisher pub_bullet = nh.advertise<std_msgs::UInt8>("/referee/bullet_remain", 1);
     ros::Publisher pub_friendly = nh.advertise<std_msgs::Int32>("/referee/friendly_score", 1);
     ros::Publisher pub_enemy = nh.advertise<std_msgs::Int32>("/referee/enemy_score", 1);
     ros::Publisher pub_arrived = nh.advertise<std_msgs::Bool>("/dstar_status", 1);
-    ros::Publisher pub_occupy = nh.advertise<std_msgs::Int32>("/referee/occupy_status", 1);
+    ros::Publisher pub_occupy = nh.advertise<std_msgs::UInt8>("/referee/occupy_status", 1);
     
     ros::Duration(0.2).sleep();
     
@@ -46,17 +47,18 @@ int main(int argc, char** argv)
         }
         else if (input == "send")
         {
+            std_msgs::UInt8 uint8_msg;
             std_msgs::Int32 int_msg;
             std_msgs::Bool bool_msg;
             
-            int_msg.data = game_progress;
-            pub_game.publish(int_msg);
+            uint8_msg.data = game_progress;
+            pub_game.publish(uint8_msg);
             
-            int_msg.data = hp;
-            pub_hp.publish(int_msg);
+            uint8_msg.data = hp;
+            pub_hp.publish(uint8_msg);
             
-            int_msg.data = bullet;
-            pub_bullet.publish(int_msg);
+            uint8_msg.data = bullet;
+            pub_bullet.publish(uint8_msg);
             
             int_msg.data = friendly_score;
             pub_friendly.publish(int_msg);
@@ -67,8 +69,8 @@ int main(int argc, char** argv)
             bool_msg.data = arrived;
             pub_arrived.publish(bool_msg);
             
-            int_msg.data = occupy_status;
-            pub_occupy.publish(int_msg);
+            uint8_msg.data = occupy_status;
+            pub_occupy.publish(uint8_msg);
             
             std::cout << "已发送所有数据\n";
             continue;

@@ -20,11 +20,13 @@
   <arg name="goal_topic" default="/clicked_point"/>
 
   <!-- Global goal parameters consumed by SetGoalFromParams/SetGoalFromParamsCyclic (nh, not pnh): goals/<ns>/{x,y} or goals/<ns>/point_<i>/{x,y} -->
-  <!-- Single point (for OCCUPY, SUPPLY) -->
+  <!-- Single point (for OCCUPY, SUPPLY, WAITFOROP) -->
   <arg name="occupy_x" default="5.0"/>
   <arg name="occupy_y" default="5.0"/>
   <arg name="supply_x" default="6.0"/>
   <arg name="supply_y" default="6.0"/>
+  <arg name="waitforop_x" default="0.5"/>
+  <arg name="waitforop_y" default="0.5"/>
   
   <!-- Cyclic points for PUSH (4 points in loop) -->
   <arg name="push_point_0_x" default="1.0"/>
@@ -47,6 +49,9 @@
   <param name="/goals/occupy/point_3/x" value="$(arg occupy_x)"/>
   <param name="/goals/occupy/point_3/y" value="$(arg occupy_y)"/>
   
+  <param name="/goals/supply/x" value="$(arg supply_x)"/>
+  <param name="/goals/supply/y" value="$(arg supply_y)"/>
+  <!-- SUPPLY point - also in cyclic format for consistency -->
   <param name="/goals/supply/point_0/x" value="$(arg supply_x)"/>
   <param name="/goals/supply/point_0/y" value="$(arg supply_y)"/>
   <param name="/goals/supply/point_1/x" value="$(arg supply_x)"/>
@@ -55,6 +60,19 @@
   <param name="/goals/supply/point_2/y" value="$(arg supply_y)"/>
   <param name="/goals/supply/point_3/x" value="$(arg supply_x)"/>
   <param name="/goals/supply/point_3/y" value="$(arg supply_y)"/>
+  
+  <!-- WAITFOROP point - for SetGoalFromParams direct access -->
+  <param name="/goals/waitforop/x" value="$(arg waitforop_x)"/>
+  <param name="/goals/waitforop/y" value="$(arg waitforop_y)"/>
+  <!-- WAITFOROP point - also in cyclic format for consistency -->
+  <param name="/goals/waitforop/point_0/x" value="$(arg waitforop_x)"/>
+  <param name="/goals/waitforop/point_0/y" value="$(arg waitforop_y)"/>
+  <param name="/goals/waitforop/point_1/x" value="$(arg waitforop_x)"/>
+  <param name="/goals/waitforop/point_1/y" value="$(arg waitforop_y)"/>
+  <param name="/goals/waitforop/point_2/x" value="$(arg waitforop_x)"/>
+  <param name="/goals/waitforop/point_2/y" value="$(arg waitforop_y)"/>
+  <param name="/goals/waitforop/point_3/x" value="$(arg waitforop_x)"/>
+  <param name="/goals/waitforop/point_3/y" value="$(arg waitforop_y)"/>
   
   <!-- Set cyclic push points -->
   <param name="/goals/push/point_0/x" value="$(arg push_point_0_x)"/>

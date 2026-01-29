@@ -99,12 +99,12 @@ private:
         MCUDataFrame frame;
         frame.sof = MCU_FRAME_SOF;
         
-        // 模拟数据
-        frame.yaw_angle = std::sin(counter_ * 0.01f) * 3.14159f;  // 云台摇摆
-        frame.chassis_imu = std::cos(counter_ * 0.01f) * 3.14159f; // 底盘旋转
-        frame.motion_mode = (counter_ / 50) % 4;  // 0-3循环
-        frame.operator_x = 100.0f + 50.0f * std::sin(counter_ * 0.01f);
-        frame.operator_y = 200.0f + 50.0f * std::cos(counter_ * 0.01f);
+        // 模拟数据（这些字段在reserved_1_17中，不能直接访问）
+        // float yaw_angle = std::sin(counter_ * 0.01f) * 3.14159f;  // 云台摇摆
+        // float chassis_imu = std::cos(counter_ * 0.01f) * 3.14159f; // 底盘旋转
+        // int motion_mode = (counter_ / 50) % 4;  // 0-3循环
+        // float operator_x = 100.0f + 50.0f * std::sin(counter_ * 0.01f);
+        // float operator_y = 200.0f + 50.0f * std::cos(counter_ * 0.01f);
         
         frame.robot_id = 7;          // 哨兵ID
         frame.robot_color = 0;       // 红方
@@ -142,10 +142,8 @@ private:
             if (frame_count_ % 100 == 0)
             {
                 ROS_INFO("MCU Simulator: sent %u frames, "
-                        "yaw=%.2f, chassis_imu=%.2f, "
                         "self_hp=%u, bullet=%u, occupy=%u",
                         frame_count_,
-                        frame.yaw_angle, frame.chassis_imu,
                         frame.self_hp, frame.bullet_remain, frame.occupy_status);
             }
         }

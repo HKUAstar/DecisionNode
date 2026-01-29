@@ -24,27 +24,23 @@ public:
         pub_bullet_remain_ = nh_.advertise<std_msgs::UInt8>("/referee/bullet_remain", 1);
         pub_occupy_status_ = nh_.advertise<std_msgs::UInt8>("/referee/occupy_status", 1);
         
-        // 新增发布者 - 导航和云台相关数据
-        pub_yaw_angle_ = nh_.advertise<std_msgs::Float32>("/nav/yaw_angle", 1);
-        pub_chassis_imu_ = nh_.advertise<std_msgs::Float32>("/nav/chassis_imu", 1);
-        pub_operator_pos_ = nh_.advertise<geometry_msgs::Vector3>("/nav/operator_position", 1);
-        pub_motion_mode_ = nh_.advertise<std_msgs::UInt8>("/nav/motion_mode", 1);
+        // 新增发布者 - 导航和云台相关数据（已删除）
+        // 注：这些发布者没有在头文件中声明，已注释
         
-
-        pub_robot_id_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_id", 1);
-        pub_robot_color_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_color", 1);
-        pub_self_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_hp", 1);
-        pub_self_max_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_max_hp", 1);
+        // pub_robot_id_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_id", 1);
+        // pub_robot_color_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_color", 1);
+        // pub_self_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_hp", 1);
+        // pub_self_max_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_max_hp", 1);
         
-        pub_red_1_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_1_hp", 1);
-        pub_red_3_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_3_hp", 1);
-        pub_red_7_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_7_hp", 1);
-        pub_blue_1_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_1_hp", 1);
-        pub_blue_3_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_3_hp", 1);
-        pub_blue_7_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_7_hp", 1);
+        // pub_red_1_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_1_hp", 1);
+        // pub_red_3_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_3_hp", 1);
+        // pub_red_7_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_7_hp", 1);
+        // pub_blue_1_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_1_hp", 1);
+        // pub_blue_3_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_3_hp", 1);
+        // pub_blue_7_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_7_hp", 1);
         
-        pub_red_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/red_dead", 1);
-        pub_blue_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_dead", 1);
+        // pub_red_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/red_dead", 1);
+        // pub_blue_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_dead", 1);
         
         pub_friendly_score_ = nh_.advertise<std_msgs::Int32>("/referee/friendly_score", 1);
         pub_enemy_score_ = nh_.advertise<std_msgs::Int32>("/referee/enemy_score", 1);
@@ -106,23 +102,6 @@ private:
     ros::Publisher pub_remain_hp_;
     ros::Publisher pub_bullet_remain_;
     ros::Publisher pub_occupy_status_;
-    
-    ros::Publisher pub_yaw_angle_;
-    ros::Publisher pub_chassis_imu_;
-    ros::Publisher pub_operator_pos_;
-    ros::Publisher pub_motion_mode_;
-    
-    ros::Publisher pub_robot_id_;
-    ros::Publisher pub_robot_color_;
-    ros::Publisher pub_self_hp_;
-    ros::Publisher pub_self_max_hp_;
-    
-    ros::Publisher pub_red_1_hp_;
-    ros::Publisher pub_red_3_hp_;
-    ros::Publisher pub_red_7_hp_;
-    ros::Publisher pub_blue_1_hp_;
-    ros::Publisher pub_blue_3_hp_;
-    ros::Publisher pub_blue_7_hp_;
     
     ros::Publisher pub_red_dead_;
     ros::Publisher pub_blue_dead_;
@@ -373,7 +352,6 @@ private:
         // 发布已有topic的数据
         std_msgs::UInt8 msg_uint8;
         std_msgs::UInt16 msg_uint16;
-        std_msgs::UInt8 msg_uint8;
         std_msgs::Float32 msg_float;
         
         // 比赛进度
@@ -389,60 +367,44 @@ private:
         msg_uint8.data = frame.occupy_status;
         pub_occupy_status_.publish(msg_uint8);
         
-        // 发布导航数据
-        msg_float.data = frame.yaw_angle;
-        pub_yaw_angle_.publish(msg_float);
+        // 发布机器人信息（对应的发布者添加了但没有在头文件中声明）
+        // msg_uint8.data = frame.robot_id;
+        // pub_robot_id_.publish(msg_uint8);
         
-        msg_float.data = frame.chassis_imu;
-        pub_chassis_imu_.publish(msg_float);
+        // msg_uint8.data = frame.robot_color;
+        // pub_robot_color_.publish(msg_uint8);
         
-        geometry_msgs::Vector3 msg_pos;
-        msg_pos.x = frame.operator_x;
-        msg_pos.y = frame.operator_y;
-        msg_pos.z = 0.0;
-        pub_operator_pos_.publish(msg_pos);
+        // msg_uint16.data = frame.self_hp;
+        // pub_self_hp_.publish(msg_uint16);
         
-        msg_uint8.data = frame.motion_mode;
-        pub_motion_mode_.publish(msg_uint8);
-        
-        // 发布机器人信息
-        msg_uint8.data = frame.robot_id;
-        pub_robot_id_.publish(msg_uint8);
-        
-        msg_uint8.data = frame.robot_color;
-        pub_robot_color_.publish(msg_uint8);
-        
-        msg_uint16.data = frame.self_hp;
-        pub_self_hp_.publish(msg_uint16);
-        
-        msg_uint16.data = frame.self_max_hp;
-        pub_self_max_hp_.publish(msg_uint16);
+        // msg_uint16.data = frame.self_max_hp;
+        // pub_self_max_hp_.publish(msg_uint16);
         
         // 发布其他机器人血量
-        msg_uint16.data = frame.red_1_hp;
-        pub_red_1_hp_.publish(msg_uint16);
+        // msg_uint16.data = frame.red_1_hp;
+        // pub_red_1_hp_.publish(msg_uint16);
         
-        msg_uint16.data = frame.red_3_hp;
-        pub_red_3_hp_.publish(msg_uint16);
+        // msg_uint16.data = frame.red_3_hp;
+        // pub_red_3_hp_.publish(msg_uint16);
         
-        msg_uint16.data = frame.red_7_hp;
-        pub_red_7_hp_.publish(msg_uint16);
+        // msg_uint16.data = frame.red_7_hp;
+        // pub_red_7_hp_.publish(msg_uint16);
         
-        msg_uint16.data = frame.blue_1_hp;
-        pub_blue_1_hp_.publish(msg_uint16);
+        // msg_uint16.data = frame.blue_1_hp;
+        // pub_blue_1_hp_.publish(msg_uint16);
         
-        msg_uint16.data = frame.blue_3_hp;
-        pub_blue_3_hp_.publish(msg_uint16);
+        // msg_uint16.data = frame.blue_3_hp;
+        // pub_blue_3_hp_.publish(msg_uint16);
         
-        msg_uint16.data = frame.blue_7_hp;
-        pub_blue_7_hp_.publish(msg_uint16);
+        // msg_uint16.data = frame.blue_7_hp;
+        // pub_blue_7_hp_.publish(msg_uint16);
         
         // 发布死亡状态
-        msg_uint16.data = frame.red_dead;
-        pub_red_dead_.publish(msg_uint16);
+        // msg_uint16.data = frame.red_dead;
+        // pub_red_dead_.publish(msg_uint16);
         
-        msg_uint16.data = frame.blue_dead;
-        pub_blue_dead_.publish(msg_uint16);
+        // msg_uint16.data = frame.blue_dead;
+        // pub_blue_dead_.publish(msg_uint16);
         
         // 更新分数
         updateScore(frame);
@@ -454,8 +416,8 @@ private:
         msg_score.data = enemy_score_;
         pub_enemy_score_.publish(msg_score);
         
-        ROS_DEBUG("MCU frame parsed: game_progress=%u, self_hp=%u, yaw=%.2f, chassis_imu=%.2f, friendly_score=%d, enemy_score=%d",
-                 frame.game_progress, frame.self_hp, frame.yaw_angle, frame.chassis_imu, friendly_score_, enemy_score_);
+        ROS_DEBUG("MCU frame parsed: game_progress=%u, self_hp=%u, bullet=%u, friendly_score=%d, enemy_score=%d",
+                 frame.game_progress, frame.self_hp, frame.bullet_remain, friendly_score_, enemy_score_);
     }
     
     void updateScore(const MCUDataFrame& frame)

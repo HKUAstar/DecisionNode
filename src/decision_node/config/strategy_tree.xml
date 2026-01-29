@@ -11,12 +11,12 @@
 
       <ReactiveFallback name="DecideAction">
         <Sequence name="ToInitWhenNotInGame">
-          <GameNotStartEnd />
+          <IsGameStarted expect_started="false" />
           <SetAction action="INIT" />
         </Sequence>
 
         <Sequence name="ToPushWhenGameStart">
-          <IsGameStarted />
+          <IsGameStarted expect_started="true" />
           <IsAction value="INIT" />
           <SetAction action="PUSH" />
         </Sequence>
@@ -24,6 +24,12 @@
         <Sequence name="ToRespawnWhenDead">
           <IsSentryDead />
           <SetAction action="RESPAWN" />
+        </Sequence>
+
+        <Sequence name="ToSupplyAfterRespawn">
+          <IsAction value="RESPAWN" />
+          <IsSentryAlive />
+          <SetAction action="SUPPLY" />
         </Sequence>
 
         <Sequence name="ToSupplyWhenInDanger">
@@ -73,7 +79,10 @@
         </Sequence>
         -->
 
-        <SetAction action="PUSH" />
+        <!-- WAITFOROP: Default state when no other conditions are met -->
+        <Sequence name="ToWaitforOP">
+          <SetAction action="WAITFOROP" />
+        </Sequence>
       </ReactiveFallback>
 
       <ReactiveFallback name="ExecuteAction">
@@ -81,6 +90,10 @@
           <IsAction value="INIT" />
           <SetMotionFlag target_motion="3" />
           <PublishMotion />
+          <SetBulletUp value="0" />
+          <PublishBulletUp />
+          <SetRecover value="0" />
+          <PublishRecover />
           <ClearGoal />
         </Sequence>
 
@@ -175,6 +188,18 @@
           <IsAction value="RESPAWN" />
           <SetMotionFlag target_motion="3" />
           <PublishMotion />
+        </Sequence>
+
+        <Sequence>
+          <IsAction value="WAITFOROP" />
+          <SetMotionFlag target_motion="0" />
+          <PublishMotion />
+          <SetBulletUp value="0" />
+          <PublishBulletUp />
+          <SetRecover value="0" />
+          <PublishRecover />
+          <SetGoalFromParams ns="waitforop" />
+          <PublishGoalPoint topic="clicked_point" />
         </Sequence>
       </ReactiveFallback>
     </ReactiveSequence>

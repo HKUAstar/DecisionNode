@@ -209,24 +209,6 @@ public:
 // ---------------------------
 // BT Nodes: Conditions
 // ---------------------------
-class GameNotStartEnd : public BT::ConditionNode
-{
-public:
-  GameNotStartEnd(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::ConditionNode(name, config)
-  {
-  }
-
-  static BT::PortsList providedPorts() { return {}; }
-
-  BT::NodeStatus tick() override
-  {
-    const int gp = config().blackboard->get<int>("ref.game_progress");
-    const bool not_start_or_end = (gp == 0 || gp == 1 || gp == 2 || gp == 3 || gp == 5);
-    return not_start_or_end ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
-  }
-};
-
 class IsGameStarted : public BT::ConditionNode
 {
 public:
@@ -235,13 +217,22 @@ public:
   {
   }
 
-  static BT::PortsList providedPorts() { return {}; }
+  static BT::PortsList providedPorts() 
+  { 
+    return {BT::InputPort<bool>("expect_started", true, "Expected game state: true=started, false=not started")};
+  }
 
   BT::NodeStatus tick() override
   {
     const int gp = config().blackboard->get<int>("ref.game_progress");
     const bool is_started = (gp == 4);  // 4 means game in progress
-    return is_started ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    
+    // Get the expect_started parameter, default to true if not provided
+    const bool expect_started = getInput<bool>("expect_started").value_or(true);
+    
+    // Return SUCCESS if actual state matches expected state
+    const bool condition_met = (is_started == expect_started);
+    return condition_met ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
 
@@ -259,6 +250,23 @@ public:
   {
     const bool is_dead = config().blackboard->get<bool>("is_dead");
     return is_dead ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+  }
+};
+
+class IsSentryAlive : public BT::ConditionNode
+{
+public:
+  IsSentryAlive(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::ConditionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    const bool is_dead = config().blackboard->get<bool>("is_dead");
+    return (!is_dead) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
 
@@ -421,6 +429,56 @@ public:
     bb->set("goal.valid", false);
     return BT::NodeStatus::SUCCESS;
   }
+};
+
+// Wait: 等待指定的秒数
+class Wait : public BT::SyncActionNode
+{
+public:
+  Wait(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config), wait_end_time_(ros::Time(0))
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<double>("duration", 1.0, "等待的秒数"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    double duration = 1.0;
+    if (!getInput("duration", duration))
+    {
+      return BT::NodeStatus::FAILURE;
+    }
+
+    auto bb = config().blackboard;
+    
+    // 第一次进入时，记录开始时间
+    if (wait_end_time_ == ros::Time(0))
+    {
+      wait_end_time_ = ros::Time::now() + ros::Duration(duration);
+      ROS_DEBUG("Wait: Starting wait for %.2f seconds", duration);
+      return BT::NodeStatus::RUNNING;
+    }
+
+    // 检查是否超过等待时间
+    if (ros::Time::now() >= wait_end_time_)
+    {
+      ROS_DEBUG("Wait: Wait completed");
+      wait_end_time_ = ros::Time(0);  // 重置计时器
+      return BT::NodeStatus::SUCCESS;
+    }
+
+    // 还没等够，继续等待
+    return BT::NodeStatus::RUNNING;
+  }
+
+private:
+  ros::Time wait_end_time_;
 };
 
 //[TODO]: 这里的目标点是从参数服务器读取的，
@@ -711,9 +769,9 @@ int main(int argc, char** argv)
   factory.registerNodeType<UpdateTimersBB>("UpdateTimersBB");
   factory.registerNodeType<UpdateDerivedFlags>("UpdateDerivedFlags");
 
-  factory.registerNodeType<GameNotStartEnd>("GameNotStartEnd");
   factory.registerNodeType<IsGameStarted>("IsGameStarted");
   factory.registerNodeType<IsSentryDead>("IsSentryDead");
+  factory.registerNodeType<IsSentryAlive>("IsSentryAlive");
   factory.registerNodeType<IsSentryInDanger>("IsSentryInDanger");
   factory.registerNodeType<NotBulletSufficient>("NotBulletSufficient");
   factory.registerNodeType<IsArrived>("IsArrived");
@@ -722,6 +780,7 @@ int main(int argc, char** argv)
 
   factory.registerNodeType<SetAction>("SetAction");
   factory.registerNodeType<ClearGoal>("ClearGoal");
+  factory.registerNodeType<Wait>("Wait");
   
   RegisterMotionChangeNodes(factory, &motion_pub, &publish_on_change_only);
 

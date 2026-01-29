@@ -8,11 +8,7 @@
 struct MCUDataFrame
 {
     uint8_t  sof;            // 0x91 (字节0)
-    float    yaw_angle;      // 云台yaw弧度 (字节1-4)
-    float    chassis_imu;    // 底盘IMU弧度 (字节5-8)
-    uint8_t  motion_mode;    // 运动模式 (字节9)
-    float    operator_x;     // 操作手x (字节10-13)
-    float    operator_y;     // 操作手y (字节14-17)
+    uint8_t  reserved_1_17[17];  // 预留 (字节1-17，包含 yaw_angle, chassis_imu, motion_mode, operator_x, operator_y)
     uint8_t  robot_id;       // 机器人ID (字节18)
     uint8_t  robot_color;    // 颜色 (字节19)
     uint8_t  game_progress;  // 比赛阶段 (字节20)
