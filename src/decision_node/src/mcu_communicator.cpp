@@ -19,10 +19,10 @@ public:
         nh_.param("baudrate", serial_baudrate_, 115200);
         
         // 初始化发布者 - 对应已有的topic
-        pub_game_progress_ = nh_.advertise<std_msgs::Int32>("/referee/game_progress", 1);
-        pub_remain_hp_ = nh_.advertise<std_msgs::Int32>("/referee/remain_hp", 1);
-        pub_bullet_remain_ = nh_.advertise<std_msgs::Int32>("/referee/bullet_remain", 1);
-        pub_occupy_status_ = nh_.advertise<std_msgs::Int32>("/referee/occupy_status", 1);
+        pub_game_progress_ = nh_.advertise<std_msgs::UInt8>("/referee/game_progress", 1);
+        pub_remain_hp_ = nh_.advertise<std_msgs::UInt8>("/referee/remain_hp", 1);
+        pub_bullet_remain_ = nh_.advertise<std_msgs::UInt8>("/referee/bullet_remain", 1);
+        pub_occupy_status_ = nh_.advertise<std_msgs::UInt8>("/referee/occupy_status", 1);
         
         // 新增发布者 - 导航和云台相关数据
         pub_yaw_angle_ = nh_.advertise<std_msgs::Float32>("/nav/yaw_angle", 1);
@@ -45,6 +45,9 @@ public:
         
         pub_red_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/red_dead", 1);
         pub_blue_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_dead", 1);
+        
+        pub_friendly_score_ = nh_.advertise<std_msgs::Int32>("/referee/friendly_score", 1);
+        pub_enemy_score_ = nh_.advertise<std_msgs::Int32>("/referee/enemy_score", 1);
         
         // 上位机命令
         sub_motion_ = nh_.subscribe<std_msgs::UInt8>("motion", 1, 
@@ -124,6 +127,9 @@ private:
     ros::Publisher pub_red_dead_;
     ros::Publisher pub_blue_dead_;
     
+    ros::Publisher pub_friendly_score_;
+    ros::Publisher pub_enemy_score_;
+    
     // ROS 订阅者
     ros::Subscriber sub_motion_;
     ros::Subscriber sub_recover_;
@@ -148,6 +154,15 @@ private:
     uint8_t current_hp_up_ = 0;
     uint8_t current_bullet_up_ = 0;
     uint8_t current_motion_mode_ = 0;
+    
+    // 分数追踪变量
+    int32_t friendly_score_ = 200;  // 己方初始分数
+    int32_t enemy_score_ = 200;     // 敌方初始分数
+    ros::Time last_score_update_time_;  // 上次更新分数的时间
+    int last_occupy_status_ = 0;    // 上一帧的占领状态
+    uint16_t last_red_dead_ = 0;    // 上一帧红方死亡状态
+    uint16_t last_blue_dead_ = 0;   // 上一帧蓝方死亡状态
+    uint8_t robot_color_ = 0;       // 0=red, 1=blue（稍后从MCU数据更新）
     
     // Motion回调函数 - 根据 motion 值和当前状态发送命令帧
     void motionCallback(const std_msgs::UInt8::ConstPtr& msg)
@@ -225,6 +240,29 @@ private:
             }
         }
         return crc;
+    }
+    
+    // CRC8验证函数 - 用于接收数据
+    bool verifyCRC8(MCUDataFrame* frame)
+    {
+        // 计算除了CRC和EOF之外的所有数据的CRC值
+        // frame结构体中CRC8的位置需要知道
+        // 假设MCUDataFrame结构体中CRC8在最后一个字段之前
+        
+        // 获取frame中存储的CRC值（假设CRC8字段在EOF之前）
+        uint8_t received_crc = frame->crc8;
+        
+        // 重新计算CRC（计算SOF之后到CRC之前的所有字段）
+        // 这里需要知道MCUDataFrame的具体结构
+        // 通常是从SOF开始到EOF之前的所有数据
+        uint8_t calculated_crc = calculateCRC8((uint8_t*)&frame->sof, MCU_FRAME_SIZE - 2);  // 减去CRC8和EOF
+        
+        if (received_crc != calculated_crc)
+        {
+            ROS_DEBUG("CRC mismatch: received=0x%02X, calculated=0x%02X", received_crc, calculated_crc);
+            return false;
+        }
+        return true;
     }
     
     void receiveThread()
@@ -322,27 +360,34 @@ private:
             return;
         }
         
+        // 验证CRC8校验
+        if (!verifyCRC8(&frame))
+        {
+            ROS_WARN("CRC8 verification failed for received frame");
+            return;
+        }
+        
+        // 更新机器人颜色（0=red, 1=blue）
+        robot_color_ = frame.robot_color;
+        
         // 发布已有topic的数据
-        std_msgs::Int32 msg_int;
+        std_msgs::UInt8 msg_uint8;
         std_msgs::UInt16 msg_uint16;
         std_msgs::UInt8 msg_uint8;
         std_msgs::Float32 msg_float;
         
         // 比赛进度
-        msg_int.data = frame.game_progress;
-        pub_game_progress_.publish(msg_int);
-        
+        msg_uint8.data = frame.game_progress;
+        pub_game_progress_.publish(msg_uint8);
         // 自身血量
-        msg_int.data = frame.self_hp;
-        pub_remain_hp_.publish(msg_int);
-        
+        msg_uint8.data = frame.self_hp;
+        pub_remain_hp_.publish(msg_uint8);
         // 剩余弹量
-        msg_int.data = frame.bullet_remain;
-        pub_bullet_remain_.publish(msg_int);
-        
+        msg_uint8.data = frame.bullet_remain;
+        pub_bullet_remain_.publish(msg_uint8);
         // 占领状态
-        msg_int.data = frame.occupy_status;
-        pub_occupy_status_.publish(msg_int);
+        msg_uint8.data = frame.occupy_status;
+        pub_occupy_status_.publish(msg_uint8);
         
         // 发布导航数据
         msg_float.data = frame.yaw_angle;
@@ -399,8 +444,94 @@ private:
         msg_uint16.data = frame.blue_dead;
         pub_blue_dead_.publish(msg_uint16);
         
-        ROS_DEBUG("MCU frame parsed: game_progress=%u, self_hp=%u, yaw=%.2f, chassis_imu=%.2f",
-                 frame.game_progress, frame.self_hp, frame.yaw_angle, frame.chassis_imu);
+        // 更新分数
+        updateScore(frame);
+        
+        // 发布分数
+        std_msgs::Int32 msg_score;
+        msg_score.data = friendly_score_;
+        pub_friendly_score_.publish(msg_score);
+        msg_score.data = enemy_score_;
+        pub_enemy_score_.publish(msg_score);
+        
+        ROS_DEBUG("MCU frame parsed: game_progress=%u, self_hp=%u, yaw=%.2f, chassis_imu=%.2f, friendly_score=%d, enemy_score=%d",
+                 frame.game_progress, frame.self_hp, frame.yaw_angle, frame.chassis_imu, friendly_score_, enemy_score_);
+    }
+    
+    void updateScore(const MCUDataFrame& frame)
+    {
+        ros::Time current_time = ros::Time::now();
+        
+        // 初始化时间戳
+        if (last_score_update_time_.isZero())
+        {
+            last_score_update_time_ = current_time;
+        }
+        
+        // 检测占领状态变化 - 每秒扣1分
+        if (frame.occupy_status != last_occupy_status_)
+        {
+            last_occupy_status_ = frame.occupy_status;
+            last_score_update_time_ = current_time;
+        }
+        else if ((current_time - last_score_update_time_).toSec() >= 1.0)
+        {
+            // occupy_status == 2: 对方占领 → 己方扣1分
+            if (frame.occupy_status == 2)
+            {
+                friendly_score_ = std::max(0, friendly_score_ - 1);
+            }
+            // occupy_status == 1: 己方占领 → 对方扣1分
+            else if (frame.occupy_status == 1)
+            {
+                enemy_score_ = std::max(0, enemy_score_ - 1);
+            }
+            last_score_update_time_ = current_time;
+        }
+        
+        // 检测红方死亡状态变化
+        if (frame.red_dead != last_red_dead_)
+        {
+            uint16_t new_deaths = frame.red_dead - last_red_dead_;
+            for (uint16_t i = 0; i < new_deaths; i++)
+            {
+                if (robot_color_ == 0)  // 己方是红色
+                {
+                    // 己方被击杀，自己人扣20分
+                    friendly_score_ = std::max(0, friendly_score_ - 20);
+                    ROS_INFO("Red robot killed (friendly): friendly_score now %d", friendly_score_);
+                }
+                else  // 己方是蓝色
+                {
+                    // 击杀对方，敌方扣20分
+                    enemy_score_ = std::max(0, enemy_score_ - 20);
+                    ROS_INFO("Red robot killed (enemy): enemy_score now %d", enemy_score_);
+                }
+            }
+            last_red_dead_ = frame.red_dead;
+        }
+        
+        // 检测蓝方死亡状态变化
+        if (frame.blue_dead != last_blue_dead_)
+        {
+            uint16_t new_deaths = frame.blue_dead - last_blue_dead_;
+            for (uint16_t i = 0; i < new_deaths; i++)
+            {
+                if (robot_color_ == 1)  // 己方是蓝色
+                {
+                    // 己方被击杀，自己人扣20分
+                    friendly_score_ = std::max(0, friendly_score_ - 20);
+                    ROS_INFO("Blue robot killed (friendly): friendly_score now %d", friendly_score_);
+                }
+                else  // 己方是红色
+                {
+                    // 击杀对方，敌方扣20分
+                    enemy_score_ = std::max(0, enemy_score_ - 20);
+                    ROS_INFO("Blue robot killed (enemy): enemy_score now %d", enemy_score_);
+                }
+            }
+            last_blue_dead_ = frame.blue_dead;
+        }
     }
 };
 

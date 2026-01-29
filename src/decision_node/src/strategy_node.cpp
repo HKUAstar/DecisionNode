@@ -227,6 +227,24 @@ public:
   }
 };
 
+class IsGameStarted : public BT::ConditionNode
+{
+public:
+  IsGameStarted(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::ConditionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    const int gp = config().blackboard->get<int>("ref.game_progress");
+    const bool is_started = (gp == 4);  // 4 means game in progress
+    return is_started ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+  }
+};
+
 class IsSentryDead : public BT::ConditionNode
 {
 public:
@@ -642,13 +660,13 @@ int main(int argc, char** argv)
 
   auto blackboard = BT::Blackboard::create();
   // Referee-like inputs (占位话题；[TODO] 后续可替换为 Referee_Task 的真实桥接)
-  auto sub_game_progress = nh.subscribe<std_msgs::Int32>("/referee/game_progress", 1, [&](const std_msgs::Int32::ConstPtr& msg) {
+  auto sub_game_progress = nh.subscribe<std_msgs::UInt8>("/referee/game_progress", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.game_progress = msg->data;
   });
-  auto sub_remain_hp = nh.subscribe<std_msgs::Int32>("/referee/remain_hp", 1, [&](const std_msgs::Int32::ConstPtr& msg) {
+  auto sub_remain_hp = nh.subscribe<std_msgs::UInt8>("/referee/remain_hp", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.remain_hp = msg->data;
   });
-  auto sub_bullet = nh.subscribe<std_msgs::Int32>("/referee/bullet_remain", 1, [&](const std_msgs::Int32::ConstPtr& msg) {
+  auto sub_bullet = nh.subscribe<std_msgs::UInt8>("/referee/bullet_remain", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.bullet_remain = msg->data;
   });
   auto sub_friendly_score = nh.subscribe<std_msgs::Int32>("/referee/friendly_score", 1, [&](const std_msgs::Int32::ConstPtr& msg) {
@@ -657,7 +675,7 @@ int main(int argc, char** argv)
   auto sub_enemy_score = nh.subscribe<std_msgs::Int32>("/referee/enemy_score", 1, [&](const std_msgs::Int32::ConstPtr& msg) {
     ref.enemy_score = msg->data;
   });
-  auto sub_occupy_status = nh.subscribe<std_msgs::Int32>("/referee/occupy_status", 1,[&](const std_msgs::Int32::ConstPtr& msg) {
+  auto sub_occupy_status = nh.subscribe<std_msgs::UInt8>("/referee/occupy_status", 1,[&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.occupy_status = msg->data;
   });
   // Navigation arrived (复用现有语义)
@@ -694,6 +712,7 @@ int main(int argc, char** argv)
   factory.registerNodeType<UpdateDerivedFlags>("UpdateDerivedFlags");
 
   factory.registerNodeType<GameNotStartEnd>("GameNotStartEnd");
+  factory.registerNodeType<IsGameStarted>("IsGameStarted");
   factory.registerNodeType<IsSentryDead>("IsSentryDead");
   factory.registerNodeType<IsSentryInDanger>("IsSentryInDanger");
   factory.registerNodeType<NotBulletSufficient>("NotBulletSufficient");
@@ -752,6 +771,7 @@ int main(int argc, char** argv)
   blackboard->set("central_occupiable", false);
   blackboard->set("is_enemy_occupied", false);  
   blackboard->set("central_accumulate_count", 0);
+  blackboard->set("occupy_reached", false);  // 占领阈值是否到达
   blackboard->set("recover", 0);  // 回血标志，默认为0
   blackboard->set("bullet_up", 0);  // 补弹标志，默认为0
   std::string bt_xml_path;
