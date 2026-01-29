@@ -99,7 +99,7 @@
 
         <Sequence>
           <IsAction value="SUPPLY" />
-          <SetMotionFlagToOne />
+          <SetMotionFlag target_motion="2" />
           <SetMotion input_port="SUPPLY" />
           <PublishMotion />
           <SetGoalFromParams ns="supply" />
@@ -142,7 +142,7 @@
         <!--
         <Sequence>
           <IsAction value="RADICAL" />
-          <SetMotionFlagToOne />
+          <SetMotionFlag target_motion="1" />
           <SetMotion input_port="RADICAL" />
           <PublishMotion />
           [TODO: Chase/Pursuit node to be implemented here]
@@ -151,10 +151,10 @@
 
         <Sequence>
           <IsAction value="RESPAWN" />
+          <SetMotionFlag target_motion="3" />
           <SetMotion input_port="RESPAWN" />
           <PublishMotion />
-
-        <AlwaysFailure/>
+        </Sequence>
       </ReactiveFallback>
     </ReactiveSequence>
   </BehaviorTree>

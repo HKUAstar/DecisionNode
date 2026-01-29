@@ -37,10 +37,24 @@
   <arg name="push_point_3_y" default="4.0"/>
 
   <!-- Set parameters on parameter server -->
-  <param name="/goals/occupy/x" value="$(arg occupy_x)"/>
-  <param name="/goals/occupy/y" value="$(arg occupy_y)"/>
-  <param name="/goals/supply/x" value="$(arg supply_x)"/>
-  <param name="/goals/supply/y" value="$(arg supply_y)"/>
+  <!-- Single point (for OCCUPY, SUPPLY) - also in cyclic format for consistency -->
+  <param name="/goals/occupy/point_0/x" value="$(arg occupy_x)"/>
+  <param name="/goals/occupy/point_0/y" value="$(arg occupy_y)"/>
+  <param name="/goals/occupy/point_1/x" value="$(arg occupy_x)"/>
+  <param name="/goals/occupy/point_1/y" value="$(arg occupy_y)"/>
+  <param name="/goals/occupy/point_2/x" value="$(arg occupy_x)"/>
+  <param name="/goals/occupy/point_2/y" value="$(arg occupy_y)"/>
+  <param name="/goals/occupy/point_3/x" value="$(arg occupy_x)"/>
+  <param name="/goals/occupy/point_3/y" value="$(arg occupy_y)"/>
+  
+  <param name="/goals/supply/point_0/x" value="$(arg supply_x)"/>
+  <param name="/goals/supply/point_0/y" value="$(arg supply_y)"/>
+  <param name="/goals/supply/point_1/x" value="$(arg supply_x)"/>
+  <param name="/goals/supply/point_1/y" value="$(arg supply_y)"/>
+  <param name="/goals/supply/point_2/x" value="$(arg supply_x)"/>
+  <param name="/goals/supply/point_2/y" value="$(arg supply_y)"/>
+  <param name="/goals/supply/point_3/x" value="$(arg supply_x)"/>
+  <param name="/goals/supply/point_3/y" value="$(arg supply_y)"/>
   
   <!-- Set cyclic push points -->
   <param name="/goals/push/point_0/x" value="$(arg push_point_0_x)"/>
