@@ -47,8 +47,12 @@ public:
         pub_blue_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_dead", 1);
         
         // 上位机命令
-        // sub_motion_ = nh_.subscribe<std_msgs::UInt8>("/cmd/motion", 1, 
-        //                                              &MCUCommunicator::motionCallback, this);
+        sub_motion_ = nh_.subscribe<std_msgs::UInt8>("motion", 1, 
+                                                     &MCUCommunicator::motionCallback, this);
+        sub_recover_ = nh_.subscribe<std_msgs::Int32>("recover", 1,
+                                                      &MCUCommunicator::recoverCallback, this);
+        sub_bullet_up_ = nh_.subscribe<std_msgs::Int32>("bullet_up", 1,
+                                                        &MCUCommunicator::bulletUpCallback, this);
         
         sub_nav_cmd_ = nh_.subscribe<geometry_msgs::Twist>("/cmd/nav", 1,
                                                            &MCUCommunicator::navCallback, this);
@@ -123,7 +127,9 @@ private:
     ros::Publisher pub_blue_dead_;
     
     // ROS 订阅者
-    // ros::Subscriber sub_motion_;
+    ros::Subscriber sub_motion_;
+    ros::Subscriber sub_recover_;
+    ros::Subscriber sub_bullet_up_;
     ros::Subscriber sub_nav_cmd_;
     
     // 发送缓冲
@@ -185,38 +191,66 @@ private:
         }
     }
     
-    // 发送Motion命令到下位机 (已注释)
-    // void sendMotionCommand(uint8_t motion_mode)
-    // {
-    //     // 构建Motion命令帧
-    //     MotionCommandFrame frame;
-    //     frame.sof = MOTION_FRAME_SOF;   // 0x92
-    //     frame.motion_mode_up = motion_mode;
-    //     frame.eof = MCU_FRAME_EOF;      // 0xFE
-    //     
-    //     // CRC8校验
-    //     uint8_t crc_data[2] = {frame.sof, frame.motion_mode_up};
-    //     frame.crc8 = calculateCRC8(crc_data, 2);
-    //     
-    // 
-    //     try
-    //     {
-    //         if (serial_.isOpen())
-    //         {
-    //             serial_.write((uint8_t*)&frame, sizeof(frame));
-    //             ROS_DEBUG("Motion command sent: motion_mode_up=%u (frame size=%zu)", 
-    //                      motion_mode, sizeof(frame));
-    //         }
-    //         else
-    //         {
-    //             ROS_WARN("Serial port is not open, cannot send motion command");
-    //         }
-    //     }
-    //     catch (const serial::SerialException& e)
-    //     {
-    //         ROS_ERROR("Failed to send motion command: %s", e.what());
-    //     }
-    // }
+    // 存储当前的 hp_up 和 bullet_up 状态
+    uint8_t current_hp_up_ = 0;
+    uint8_t current_bullet_up_ = 0;
+    uint8_t current_motion_mode_ = 0;
+    
+    // Motion回调函数 - 根据 motion 值和当前状态发送命令帧
+    void motionCallback(const std_msgs::UInt8::ConstPtr& msg)
+    {
+        sendMotionCommand(msg->data);
+    }
+    
+    // Recover（回血）回调函数
+    void recoverCallback(const std_msgs::Int32::ConstPtr& msg)
+    {
+        current_hp_up_ = (msg->data != 0) ? 1 : 0;
+        sendMotionCommand(current_motion_mode_);
+    }
+    
+    // Bullet（买弹）回调函数
+    void bulletUpCallback(const std_msgs::Int32::ConstPtr& msg)
+    {
+        current_bullet_up_ = (msg->data != 0) ? 1 : 0;
+        sendMotionCommand(current_motion_mode_);
+    }
+    
+    // 发送Motion命令到下位机
+    void sendMotionCommand(uint8_t motion_mode)
+    {
+        current_motion_mode_ = motion_mode;
+        
+        // 构建Motion命令帧
+        MotionCommandFrame frame;
+        frame.sof = 0x92;              // 0x92
+        frame.motion_mode_up = motion_mode;
+        frame.hp_up = current_hp_up_;
+        frame.bullet_up = current_bullet_up_;
+        frame.eof = 0xFE;             // 0xFE
+        
+        // CRC8校验 (包含 sof, motion_mode_up, hp_up, bullet_up)
+        uint8_t crc_data[4] = {frame.sof, frame.motion_mode_up, frame.hp_up, frame.bullet_up};
+        frame.crc8 = calculateCRC8(crc_data, 4);
+        
+        try
+        {
+            if (serial_.isOpen())
+            {
+                serial_.write((uint8_t*)&frame, sizeof(frame));
+                ROS_DEBUG("Motion command sent: motion_mode=%u, hp_up=%u, bullet_up=%u (frame size=%zu)", 
+                         motion_mode, current_hp_up_, current_bullet_up_, sizeof(frame));
+            }
+            else
+            {
+                ROS_WARN("Serial port is not open, cannot send motion command");
+            }
+        }
+        catch (const serial::SerialException& e)
+        {
+            ROS_ERROR("Failed to send motion command: %s", e.what());
+        }
+    }
     
     // CRC8校验函数
     uint8_t calculateCRC8(const uint8_t* data, size_t length)

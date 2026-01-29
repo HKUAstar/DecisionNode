@@ -172,7 +172,63 @@ public:
   }
 };
 
-void RegisterRecoverChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* recover_pub)
+// PublishBulletUp: Publish bullet_up value to ROS topic
+class PublishBulletUp : public BT::SyncActionNode
+{
+private:
+  ros::Publisher* publisher_;
+  bool* publish_on_change_only_;
+
+public:
+  PublishBulletUp(const std::string& name, const BT::NodeConfiguration& config, ros::Publisher* pub, bool* publish_on_change_only)
+    : BT::SyncActionNode(name, config), publisher_(pub), publish_on_change_only_(publish_on_change_only)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    int bullet_up = 0;
+    try
+    {
+      bullet_up = bb->get<int>("bullet_up");
+    }
+    catch (...)
+    {
+      bullet_up = 0;
+      bb->set("bullet_up", bullet_up);
+    }
+
+    if (*publish_on_change_only_)
+    {
+      int last_bullet_up = 0;
+      try
+      {
+        last_bullet_up = bb->get<int>("bullet_up_last");
+      }
+      catch (...)
+      {
+        last_bullet_up = -1;
+      }
+
+      if (last_bullet_up == bullet_up)
+      {
+        return BT::NodeStatus::SUCCESS;  // No change, skip publish
+      }
+      bb->set("bullet_up_last", bullet_up);
+    }
+
+    std_msgs::Int32 msg;
+    msg.data = bullet_up;
+    ROS_DEBUG("PublishBulletUp: Publishing bullet_up=%d", bullet_up);
+    publisher_->publish(msg);
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
+void RegisterRecoverChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* recover_pub, ros::Publisher* bullet_up_pub)
 {
   factory.registerNodeType<IsHealthFull>("IsHealthFull");
   factory.registerNodeType<SetRecover>("SetRecover");
@@ -186,6 +242,16 @@ void RegisterRecoverChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher
       "PublishRecover", [recover_pub](const std::string& name, const BT::NodeConfiguration& config) {
         static bool publish_on_change = true;  // 可根据需要调整
         return std::make_unique<PublishRecover>(name, config, recover_pub, &publish_on_change);
+      });
+  }
+  
+  // bullet_up_pub 为 nullptr 时不注册 PublishBulletUp（可选）
+  if (bullet_up_pub != nullptr)
+  {
+    factory.registerBuilder<PublishBulletUp>(
+      "PublishBulletUp", [bullet_up_pub](const std::string& name, const BT::NodeConfiguration& config) {
+        static bool publish_on_change = true;  // 可根据需要调整
+        return std::make_unique<PublishBulletUp>(name, config, bullet_up_pub, &publish_on_change);
       });
   }
 }

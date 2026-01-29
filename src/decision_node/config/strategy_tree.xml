@@ -108,6 +108,7 @@
             <Sequence>
               <CheckArrived />
               <SetRecover value="1" />
+              <PublishRecover />
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
@@ -115,6 +116,7 @@
             <Sequence>
               <IsHealthFull />
               <SetRecover value="0" />
+              <PublishRecover />
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
@@ -122,6 +124,7 @@
             <Sequence>
               <CheckArrived />
               <SetBulletUp value="1" />
+              <PublishBulletUp />
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
@@ -129,6 +132,7 @@
             <Sequence>
               <IsBulletFull max_bullet="999" />
               <SetBulletUp value="0" />
+              <PublishBulletUp />
             </Sequence>
             <AlwaysSuccess />
           </Fallback>

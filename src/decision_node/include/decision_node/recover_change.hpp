@@ -3,4 +3,4 @@
 #include <behaviortree_cpp_v3/bt_factory.h>
 #include <ros/ros.h>
 
-void RegisterRecoverChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* recover_pub);
+void RegisterRecoverChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* recover_pub, ros::Publisher* bullet_up_pub);

@@ -34,16 +34,18 @@ struct MCUDataFrame
 
 static_assert(sizeof(MCUDataFrame) == 46, "MCUDataFrame must be exactly 46 bytes");
 
-// 上位机发送的Motion命令帧结构 (共4字节)
+// 上位机发送的Motion命令帧结构 (共6字节)
 struct MotionCommandFrame
 {
-    uint8_t  sof;           // 0x92 (字节0)
+    uint8_t  sof;              // 0x92 (字节0)
     uint8_t  motion_mode_up;   // 运动模式 (字节1)
-    uint8_t  crc8;          // CRC8 (字节2)
-    uint8_t  eof;           // 0xFE (字节3)
+    uint8_t  hp_up;            // 0不回血 1回血 (字节2)
+    uint8_t  bullet_up;        // 0不买弹 1买弹 (字节3)
+    uint8_t  crc8;             // CRC8 (字节4)
+    uint8_t  eof;              // 0xFE (字节5)
 } __attribute__((packed));
 
-static_assert(sizeof(MotionCommandFrame) == 4, "MotionCommandFrame must be exactly 4 bytes");
+static_assert(sizeof(MotionCommandFrame) == 6, "MotionCommandFrame must be exactly 6 bytes");
 
 // 上位机发送的导航命令帧结构 (共17字节)
 struct NavCommandFrame
