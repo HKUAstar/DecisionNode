@@ -744,7 +744,6 @@ int main(int argc, char** argv)
 
   // Default action
   blackboard->set("action", std::string("INIT"));
-  blackboard->set("motion", std::string("STAY_IN_PLACE"));
   blackboard->set("goal.valid", false);
   blackboard->set("goal.cycle_index", 0);
   blackboard->set("motion_flag", 2);  // 默认为2

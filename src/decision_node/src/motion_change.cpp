@@ -5,16 +5,6 @@
 #include <std_msgs/UInt8.h>
 #include "decision_node/motion_change.hpp"
 
-// Helper function to convert string to uppercase
-static std::string toUpper(std::string s)
-{
-  for (auto& c : s)
-  {
-    c = static_cast<char>(::toupper(c));
-  }
-  return s;
-}
-
 class CheckArrived : public BT::ConditionNode
 {
 public:
@@ -120,35 +110,6 @@ public:
   }
 };
 
-// SetMotion: Sets motion value from port input
-class SetMotion : public BT::SyncActionNode
-{
-public:
-  explicit SetMotion(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::SyncActionNode(name, config)
-  {
-  }
-
-  static BT::PortsList providedPorts()
-  {
-    return {BT::InputPort<std::string>("input_port")};
-  }
-
-  BT::NodeStatus tick() override
-  {
-    auto motion_str = getInput<std::string>("input_port");
-    if (!motion_str)
-    {
-      return BT::NodeStatus::FAILURE;
-    }
-
-    auto bb = config().blackboard;
-    bb->set("motion", toUpper(motion_str.value()));
-    // ROS_INFO("SetMotion: set motion to %s", toUpper(motion_str.value()).c_str());
-    return BT::NodeStatus::SUCCESS;
-  }
-};
-
 // PublishMotion: Publishes motion_flag to ROS topic
 class PublishMotion : public BT::SyncActionNode
 {
@@ -213,21 +174,11 @@ void RegisterMotionChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher*
       "SetMotionFlag", [](const std::string& name, const BT::NodeConfiguration& config) {
         return std::make_unique<SetMotionFlag>(name, config);
       });
-  
-  factory.registerBuilder<SetMotion>(
-      "SetMotion", [](const std::string& name, const BT::NodeConfiguration& config) {
-        return std::make_unique<SetMotion>(name, config);
-      });
 
   factory.registerBuilder<PublishMotion>(
       "PublishMotion", [motion_pub, publish_on_change_only](const std::string& name, const BT::NodeConfiguration& config) {
         return std::make_unique<PublishMotion>(name, config, motion_pub, publish_on_change_only);
       });
-}
-
-void RegisterSetMotionNode(BT::BehaviorTreeFactory& factory)
-{
-  factory.registerNodeType<SetMotion>("SetMotion");
 }
 
 void RegisterPublishMotionNode(BT::BehaviorTreeFactory& factory, ros::Publisher* publisher)

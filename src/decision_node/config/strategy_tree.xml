@@ -67,7 +67,6 @@
         <Sequence>
           <IsAction value="INIT" />
           <SetMotionFlag target_motion="3" />
-          <SetMotion input_port="STAY_IN_PLACE" />
           <PublishMotion />
           <ClearGoal />
         </Sequence>
@@ -81,9 +80,8 @@
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
-          <!-- Enter loop state: set motion_flag to 0 -->
-          <SetMotionFlag target_motion="0" />
-          <!-- Check if under attack: if yes, set to 1; otherwise try to reset to 0 -->
+          <!-- Set motion_flag based on attack status -->
+          <!-- If under attack: motion_flag=1, otherwise: motion_flag=0 -->
           <Fallback>
             <Sequence>
               <CheckAttacked />
@@ -91,7 +89,6 @@
             </Sequence>
             <SetMotionFlag target_motion="0" />
           </Fallback>
-          <SetMotion input_port="OCCUPY" />
           <PublishMotion />
           <SetGoalFromParamsCyclic ns="occupy" point_count="4" />
           <PublishGoalPoint topic="clicked_point" />
@@ -100,7 +97,6 @@
         <Sequence>
           <IsAction value="SUPPLY" />
           <SetMotionFlag target_motion="2" />
-          <SetMotion input_port="SUPPLY" />
           <PublishMotion />
           <SetGoalFromParams ns="supply" />
           <PublishGoalPoint topic="clicked_point" />
@@ -143,7 +139,6 @@
         <Sequence>
           <IsAction value="RADICAL" />
           <SetMotionFlag target_motion="1" />
-          <SetMotion input_port="RADICAL" />
           <PublishMotion />
           [TODO: Chase/Pursuit node to be implemented here]
         </Sequence>
@@ -152,7 +147,6 @@
         <Sequence>
           <IsAction value="RESPAWN" />
           <SetMotionFlag target_motion="3" />
-          <SetMotion input_port="RESPAWN" />
           <PublishMotion />
         </Sequence>
       </ReactiveFallback>
