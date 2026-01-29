@@ -25,14 +25,28 @@
           <SetAction action="SUPPLY" />
         </Sequence>
 
-        <Sequence name="ToOccupyWhenNeeded">
-          <Fallback>
-            <NotBulletSufficient />
-            <AggressiveAdvantage threshold="{aggressive_threshold}" />
-            <CentralOccupiable />
-          </Fallback>
-          <SetAction action="OCCUPY" />
-        </Sequence>
+
+        <Fallback name="ToOccupy">
+          <Sequence>
+            <AccumulateCentralOccupiable 
+              occupy_status="{ref.occupy_status}"
+              threshold="{occupy_threshold}"
+              accumulated_count="{occupy_count}"
+              reached_threshold="{occupy_reached}" />
+            <TriggerOnThreshold 
+              reached_threshold="{occupy_reached}"
+              reset_condition="{is_enemy_occupied}" />
+            <SetAction action="OCCUPY" />
+            <ResetAccumulator />
+          </Sequence>
+          <Sequence>
+            <Fallback>
+              <NotBulletSufficient />
+              <AggressiveAdvantage threshold="{aggressive_threshold}" />
+            </Fallback>
+            <SetAction action="OCCUPY" />
+          </Sequence>
+        </Fallback>
 
         <!-- RADICAL Mode: Chase enemy when aggressive and bullet sufficient -->
         <!--
@@ -52,6 +66,7 @@
       <ReactiveFallback name="ExecuteAction">
         <Sequence>
           <IsAction value="INIT" />
+          <SetMotionFlag target_motion="3" />
           <SetMotion input_port="STAY_IN_PLACE" />
           <PublishMotion />
           <ClearGoal />
@@ -66,7 +81,16 @@
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
-          <SetMotionFlagToOne />
+          <!-- Enter loop state: set motion_flag to 0 -->
+          <SetMotionFlag target_motion="0" />
+          <!-- Check if under attack: if yes, set to 1; otherwise try to reset to 0 -->
+          <Fallback>
+            <Sequence>
+              <CheckAttacked />
+              <SetMotionFlag target_motion="1" />
+            </Sequence>
+            <SetMotionFlag target_motion="0" />
+          </Fallback>
           <SetMotion input_port="OCCUPY" />
           <PublishMotion />
           <SetGoalFromParamsCyclic ns="occupy" point_count="4" />
@@ -80,6 +104,20 @@
           <PublishMotion />
           <SetGoalFromParams ns="supply" />
           <PublishGoalPoint topic="clicked_point" />
+          <Fallback>
+            <Sequence>
+              <CheckArrived />
+              <SetRecover value="1" />
+            </Sequence>
+            <AlwaysSuccess />
+          </Fallback>
+          <Fallback>
+            <Sequence>
+              <IsHealthFull />
+              <SetRecover value="0" />
+            </Sequence>
+            <AlwaysSuccess />
+          </Fallback>
           <Fallback>
             <Sequence>
               <CheckArrived />
@@ -111,23 +149,6 @@
           <IsAction value="RESPAWN" />
           <SetMotion input_port="RESPAWN" />
           <PublishMotion />
-          <SetGoalFromParams ns="supply" />
-          <PublishGoalPoint topic="clicked_point" />
-          <Fallback>
-            <Sequence>
-              <CheckArrived />
-              <SetRecover value="1" />
-            </Sequence>
-            <AlwaysSuccess />
-          </Fallback>
-          <Fallback>
-            <Sequence>
-              <IsHealthFull />
-              <SetRecover value="0" />
-            </Sequence>
-            <AlwaysSuccess />
-          </Fallback>
-        </Sequence>
 
         <AlwaysFailure/>
       </ReactiveFallback>

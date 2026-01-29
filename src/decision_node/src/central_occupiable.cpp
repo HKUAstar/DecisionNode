@@ -182,7 +182,6 @@ public:
 
 void RegisterOccupationNodes(BT::BehaviorTreeFactory& factory)
 {
-    factory.registerNodeType<AccumulateCentralOccupiable>("AccumulateCentralOccupiable");
     factory.registerNodeType<TriggerOnThreshold>("TriggerOnThreshold");
     factory.registerNodeType<ResetAccumulator>("ResetAccumulator");
     factory.registerNodeType<CheckEnemyOccupied>("CheckEnemyOccupied");

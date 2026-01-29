@@ -323,22 +323,6 @@ public:
   }
 };
 
-class CentralOccupiable : public BT::ConditionNode
-{
-public:
-  CentralOccupiable(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::ConditionNode(name, config)
-  {
-  }
-
-  static BT::PortsList providedPorts() { return {}; }
-
-  BT::NodeStatus tick() override
-  {
-    const bool occupiable = config().blackboard->get<bool>("central_occupiable");
-    return occupiable ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
-  }
-};
 
 class IsAction : public BT::ConditionNode
 {
@@ -713,7 +697,6 @@ int main(int argc, char** argv)
   factory.registerNodeType<NotBulletSufficient>("NotBulletSufficient");
   factory.registerNodeType<IsArrived>("IsArrived");
   factory.registerNodeType<AggressiveAdvantage>("AggressiveAdvantage");
-  factory.registerNodeType<CentralOccupiable>("CentralOccupiable");
   factory.registerNodeType<IsAction>("IsAction");
 
   factory.registerNodeType<SetAction>("SetAction");
