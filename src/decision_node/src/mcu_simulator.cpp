@@ -124,8 +124,8 @@ private:
         frame.blue_dead = 0x00;
         
         // 自身状态
-        frame.self_hp = 400 - (counter_ % 100);
-        frame.self_max_hp = 400;
+        frame.remain_hp = 400 - (counter_ % 100);
+        frame.max_hp = 400;
         frame.bullet_remain = 1000 - (counter_ % 500);
         frame.occupy_status = (counter_ / 100) % 3;  // 0: 未占领, 1: 友方, 2: 敌方
         
@@ -142,9 +142,9 @@ private:
             if (frame_count_ % 100 == 0)
             {
                 ROS_INFO("MCU Simulator: sent %u frames, "
-                        "self_hp=%u, bullet=%u, occupy=%u",
+                        "remain_hp=%u, bullet=%u, occupy=%u",
                         frame_count_,
-                        frame.self_hp, frame.bullet_remain, frame.occupy_status);
+                        frame.remain_hp, frame.bullet_remain, frame.occupy_status);
             }
         }
         catch (const serial::SerialException& e)

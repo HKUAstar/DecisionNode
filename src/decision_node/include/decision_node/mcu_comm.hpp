@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cstring>
 
-// 下位机数据帧结构 (共46字节)
+// 下位机数据帧结构 (共49字节)
 struct MCUDataFrame
 {
     uint8_t  sof;            // 0x91 (字节0)
@@ -20,8 +20,8 @@ struct MCUDataFrame
     uint16_t blue_7_hp;      // 蓝哨兵 (字节31-32)
     uint16_t red_dead;       // 红方死亡位 (字节33-34)
     uint16_t blue_dead;      // 蓝方死亡位 (字节35-36)
-    uint16_t self_hp;        // 自身血量 (字节37-38)
-    uint16_t self_max_hp;    // 最大血量 (字节39-40)
+    uint16_t remain_hp;      // 自身血量 (字节37-38)
+    uint16_t max_hp;         // 最大血量 (字节39-40)
     uint16_t bullet_remain;  // 剩余弹量 (字节41-42)
     uint8_t  occupy_status;  // 占领状态 (字节43)
     uint8_t  crc8;           // CRC8 (字节44)

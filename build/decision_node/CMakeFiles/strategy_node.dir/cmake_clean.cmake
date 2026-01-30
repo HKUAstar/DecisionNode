@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/sentry_train_test/AstarTraining/DecisionNode/devel/lib/decision_node/strategy_node"
-  "/home/sentry_train_test/AstarTraining/DecisionNode/devel/lib/decision_node/strategy_node.pdb"
+  "/mnt/d/decision_ws/devel/lib/decision_node/strategy_node"
+  "/mnt/d/decision_ws/devel/lib/decision_node/strategy_node.pdb"
   "CMakeFiles/strategy_node.dir/src/central_occupiable.cpp.o"
   "CMakeFiles/strategy_node.dir/src/central_occupiable.cpp.o.d"
   "CMakeFiles/strategy_node.dir/src/motion_change.cpp.o"

@@ -13,6 +13,7 @@
 #include <behaviortree_cpp_v3/bt_factory.h>
 #include <behaviortree_cpp_v3/blackboard.h>
 #include <ros/ros.h>
+#include <std_msgs/UInt16.h>
 #include <ros/package.h>
 
 #include <geometry_msgs/PointStamped.h>
@@ -55,6 +56,18 @@ struct RefereeState
   int friendly_score = 0;
   int enemy_score = 0;
   int occupy_status = 0;  // 0: unoccupied, 1: friendly occupied, 2: enemy occupied，3：both occupied
+  int robot_id = 0;       // 机器人ID
+  int robot_color = 0;    // 机器人颜色 (0=red, 1=blue)
+  int self_hp = 400;      // 自身血量（来自remain_hp）
+  int self_max_hp = 400;  // 自身最大血量（来自max_hp）
+  int red_1_hp = 400;     // 红英雄血量
+  int red_3_hp = 400;     // 红步兵3血量
+  int red_7_hp = 400;     // 红哨兵血量
+  int blue_1_hp = 400;    // 蓝英雄血量
+  int blue_3_hp = 400;    // 蓝步兵3血量
+  int blue_7_hp = 400;    // 蓝哨兵血量
+  int red_dead = 0;       // 红方死亡位
+  int blue_dead = 0;      // 蓝方死亡位
 };
 
 struct NavigationState
@@ -84,6 +97,18 @@ public:
     bb->set("ref.friendly_score", state_->friendly_score);
     bb->set("ref.enemy_score", state_->enemy_score);
     bb->set("ref.occupy_status", state_->occupy_status);
+    bb->set("ref.robot_id", state_->robot_id);
+    bb->set("ref.robot_color", state_->robot_color);
+    bb->set("ref.self_hp", state_->self_hp);
+    bb->set("ref.self_max_hp", state_->self_max_hp);
+    bb->set("ref.red_1_hp", state_->red_1_hp);
+    bb->set("ref.red_3_hp", state_->red_3_hp);
+    bb->set("ref.red_7_hp", state_->red_7_hp);
+    bb->set("ref.blue_1_hp", state_->blue_1_hp);
+    bb->set("ref.blue_3_hp", state_->blue_3_hp);
+    bb->set("ref.blue_7_hp", state_->blue_7_hp);
+    bb->set("ref.red_dead", state_->red_dead);
+    bb->set("ref.blue_dead", state_->blue_dead);
     return BT::NodeStatus::SUCCESS;
   }
 
@@ -721,10 +746,10 @@ int main(int argc, char** argv)
   auto sub_game_progress = nh.subscribe<std_msgs::UInt8>("/referee/game_progress", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.game_progress = msg->data;
   });
-  auto sub_remain_hp = nh.subscribe<std_msgs::UInt8>("/referee/remain_hp", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
+  auto sub_remain_hp = nh.subscribe<std_msgs::UInt16>("/referee/remain_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
     ref.remain_hp = msg->data;
   });
-  auto sub_bullet = nh.subscribe<std_msgs::UInt8>("/referee/bullet_remain", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
+  auto sub_bullet = nh.subscribe<std_msgs::UInt16>("/referee/bullet_remain", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
     ref.bullet_remain = msg->data;
   });
   auto sub_friendly_score = nh.subscribe<std_msgs::Int32>("/referee/friendly_score", 1, [&](const std_msgs::Int32::ConstPtr& msg) {
@@ -736,6 +761,49 @@ int main(int argc, char** argv)
   auto sub_occupy_status = nh.subscribe<std_msgs::UInt8>("/referee/occupy_status", 1,[&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.occupy_status = msg->data;
   });
+  
+  // 机器人信息订阅
+  auto sub_robot_id = nh.subscribe<std_msgs::UInt8>("/robot/robot_id", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
+    ref.robot_id = msg->data;
+  });
+  auto sub_robot_color = nh.subscribe<std_msgs::UInt8>("/robot/robot_color", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
+    ref.robot_color = msg->data;
+  });
+  auto sub_self_hp = nh.subscribe<std_msgs::UInt16>("/robot/self_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.self_hp = msg->data;
+  });
+  auto sub_self_max_hp = nh.subscribe<std_msgs::UInt16>("/robot/self_max_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.self_max_hp = msg->data;
+  });
+  
+  // 其他机器人HP数据订阅
+  auto sub_red_1_hp = nh.subscribe<std_msgs::UInt16>("/referee/red_1_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.red_1_hp = msg->data;
+  });
+  auto sub_red_3_hp = nh.subscribe<std_msgs::UInt16>("/referee/red_3_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.red_3_hp = msg->data;
+  });
+  auto sub_red_7_hp = nh.subscribe<std_msgs::UInt16>("/referee/red_7_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.red_7_hp = msg->data;
+  });
+  auto sub_blue_1_hp = nh.subscribe<std_msgs::UInt16>("/referee/blue_1_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.blue_1_hp = msg->data;
+  });
+  auto sub_blue_3_hp = nh.subscribe<std_msgs::UInt16>("/referee/blue_3_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.blue_3_hp = msg->data;
+  });
+  auto sub_blue_7_hp = nh.subscribe<std_msgs::UInt16>("/referee/blue_7_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.blue_7_hp = msg->data;
+  });
+  
+  // 死亡位数据订阅
+  auto sub_red_dead = nh.subscribe<std_msgs::UInt16>("/referee/red_dead", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.red_dead = msg->data;
+  });
+  auto sub_blue_dead = nh.subscribe<std_msgs::UInt16>("/referee/blue_dead", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.blue_dead = msg->data;
+  });
+  
   // Navigation arrived (复用现有语义)
   auto sub_arrived = nh.subscribe<std_msgs::Bool>("/dstar_status", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
     nav.arrived = msg->data;

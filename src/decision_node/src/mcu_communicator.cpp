@@ -40,27 +40,27 @@ public:
         
         // 初始化发布者 - 对应已有的topic
         pub_game_progress_ = nh_.advertise<std_msgs::UInt8>("/referee/game_progress", 1);
-        pub_remain_hp_ = nh_.advertise<std_msgs::UInt8>("/referee/remain_hp", 1);
-        pub_bullet_remain_ = nh_.advertise<std_msgs::UInt8>("/referee/bullet_remain", 1);
+        pub_remain_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/remain_hp", 1);
+        pub_bullet_remain_ = nh_.advertise<std_msgs::UInt16>("/referee/bullet_remain", 1);
         pub_occupy_status_ = nh_.advertise<std_msgs::UInt8>("/referee/occupy_status", 1);
         
         // 新增发布者 - 导航和云台相关数据（已删除）
         // 注：这些发布者没有在头文件中声明，已注释
         
-        // pub_robot_id_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_id", 1);
-        // pub_robot_color_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_color", 1);
-        // pub_self_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_hp", 1);
-        // pub_self_max_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_max_hp", 1);
+        pub_robot_id_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_id", 1);
+        pub_robot_color_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_color", 1);
+        pub_self_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_hp", 1);
+        pub_self_max_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_max_hp", 1);
         
-        // pub_red_1_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_1_hp", 1);
-        // pub_red_3_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_3_hp", 1);
-        // pub_red_7_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_7_hp", 1);
-        // pub_blue_1_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_1_hp", 1);
-        // pub_blue_3_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_3_hp", 1);
-        // pub_blue_7_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_7_hp", 1);
+        pub_red_1_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_1_hp", 1);
+        pub_red_3_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_3_hp", 1);
+        pub_red_7_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_7_hp", 1);
+        pub_blue_1_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_1_hp", 1);
+        pub_blue_3_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_3_hp", 1);
+        pub_blue_7_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_7_hp", 1);
         
-        // pub_red_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/red_dead", 1);
-        // pub_blue_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_dead", 1);
+        pub_red_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/red_dead", 1);
+        pub_blue_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_dead", 1);
         
         pub_friendly_score_ = nh_.advertise<std_msgs::Int32>("/referee/friendly_score", 1);
         pub_enemy_score_ = nh_.advertise<std_msgs::Int32>("/referee/enemy_score", 1);
@@ -124,6 +124,18 @@ private:
     ros::Publisher pub_remain_hp_;
     ros::Publisher pub_bullet_remain_;
     ros::Publisher pub_occupy_status_;
+    
+    ros::Publisher pub_robot_id_;
+    ros::Publisher pub_robot_color_;
+    ros::Publisher pub_self_hp_;
+    ros::Publisher pub_self_max_hp_;
+    
+    ros::Publisher pub_red_1_hp_;
+    ros::Publisher pub_red_3_hp_;
+    ros::Publisher pub_red_7_hp_;
+    ros::Publisher pub_blue_1_hp_;
+    ros::Publisher pub_blue_3_hp_;
+    ros::Publisher pub_blue_7_hp_;
     
     ros::Publisher pub_red_dead_;
     ros::Publisher pub_blue_dead_;
@@ -209,8 +221,8 @@ private:
         frame.eof = 0xFE;             // 0xFE
         
         // CRC8校验 (与 MCU 一致：计算 sof 到 bullet_num 的 CRC)
-        // MotionCommandFrame 大小为 7 字节，CRC 计算前 5 字节
-        frame.crc8 = calculateCRC8((uint8_t*)&frame, sizeof(MotionCommandFrame) - 2, 0xFF);
+        // MotionCommandFrame 大小为 7 字节，CRC 计算前 5 字节（从 sof 开始，不包括 crc8 和 eof）
+        frame.crc8 = calculateCRC8((uint8_t*)&frame.sof, sizeof(MotionCommandFrame) - 2, 0xFF);
         
         try
         {
@@ -405,53 +417,53 @@ private:
         msg_uint8.data = frame.game_progress;
         pub_game_progress_.publish(msg_uint8);
         // 自身血量
-        msg_uint8.data = frame.self_hp;
-        pub_remain_hp_.publish(msg_uint8);
+        msg_uint16.data = frame.remain_hp;
+        pub_remain_hp_.publish(msg_uint16);
         // 剩余弹量
-        msg_uint8.data = frame.bullet_remain;
-        pub_bullet_remain_.publish(msg_uint8);
+        msg_uint16.data = frame.bullet_remain;
+        pub_bullet_remain_.publish(msg_uint16);
         // 占领状态
         msg_uint8.data = frame.occupy_status;
         pub_occupy_status_.publish(msg_uint8);
         
-        // 发布机器人信息（对应的发布者添加了但没有在头文件中声明）
-        // msg_uint8.data = frame.robot_id;
-        // pub_robot_id_.publish(msg_uint8);
+        // 发布机器人信息
+        msg_uint8.data = frame.robot_id;
+        pub_robot_id_.publish(msg_uint8);
         
-        // msg_uint8.data = frame.robot_color;
-        // pub_robot_color_.publish(msg_uint8);
+        msg_uint8.data = frame.robot_color;
+        pub_robot_color_.publish(msg_uint8);
         
-        // msg_uint16.data = frame.self_hp;
-        // pub_self_hp_.publish(msg_uint16);
+        msg_uint16.data = frame.remain_hp;
+        pub_self_hp_.publish(msg_uint16);
         
-        // msg_uint16.data = frame.self_max_hp;
-        // pub_self_max_hp_.publish(msg_uint16);
+        msg_uint16.data = frame.max_hp;
+        pub_self_max_hp_.publish(msg_uint16);
         
         // 发布其他机器人血量
-        // msg_uint16.data = frame.red_1_hp;
-        // pub_red_1_hp_.publish(msg_uint16);
+        msg_uint16.data = frame.red_1_hp;
+        pub_red_1_hp_.publish(msg_uint16);
         
-        // msg_uint16.data = frame.red_3_hp;
-        // pub_red_3_hp_.publish(msg_uint16);
+        msg_uint16.data = frame.red_3_hp;
+        pub_red_3_hp_.publish(msg_uint16);
         
-        // msg_uint16.data = frame.red_7_hp;
-        // pub_red_7_hp_.publish(msg_uint16);
+        msg_uint16.data = frame.red_7_hp;
+        pub_red_7_hp_.publish(msg_uint16);
         
-        // msg_uint16.data = frame.blue_1_hp;
-        // pub_blue_1_hp_.publish(msg_uint16);
+        msg_uint16.data = frame.blue_1_hp;
+        pub_blue_1_hp_.publish(msg_uint16);
         
-        // msg_uint16.data = frame.blue_3_hp;
-        // pub_blue_3_hp_.publish(msg_uint16);
+        msg_uint16.data = frame.blue_3_hp;
+        pub_blue_3_hp_.publish(msg_uint16);
         
-        // msg_uint16.data = frame.blue_7_hp;
-        // pub_blue_7_hp_.publish(msg_uint16);
+        msg_uint16.data = frame.blue_7_hp;
+        pub_blue_7_hp_.publish(msg_uint16);
         
         // 发布死亡状态
-        // msg_uint16.data = frame.red_dead;
-        // pub_red_dead_.publish(msg_uint16);
+        msg_uint16.data = frame.red_dead;
+        pub_red_dead_.publish(msg_uint16);
         
-        // msg_uint16.data = frame.blue_dead;
-        // pub_blue_dead_.publish(msg_uint16);
+        msg_uint16.data = frame.blue_dead;
+        pub_blue_dead_.publish(msg_uint16);
         
         // 更新分数
         updateScore(frame);
@@ -463,8 +475,8 @@ private:
         msg_score.data = enemy_score_;
         pub_enemy_score_.publish(msg_score);
         
-        ROS_DEBUG("MCU frame parsed: game_progress=%u, self_hp=%u, bullet=%u, friendly_score=%d, enemy_score=%d",
-                 frame.game_progress, frame.self_hp, frame.bullet_remain, friendly_score_, enemy_score_);
+        ROS_DEBUG("MCU frame parsed: game_progress=%u, remain_hp=%u, bullet=%u, friendly_score=%d, enemy_score=%d",
+                 frame.game_progress, frame.remain_hp, frame.bullet_remain, friendly_score_, enemy_score_);
     }
     
     void updateScore(const MCUDataFrame& frame)
