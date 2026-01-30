@@ -1,27 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<launch>
-    <!-- 实际串口配置 -->
-    <arg name="communicator_port" default="/dev/ttyUSB0" doc="Real serial port for MCU communicator"/>
-    <arg name="baudrate" default="115200" doc="Serial port baudrate"/>
-    <arg name="output" default="screen" doc="Launch output target"/>
-    
+<!-- 虚拟串口 -->
+<launch>  
     <!-- 虚拟串口测试配置 (注释掉) -->
-    <!-- <arg name="simulator_port" default="/dev/pts/12" doc="Virtual serial port for simulator"/>
+    <arg name="simulator_port" default="/dev/pts/12" doc="Virtual serial port for simulator"/>
     <arg name="communicator_port" default="/dev/pts/11" doc="Virtual serial port for communicator"/>
-    <arg name="bullet_num" default="10" doc="Bullet number to send"/> -->
-    
-    <!-- MCU通讯节点 - 连接实际下位机 -->
-    <node name="mcu_communicator" pkg="decision_node" type="mcu_communicator" output="$(arg output)">
-        <!-- 实际串口配置 -->
-        <param name="serial_port" value="$(arg communicator_port)" />
-        <param name="baudrate" value="$(arg baudrate)" />
-    </node>
+    <arg name="bullet_num" default="10" doc="Bullet number to send"/> 
     
     <!-- MCU模拟器 - 生成测试数据 (注释掉) -->
-    <!-- <node name="mcu_simulator" pkg="decision_node" type="mcu_simulator" output="$(arg output)">
-        虚拟串口配置
+    <node name="mcu_simulator" pkg="decision_node" type="mcu_simulator" output="$(arg output)">
         <param name="serial_port" value="$(arg simulator_port)" />
         <param name="baudrate" value="$(arg baudrate)" />
-    </node> -->
+    </node> 
     
 </launch>

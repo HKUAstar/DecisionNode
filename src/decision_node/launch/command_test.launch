@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- 手动输入发送数据+通讯 -->
 <launch>
     <!-- MCU通讯节点 - 接收下位机数据并发布ROS Topics -->
     <node name="mcu_communicator" pkg="decision_node" type="mcu_communicator" output="screen">
