@@ -30,23 +30,24 @@ struct MCUDataFrame
 
 static_assert(sizeof(MCUDataFrame) == 46, "MCUDataFrame must be exactly 46 bytes");
 
-// 上位机发送的Motion命令帧结构 (共6字节)
+// 上位机发送的Motion命令帧结构 (共7字节)
 struct MotionCommandFrame
 {
     uint8_t  sof;              // 0x92 (字节0)
     uint8_t  motion_mode_up;   // 运动模式 (字节1)
     uint8_t  hp_up;            // 0不回血 1回血 (字节2)
     uint8_t  bullet_up;        // 0不买弹 1买弹 (字节3)
-    uint8_t  crc8;             // CRC8 (字节4)
-    uint8_t  eof;              // 0xFE (字节5)
+    uint8_t  bullet_num;       // 买多少 (字节4)
+    uint8_t  crc8;             // CRC8 (字节5)
+    uint8_t  eof;              // 0xFE (字节6)
 } __attribute__((packed));
 
-static_assert(sizeof(MotionCommandFrame) == 6, "MotionCommandFrame must be exactly 6 bytes");
+static_assert(sizeof(MotionCommandFrame) == 7, "MotionCommandFrame must be exactly 7 bytes");
 
 #define MCU_FRAME_SOF 0x91          // 下位机数据帧头
 #define MOTION_FRAME_SOF 0x92       // 上位机motion命令帧头
 #define MCU_FRAME_EOF 0xFE
 #define MCU_FRAME_SIZE 46
-#define MOTION_FRAME_SIZE 6
+#define MOTION_FRAME_SIZE 7
 
 #endif // MCU_COMM_HPP

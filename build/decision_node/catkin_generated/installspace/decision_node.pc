@@ -1,4 +1,4 @@
-prefix=/mnt/d/decision_ws/install
+prefix=/home/sentry_train_test/AstarTraining/DecisionNode/install
 
 Name: decision_node
 Description: Description of decision_node

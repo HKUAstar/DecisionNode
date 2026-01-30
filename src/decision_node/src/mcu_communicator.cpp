@@ -8,6 +8,26 @@
 #include <decision_node/mcu_comm.hpp>
 #include <thread>
 
+// CRC8 查表 - 与 MCU 端完全相同（初始值 0xFF）
+static constexpr uint8_t CRC8_TABLE[256] = {
+    0x00, 0x5e, 0xbc, 0xe2, 0x61, 0x3f, 0xdd, 0x83, 0xc2, 0x9c, 0x7e, 0x20, 0xa3, 0xfd, 0x1f, 0x41,
+    0x9d, 0xc3, 0x21, 0x7f, 0xfc, 0xa2, 0x40, 0x1e, 0x5f, 0x01, 0xe3, 0xbd, 0x3e, 0x60, 0x82, 0xdc,
+    0x23, 0x7d, 0x9f, 0xc1, 0x42, 0x1c, 0xfe, 0xa0, 0xe1, 0xbf, 0x5d, 0x03, 0x80, 0xde, 0x3c, 0x62,
+    0xbe, 0xe0, 0x02, 0x5c, 0xdf, 0x81, 0x63, 0x3d, 0x7c, 0x22, 0xc0, 0x9e, 0x1d, 0x43, 0xa1, 0xff,
+    0x46, 0x18, 0xfa, 0xa4, 0x27, 0x79, 0x9b, 0xc5, 0x84, 0xda, 0x38, 0x66, 0xe5, 0xbb, 0x59, 0x07,
+    0xdb, 0x85, 0x67, 0x39, 0xba, 0xe4, 0x06, 0x58, 0x19, 0x47, 0xa5, 0xfb, 0x78, 0x26, 0xc4, 0x9a,
+    0x65, 0x3b, 0xd9, 0x87, 0x04, 0x5a, 0xb8, 0xe6, 0xa7, 0xf9, 0x1b, 0x45, 0xc6, 0x98, 0x7a, 0x24,
+    0xf8, 0xa6, 0x44, 0x1a, 0x99, 0xc7, 0x25, 0x7b, 0x3a, 0x64, 0x86, 0xd8, 0x5b, 0x05, 0xe7, 0xb9,
+    0x8c, 0xd2, 0x30, 0x6e, 0xed, 0xb3, 0x51, 0x0f, 0x4e, 0x10, 0xf2, 0xac, 0x2f, 0x71, 0x93, 0xcd,
+    0x11, 0x4f, 0xad, 0xf3, 0x70, 0x2e, 0xcc, 0x92, 0xd3, 0x8d, 0x6f, 0x31, 0xb2, 0xec, 0x0e, 0x50,
+    0xaf, 0xf1, 0x13, 0x4d, 0xce, 0x90, 0x72, 0x2c, 0x6d, 0x33, 0xd1, 0x8f, 0x0c, 0x52, 0xb0, 0xee,
+    0x32, 0x6c, 0x8e, 0xd0, 0x53, 0x0d, 0xef, 0xb1, 0xf0, 0xae, 0x4c, 0x12, 0x91, 0xcf, 0x2d, 0x73,
+    0xca, 0x94, 0x76, 0x28, 0xab, 0xf5, 0x17, 0x49, 0x08, 0x56, 0xb4, 0xea, 0x69, 0x37, 0xd5, 0x8b,
+    0x57, 0x09, 0xeb, 0xb5, 0x36, 0x68, 0x8a, 0xd4, 0x95, 0xcb, 0x29, 0x77, 0xf4, 0xaa, 0x48, 0x16,
+    0xe9, 0xb7, 0x55, 0x0b, 0x88, 0xd6, 0x34, 0x6a, 0x2b, 0x75, 0x97, 0xc9, 0x4a, 0x14, 0xf6, 0xa8,
+    0x74, 0x2a, 0xc8, 0x96, 0x15, 0x4b, 0xa9, 0xf7, 0xb6, 0xe8, 0x0a, 0x54, 0xd7, 0x89, 0x6b, 0x35,
+};
+
 class MCUCommunicator
 {
 public:
@@ -52,6 +72,8 @@ public:
                                                       &MCUCommunicator::recoverCallback, this);
         sub_bullet_up_ = nh_.subscribe<std_msgs::UInt8>("bullet_up", 1,
                                                         &MCUCommunicator::bulletUpCallback, this);
+        sub_bullet_num_ = nh_.subscribe<std_msgs::UInt8>("bullet_num", 1,
+                                                         &MCUCommunicator::bulletNumCallback, this);
         
         try
         {
@@ -113,6 +135,7 @@ private:
     ros::Subscriber sub_motion_;
     ros::Subscriber sub_recover_;
     ros::Subscriber sub_bullet_up_;
+    ros::Subscriber sub_bullet_num_;
     
     // 发送缓冲
     uint8_t tx_buffer_[256];
@@ -132,6 +155,7 @@ private:
     // 存储当前的 hp_up 和 bullet_up 状态
     uint8_t current_hp_up_ = 0;
     uint8_t current_bullet_up_ = 0;
+    uint8_t current_bullet_num_ = 0;
     uint8_t current_motion_mode_ = 0;
     
     // 分数追踪变量
@@ -163,6 +187,13 @@ private:
         sendMotionCommand(current_motion_mode_);
     }
     
+    // Bullet Num（买弹数量）回调函数
+    void bulletNumCallback(const std_msgs::UInt8::ConstPtr& msg)
+    {
+        current_bullet_num_ = msg->data;
+        sendMotionCommand(current_motion_mode_);
+    }
+    
     // 发送Motion命令到下位机
     void sendMotionCommand(uint8_t motion_mode)
     {
@@ -174,19 +205,20 @@ private:
         frame.motion_mode_up = motion_mode;
         frame.hp_up = current_hp_up_;
         frame.bullet_up = current_bullet_up_;
+        frame.bullet_num = current_bullet_num_;
         frame.eof = 0xFE;             // 0xFE
         
-        // CRC8校验 (包含 sof, motion_mode_up, hp_up, bullet_up)
-        uint8_t crc_data[4] = {frame.sof, frame.motion_mode_up, frame.hp_up, frame.bullet_up};
-        frame.crc8 = calculateCRC8(crc_data, 4);
+        // CRC8校验 (与 MCU 一致：计算 sof 到 bullet_num 的 CRC)
+        // MotionCommandFrame 大小为 7 字节，CRC 计算前 5 字节
+        frame.crc8 = calculateCRC8((uint8_t*)&frame, sizeof(MotionCommandFrame) - 2, 0xFF);
         
         try
         {
             if (serial_.isOpen())
             {
                 serial_.write((uint8_t*)&frame, sizeof(frame));
-                ROS_DEBUG("Motion command sent: motion_mode=%u, hp_up=%u, bullet_up=%u (frame size=%zu)", 
-                         motion_mode, current_hp_up_, current_bullet_up_, sizeof(frame));
+                ROS_DEBUG("Motion command sent: motion_mode=%u, hp_up=%u, bullet_up=%u, bullet_num=%u (frame size=%zu)", 
+                         motion_mode, current_hp_up_, current_bullet_up_, current_bullet_num_, sizeof(frame));
             }
             else
             {
@@ -199,46 +231,30 @@ private:
         }
     }
     
-    // CRC8校验函数
-    uint8_t calculateCRC8(const uint8_t* data, size_t length)
+    // MCU 风格的 CRC8 查表实现
+    uint8_t calculateCRC8(const uint8_t* pch_message, size_t dw_length, uint8_t ucCRC8 = 0xFF)
     {
-        uint8_t crc = 0xFF;
-        for (size_t i = 0; i < length; i++)
+        unsigned char uc_index;
+        while (dw_length--)
         {
-            crc ^= data[i];
-            for (int j = 0; j < 8; j++)
-            {
-                if (crc & 0x80)
-                {
-                    crc = (crc << 1) ^ 0x07;
-                }
-                else
-                {
-                    crc = (crc << 1);
-                }
-            }
+            uc_index = ucCRC8 ^ (*pch_message++);
+            ucCRC8 = CRC8_TABLE[uc_index];
         }
-        return crc;
+        return ucCRC8;
     }
     
-    // CRC8验证函数 - 用于接收数据
+    // CRC8验证函数 - 用于接收数据（与 MCU 端算法完全相同）
     bool verifyCRC8(MCUDataFrame* frame)
     {
-        // 计算除了CRC和EOF之外的所有数据的CRC值
-        // frame结构体中CRC8的位置需要知道
-        // 假设MCUDataFrame结构体中CRC8在最后一个字段之前
-        
-        // 获取frame中存储的CRC值（假设CRC8字段在EOF之前）
         uint8_t received_crc = frame->crc8;
         
-        // 重新计算CRC（计算SOF之后到CRC之前的所有字段）
-        // 这里需要知道MCUDataFrame的具体结构
-        // 通常是从SOF开始到EOF之前的所有数据
-        uint8_t calculated_crc = calculateCRC8((uint8_t*)&frame->sof, MCU_FRAME_SIZE - 2);  // 减去CRC8和EOF
+        // 按照 MCU 的方式计算：get_CRC8_check_sum((uint8_t*)&frame, MCU_FRAME_SIZE - 2, 0xFF)
+        // MCU_FRAME_SIZE = 46, 所以计算前 44 字节的 CRC
+        uint8_t calculated_crc = calculateCRC8((uint8_t*)&frame->sof, MCU_FRAME_SIZE - 2, 0xFF);
         
         if (received_crc != calculated_crc)
         {
-            ROS_DEBUG("CRC mismatch: received=0x%02X, calculated=0x%02X", received_crc, calculated_crc);
+            ROS_WARN("CRC8 mismatch: received=0x%02X, calculated=0x%02X", received_crc, calculated_crc);
             return false;
         }
         return true;
@@ -317,11 +333,36 @@ private:
                 }
                 else
                 {
-                    ROS_WARN("Invalid frame end marker: 0x%02X (expected 0xFE)", 
-                            frame_buffer_[MCU_FRAME_SIZE - 1]);
+                    ROS_DEBUG("Invalid frame end marker: 0x%02X (expected 0xFE at position %u). "
+                             "Attempting re-synchronization...", 
+                            frame_buffer_[MCU_FRAME_SIZE - 1], MCU_FRAME_SIZE - 1);
+                    
+                    // 尝试重新同步：寻找缓冲区中的下一个帧头
+                    bool found_resync = false;
+                    for (size_t i = 1; i < MCU_FRAME_SIZE; i++)
+                    {
+                        if (frame_buffer_[i] == MCU_FRAME_SOF)
+                        {
+                            ROS_DEBUG("Found potential frame resync at offset %zu", i);
+                            // 将缓冲区数据移动以对齐新的帧头
+                            memmove(frame_buffer_, frame_buffer_ + i, MCU_FRAME_SIZE - i);
+                            frame_buffer_index_ = MCU_FRAME_SIZE - i;
+                            found_resync = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!found_resync)
+                    {
+                        frame_buffer_index_ = 0;  // 无法重新同步，重置缓冲区
+                    }
                 }
                 
-                frame_buffer_index_ = 0;
+                // 如果成功解析，重置缓冲区
+                if (frame_buffer_[MCU_FRAME_SIZE - 1] == MCU_FRAME_EOF)
+                {
+                    frame_buffer_index_ = 0;
+                }
             }
         }
     }
@@ -335,16 +376,22 @@ private:
         // 验证帧头和帧尾
         if (frame.sof != MCU_FRAME_SOF || frame.eof != MCU_FRAME_EOF)
         {
-            ROS_WARN("Invalid frame markers: SOF=0x%02X, EOF=0x%02X", frame.sof, frame.eof);
+            ROS_WARN("Invalid frame markers: SOF=0x%02X (expected 0x%02X), EOF=0x%02X (expected 0x%02X)", 
+                    frame.sof, MCU_FRAME_SOF, frame.eof, MCU_FRAME_EOF);
             return;
         }
         
         // 验证CRC8校验
         if (!verifyCRC8(&frame))
         {
-            ROS_WARN("CRC8 verification failed for received frame");
+            ROS_WARN("CRC8 verification failed - Frame details: "
+                    "robot_id=%u, game_progress=%u, crc8=0x%02X, EOF=0x%02X",
+                    frame.robot_id, frame.game_progress, frame.crc8, frame.eof);
             return;
         }
+        
+        ROS_DEBUG("Valid frame received: robot_id=%u, game_progress=%u, crc8=0x%02X",
+                 frame.robot_id, frame.game_progress, frame.crc8);
         
         // 更新机器人颜色（0=red, 1=blue）
         robot_color_ = frame.robot_color;
