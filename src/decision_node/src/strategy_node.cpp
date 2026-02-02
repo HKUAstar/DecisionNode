@@ -58,8 +58,8 @@ struct RefereeState
   int occupy_status = 0;  // 0: unoccupied, 1: friendly occupied, 2: enemy occupied，3：both occupied
   int robot_id = 0;       // 机器人ID
   int robot_color = 0;    // 机器人颜色 (0=red, 1=blue)
-  int self_hp = 400;      // 自身血量（来自remain_hp）
-  int self_max_hp = 400;  // 自身最大血量（来自max_hp）
+  int self_hp = 400;      // 自身血量
+  int self_max_hp = 400;  // 自身最大血量
   int red_1_hp = 400;     // 红英雄血量
   int red_3_hp = 400;     // 红步兵3血量
   int red_7_hp = 400;     // 红哨兵血量
