@@ -2,6 +2,8 @@
 #include <behaviortree_cpp_v3/bt_factory.h>
 #include <ros/ros.h>
 #include <std_msgs/UInt8.h>
+#include <std_msgs/UInt16.h>
+#include <algorithm>
 #include "decision_node/recover_change.hpp"
 
 // IsHealthFull: Check if current HP equals max HP
@@ -228,6 +230,134 @@ public:
   }
 };
 
+// SetBulletNum: Set bullet_num based on strategy (delta mode or fixed mode)
+// Mode 1: DELTA - Calculate difference between expected and current
+// Mode 2: FIXED - Use fixed supply amount
+class SetBulletNum : public BT::SyncActionNode
+{
+public:
+  SetBulletNum(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<std::string>("mode", "DELTA", "Supply mode: DELTA (expected-current) or FIXED (fixed amount)"),
+      BT::InputPort<int>("expected_bullet", 999, "Expected maximum bullet count (for DELTA mode)"),
+      BT::InputPort<int>("fixed_supply", 50, "Fixed supply amount (for FIXED mode)"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    
+    std::string mode = "DELTA";
+    int expected_bullet = 999;
+    int fixed_supply = 50;
+    
+    (void)getInput("mode", mode);
+    (void)getInput("expected_bullet", expected_bullet);
+    (void)getInput("fixed_supply", fixed_supply);
+    
+    // Transform mode to uppercase for case-insensitive comparison
+    std::transform(mode.begin(), mode.end(), mode.begin(), ::toupper);
+    
+    int current_bullet = 0;
+    try
+    {
+      current_bullet = bb->get<int>("ref.bullet_remain");
+    }
+    catch (...)
+    {
+      ROS_WARN("SetBulletNum: Failed to get current bullet_remain from blackboard");
+      current_bullet = 0;
+    }
+    
+    int bullet_num = 0;
+    
+    if (mode == "DELTA")
+    {
+      // Delta mode: Calculate difference
+      bullet_num = std::max(0, expected_bullet - current_bullet);
+      ROS_DEBUG("SetBulletNum (DELTA): expected=%d, current=%d, bullet_num=%d", 
+                expected_bullet, current_bullet, bullet_num);
+    }
+    else if (mode == "FIXED")
+    {
+      // Fixed mode: Use fixed supply amount
+      bullet_num = fixed_supply;
+      ROS_DEBUG("SetBulletNum (FIXED): bullet_num=%d", bullet_num);
+    }
+    else
+    {
+      ROS_WARN("SetBulletNum: Unknown mode '%s', defaulting to DELTA", mode.c_str());
+      bullet_num = std::max(0, expected_bullet - current_bullet);
+    }
+    
+    bb->set("bullet_num", bullet_num);
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
+// PublishBulletNum: Publish bullet_num value to ROS topic
+class PublishBulletNum : public BT::SyncActionNode
+{
+private:
+  ros::Publisher* publisher_;
+  bool* publish_on_change_only_;
+
+public:
+  PublishBulletNum(const std::string& name, const BT::NodeConfiguration& config, ros::Publisher* pub, bool* publish_on_change_only)
+    : BT::SyncActionNode(name, config), publisher_(pub), publish_on_change_only_(publish_on_change_only)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    int bullet_num = 0;
+    try
+    {
+      bullet_num = bb->get<int>("bullet_num");
+    }
+    catch (...)
+    {
+      bullet_num = 0;
+      bb->set("bullet_num", bullet_num);
+    }
+
+    if (*publish_on_change_only_)
+    {
+      int last_bullet_num = 0;
+      try
+      {
+        last_bullet_num = bb->get<int>("bullet_num_last");
+      }
+      catch (...)
+      {
+        last_bullet_num = -1;
+      }
+
+      if (last_bullet_num == bullet_num)
+      {
+        return BT::NodeStatus::SUCCESS;  // No change, skip publish
+      }
+      bb->set("bullet_num_last", bullet_num);
+    }
+
+    std_msgs::UInt8 msg;
+    msg.data = static_cast<uint8_t>(bullet_num);
+    ROS_DEBUG("PublishBulletNum: Publishing bullet_num=%d", bullet_num);
+    publisher_->publish(msg);
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
 void RegisterRecoverChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* recover_pub, ros::Publisher* bullet_up_pub)
 {
   factory.registerNodeType<IsHealthFull>("IsHealthFull");
@@ -252,6 +382,20 @@ void RegisterRecoverChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher
       "PublishBulletUp", [bullet_up_pub](const std::string& name, const BT::NodeConfiguration& config) {
         static bool publish_on_change = true;  // 可根据需要调整
         return std::make_unique<PublishBulletUp>(name, config, bullet_up_pub, &publish_on_change);
+      });
+  }
+}
+
+void RegisterBulletSupplyNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* bullet_num_pub)
+{
+  factory.registerNodeType<SetBulletNum>("SetBulletNum");
+  
+  if (bullet_num_pub != nullptr)
+  {
+    factory.registerBuilder<PublishBulletNum>(
+      "PublishBulletNum", [bullet_num_pub](const std::string& name, const BT::NodeConfiguration& config) {
+        static bool publish_on_change = true;  // 可根据需要调整
+        return std::make_unique<PublishBulletNum>(name, config, bullet_num_pub, &publish_on_change);
       });
   }
 }

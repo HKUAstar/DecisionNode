@@ -742,7 +742,7 @@ int main(int argc, char** argv)
   NavigationState nav;
 
   auto blackboard = BT::Blackboard::create();
-  // Referee-like inputs (占位话题；[TODO] 后续可替换为 Referee_Task 的真实桥接)
+  
   auto sub_game_progress = nh.subscribe<std_msgs::UInt8>("/referee/game_progress", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.game_progress = msg->data;
   });
@@ -761,8 +761,6 @@ int main(int argc, char** argv)
   auto sub_occupy_status = nh.subscribe<std_msgs::UInt8>("/referee/occupy_status", 1,[&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.occupy_status = msg->data;
   });
-  
-  // 机器人信息订阅
   auto sub_robot_id = nh.subscribe<std_msgs::UInt8>("/robot/robot_id", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.robot_id = msg->data;
   });
@@ -775,8 +773,6 @@ int main(int argc, char** argv)
   auto sub_self_max_hp = nh.subscribe<std_msgs::UInt16>("/robot/self_max_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
     ref.self_max_hp = msg->data;
   });
-  
-  // 其他机器人HP数据订阅
   auto sub_red_1_hp = nh.subscribe<std_msgs::UInt16>("/referee/red_1_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
     ref.red_1_hp = msg->data;
   });
@@ -795,8 +791,6 @@ int main(int argc, char** argv)
   auto sub_blue_7_hp = nh.subscribe<std_msgs::UInt16>("/referee/blue_7_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
     ref.blue_7_hp = msg->data;
   });
-  
-  // 死亡位数据订阅
   auto sub_red_dead = nh.subscribe<std_msgs::UInt16>("/referee/red_dead", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
     ref.red_dead = msg->data;
   });
@@ -813,6 +807,7 @@ int main(int argc, char** argv)
   ros::Publisher motion_pub = nh.advertise<std_msgs::UInt8>("motion", 1);
   ros::Publisher recover_pub = nh.advertise<std_msgs::UInt8>("recover", 1);
   ros::Publisher bullet_up_pub = nh.advertise<std_msgs::UInt8>("bullet_up", 1);
+  ros::Publisher bullet_num_pub = nh.advertise<std_msgs::UInt8>("bullet_num", 1);
 
   int tick_hz = kDefaultTickHz;
   pnh.param("tick_hz", tick_hz, tick_hz);
@@ -873,20 +868,41 @@ int main(int argc, char** argv)
   RegisterOccupationNodes(factory);
 
   RegisterRecoverChangeNodes(factory, &recover_pub, &bullet_up_pub);
+  RegisterBulletSupplyNodes(factory, &bullet_num_pub);
 
-  // Blackboard defaults (can be overridden with params below)
-  int danger_hp = 100;
-  int sufficient_bullet = 10;
-  int occupy_threshold = 30;
-  int aggressive_threshold = 50;
-  pnh.param("danger_hp", danger_hp, danger_hp);
-  pnh.param("sufficient_bullet", sufficient_bullet, sufficient_bullet);
-  pnh.param("occupy_threshold", occupy_threshold, occupy_threshold);
-  pnh.param("aggressive_threshold", aggressive_threshold, aggressive_threshold);
-  blackboard->set("danger_hp", danger_hp);
-  blackboard->set("sufficient_bullet", sufficient_bullet);
-  blackboard->set("occupy_threshold", occupy_threshold);
-  blackboard->set("aggressive_threshold", aggressive_threshold);
+  // ---------------------------
+  // Decision Parameters (集中定义)
+  // ---------------------------
+  struct DecisionParams {
+    int danger_hp = 100;
+    int sufficient_bullet = 10;
+    int max_bullet = 150;
+    int fixed_supply = 50;
+    int occupy_threshold = 30;
+    int aggressive_threshold = 50;
+  } params;
+
+
+  pnh.param("danger_hp", params.danger_hp, params.danger_hp);
+  pnh.param("sufficient_bullet", params.sufficient_bullet, params.sufficient_bullet);
+  pnh.param("max_bullet", params.max_bullet, params.max_bullet);
+  pnh.param("fixed_supply", params.fixed_supply, params.fixed_supply);
+  pnh.param("occupy_threshold", params.occupy_threshold, params.occupy_threshold);
+  pnh.param("aggressive_threshold", params.aggressive_threshold, params.aggressive_threshold);
+
+  blackboard->set("danger_hp", params.danger_hp);
+  blackboard->set("sufficient_bullet", params.sufficient_bullet);
+  blackboard->set("max_bullet", params.max_bullet);
+  blackboard->set("fixed_supply", params.fixed_supply);
+  blackboard->set("occupy_threshold", params.occupy_threshold);
+  blackboard->set("aggressive_threshold", params.aggressive_threshold);
+
+  // 日志输出参数值
+  ROS_INFO("Decision Parameters loaded:");
+  ROS_INFO("  danger_hp=%d, sufficient_bullet=%d, max_bullet=%d",
+           params.danger_hp, params.sufficient_bullet, params.max_bullet);
+  ROS_INFO("  fixed_supply=%d, occupy_threshold=%d, aggressive_threshold=%d",
+           params.fixed_supply, params.occupy_threshold, params.aggressive_threshold);
 
   // Default action
   blackboard->set("action", std::string("INIT"));
@@ -901,6 +917,7 @@ int main(int argc, char** argv)
   blackboard->set("occupy_reached", false);  // 占领阈值是否到达
   blackboard->set("recover", 0);  // 回血标志，默认为0
   blackboard->set("bullet_up", 0);  // 补弹标志，默认为0
+  blackboard->set("bullet_num", 0);  // 补弹数量，默认为0
   std::string bt_xml_path;
   pnh.param<std::string>("bt_xml", bt_xml_path, std::string(""));
   if (bt_xml_path.empty())
@@ -919,6 +936,27 @@ int main(int argc, char** argv)
   const std::string xml_text = xml_buffer.str();
 
   BT::Tree tree = factory.createTreeFromText(xml_text, blackboard);
+
+  // 初始化时发送一次默认数据到下位机
+  {
+    std_msgs::UInt8 motion_msg;
+    motion_msg.data = 2;   
+    motion_pub.publish(motion_msg);
+    
+    std_msgs::UInt8 recover_msg;
+    recover_msg.data = 0;   
+    recover_pub.publish(recover_msg);
+    
+    std_msgs::UInt8 bullet_up_msg;
+    bullet_up_msg.data = 0;  
+    bullet_up_pub.publish(bullet_up_msg);
+    
+    std_msgs::UInt8 bullet_num_msg;
+    bullet_num_msg.data = 0;  
+    bullet_num_pub.publish(bullet_num_msg);
+    
+    ROS_INFO("Initialization: Sent default values - motion=2, recover=0, bullet_up=0, bullet_num=0");
+  }
 
   ros::Rate rate(std::max(1, tick_hz));
   while (ros::ok())

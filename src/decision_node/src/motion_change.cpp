@@ -54,8 +54,6 @@ public:
   }
 };
 
-// SetMotionFlag: Universal motion flag setter with 5-second cooldown check
-// Input port "target_motion" specifies the target motion_flag value (0, 1, or 2)
 class SetMotionFlag : public BT::SyncActionNode
 {
 public:
@@ -82,31 +80,80 @@ public:
     
     int target = target_motion.value();
     
-    // Check cooldown time
-    ros::Time cooldown_end;
+    // Get current motion_flag
+    int current = 2;  // default value
     try
     {
-      cooldown_end = bb->get<ros::Time>("attack_cooldown_end_time");
+      current = bb->get<int>("motion_flag");
     }
     catch (...)
     {
-      cooldown_end = ros::Time(0);
-      bb->set("attack_cooldown_end_time", cooldown_end);
+      current = 2;
+      bb->set("motion_flag", current);
     }
+
+    // Determine if cooldown is needed
+    bool needs_cooldown = needsCooldown(current, target);
     
-    bool cooldown_finished = (cooldown_end.toSec() == 0) || (ros::Time::now() >= cooldown_end);
-    
-    if (!cooldown_finished)
+    if (needs_cooldown)
     {
-      // Still in cooldown, don't change motion_flag
-      // ROS_DEBUG("SetMotionFlag: target=%d, still in cooldown, skipping", target);
-      return BT::NodeStatus::SUCCESS;
+      // Check cooldown time
+      ros::Time cooldown_end;
+      try
+      {
+        cooldown_end = bb->get<ros::Time>("attack_cooldown_end_time");
+      }
+      catch (...)
+      {
+        cooldown_end = ros::Time(0);
+        bb->set("attack_cooldown_end_time", cooldown_end);
+      }
+      
+      bool cooldown_finished = (cooldown_end.toSec() == 0) || (ros::Time::now() >= cooldown_end);
+      
+      if (!cooldown_finished)
+      {
+        // Still in cooldown, don't change motion_flag
+        ROS_DEBUG("SetMotionFlag: current=%d, target=%d, still in cooldown (%.1fs), skipping", 
+                  current, target, (cooldown_end - ros::Time::now()).toSec());
+        return BT::NodeStatus::SUCCESS;
+      }
+      
+      // Cooldown finished, set motion_flag and restart cooldown timer
+      bb->set("motion_flag", target);
+      bb->set("attack_cooldown_end_time", ros::Time::now() + ros::Duration(5.0));
+      ROS_DEBUG("SetMotionFlag: Cooldown finished, motion_flag changed from %d to %d, cooldown restarted", 
+                current, target);
+    }
+    else
+    {
+      // No cooldown needed, set immediately
+      bb->set("motion_flag", target);
+      // Clear cooldown timer for transitions involving state 3
+      bb->set("attack_cooldown_end_time", ros::Time(0));
+      ROS_DEBUG("SetMotionFlag: No cooldown needed, motion_flag changed from %d to %d immediately", 
+                current, target);
     }
     
-    // Cooldown finished, set motion_flag to target value
-    bb->set("motion_flag", target);
-    ROS_DEBUG("SetMotionFlag: Cooldown finished, motion_flag set to %d", target);
     return BT::NodeStatus::SUCCESS;
+  }
+
+private:
+  // Helper function to determine if cooldown is needed
+  // Returns true if: current and target are both in {0,1,2} and different
+  // Returns false if: either is 3, or they are the same
+  bool needsCooldown(int current, int target)
+  {
+    // Same state, no cooldown needed
+    if (current == target)
+      return false;
+    
+    // If either is state 3 (respawn), no cooldown needed
+    if (current == 3 || target == 3)
+      return false;
+    
+    // Both are in {0, 1, 2} and different -> cooldown needed
+    return true;
   }
 };
 

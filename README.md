@@ -7,7 +7,7 @@ run test.cpp:/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder
 
 可视化：下载Groot2，打开xml文件自动识别
 
-# 节点介绍
+# 节点介绍，以免写到后面忘记什么写过什么没写过了
 
 数据更新节点
 
@@ -31,8 +31,9 @@ Condition节点
     <IsSentryInDanger />低于指定血量返回success
 
     <NotBulletSufficient />子弹量小于阈值返回success
+
     
 
-
+SetBulletNum (DELTA是补弹到某个固定值/FIXED 计算)
 
 <Wait duration="2.0" />--等待指定秒数

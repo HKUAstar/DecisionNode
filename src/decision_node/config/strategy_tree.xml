@@ -39,7 +39,6 @@
 
 
         <Fallback name="ToPush">
-          <!-- PUSH: Navigate to the first cycle point -->
           <Sequence name="SafePush">
             <Sequence>
               <AccumulateCentralOccupiable 
@@ -55,7 +54,6 @@
             <ResetAccumulator />
           </Sequence>
           
-          <!-- OCCUPY: Loop between 4 points -->
           <Fallback name="AggressiveOccupy">
             <Sequence>
               <Fallback>
@@ -79,7 +77,7 @@
         </Sequence>
         -->
 
-        <!-- WAITFOROP: Default state when no other conditions are met -->
+        <!-- Default state -->
         <Sequence name="ToWaitforOP">
           <SetAction action="WAITFOROP" />
         </Sequence>
@@ -113,7 +111,6 @@
 
         <Sequence>
           <IsAction value="OCCUPY" />
-          <!-- Loop between 4 points, advancing when arrived -->
           <Fallback>
             <Sequence>
               <CheckArrived />
@@ -121,7 +118,6 @@
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
-          <!-- Set motion_flag based on attack status while in loop -->
           <Fallback>
             <Sequence>
               <CheckAttacked />
@@ -161,14 +157,18 @@
               <CheckArrived />
               <SetBulletUp value="1" />
               <PublishBulletUp />
+              <SetBulletNum mode="DELTA" expected_bullet="{max_bullet}" fixed_supply="{fixed_supply}" />
+              <PublishBulletNum />
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
           <Fallback>
             <Sequence>
-              <IsBulletFull max_bullet="999" />
+              <IsBulletFull max_bullet="{max_bullet}" />
               <SetBulletUp value="0" />
+              <SetBulletNum mode="FIXED" fixed_supply="0" />
               <PublishBulletUp />
+              <PublishBulletNum />
             </Sequence>
             <AlwaysSuccess />
           </Fallback>

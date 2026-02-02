@@ -2680,6 +2680,7 @@ decision_node/CMakeFiles/strategy_node.dir/src/recover_change.cpp.o: /mnt/d/deci
   /opt/ros/noetic/include/ros/wall_timer.h \
   /opt/ros/noetic/include/ros/wall_timer_options.h \
   /opt/ros/noetic/include/rosconsole/macros_generated.h \
+  /opt/ros/noetic/include/std_msgs/UInt16.h \
   /opt/ros/noetic/include/std_msgs/UInt8.h \
   /opt/ros/noetic/include/xmlrpcpp/XmlRpcDecl.h \
   /opt/ros/noetic/include/xmlrpcpp/XmlRpcValue.h \
@@ -5168,9 +5169,9 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/x86_64-linux-gnu/c++/9/bits/c++io.h:
 
-/opt/ros/noetic/include/std_msgs/UInt16.h:
-
 /opt/ros/noetic/include/geometry_msgs/Point.h:
+
+/opt/ros/noetic/include/std_msgs/UInt16.h:
 
 /mnt/d/decision_ws/src/decision_node/include/decision_node/recover_change.hpp:
 
