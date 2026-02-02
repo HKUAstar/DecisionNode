@@ -192,7 +192,7 @@
 
         <Sequence>
           <IsAction value="WAITFOROP" />
-          <SetMotionFlag target_motion="0" />
+          <SetMotionFlag target_motion="2" />
           <PublishMotion />
           <SetBulletUp value="0" />
           <PublishBulletUp />

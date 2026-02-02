@@ -908,7 +908,8 @@ int main(int argc, char** argv)
   blackboard->set("action", std::string("INIT"));
   blackboard->set("goal.valid", false);
   blackboard->set("goal.cycle_index", 0);
-  blackboard->set("motion_flag", 2);  // 默认为2
+  blackboard->set("motion_flag", 3);  // 默认为3
+  blackboard->set("motion.last_flag", 3);  // 初始化motion发送记录，防止冷启动后motion不变
   blackboard->set("attack_cooldown_end_time", ros::Time(0));
   blackboard->set("is_aggressive", false);
   blackboard->set("central_occupiable", false);
@@ -940,7 +941,7 @@ int main(int argc, char** argv)
   // 初始化时发送一次默认数据到下位机
   {
     std_msgs::UInt8 motion_msg;
-    motion_msg.data = 2;   
+    motion_msg.data = 3;   
     motion_pub.publish(motion_msg);
     
     std_msgs::UInt8 recover_msg;
