@@ -18,7 +18,7 @@
         <Sequence name="ToPushWhenGameStart">
           <IsGameStarted expect_started="true" />
           <IsAction value="INIT" />
-          <SetAction action="PUSH" />
+          <SetAction action="OCCUPY" />
         </Sequence>
 
         <Sequence name="ToRespawnWhenDead">

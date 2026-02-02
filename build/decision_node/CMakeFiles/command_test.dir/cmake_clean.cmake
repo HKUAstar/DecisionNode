@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/mnt/d/decision_ws/devel/lib/decision_node/command_test"
-  "/mnt/d/decision_ws/devel/lib/decision_node/command_test.pdb"
+  "/home/sentry_train_test/AstarTraining/DecisionNode/devel/lib/decision_node/command_test"
+  "/home/sentry_train_test/AstarTraining/DecisionNode/devel/lib/decision_node/command_test.pdb"
   "CMakeFiles/command_test.dir/src/command_test.cpp.o"
   "CMakeFiles/command_test.dir/src/command_test.cpp.o.d"
 )

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/mnt/d/decision_ws/devel/lib/decision_node/mcu_simulator"
-  "/mnt/d/decision_ws/devel/lib/decision_node/mcu_simulator.pdb"
+  "/home/sentry_train_test/AstarTraining/DecisionNode/devel/lib/decision_node/mcu_simulator"
+  "/home/sentry_train_test/AstarTraining/DecisionNode/devel/lib/decision_node/mcu_simulator.pdb"
   "CMakeFiles/mcu_simulator.dir/src/mcu_simulator.cpp.o"
   "CMakeFiles/mcu_simulator.dir/src/mcu_simulator.cpp.o.d"
 )
