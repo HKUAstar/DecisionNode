@@ -1,8 +1,8 @@
-prefix=/home/sentry_train_test/AstarTraining/DecisionNode/devel
+prefix=/mnt/d/decision_ws/devel
 
 Name: decision_node
 Description: Description of decision_node
 Version: 0.1.0
-Cflags: -I/home/sentry_train_test/AstarTraining/DecisionNode/src/decision_node/include
+Cflags: -I/mnt/d/decision_ws/src/decision_node/include
 Libs: -L${prefix}/lib 
 Requires: roscpp std_msgs geometry_msgs nav_msgs serial

@@ -7,8 +7,9 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/home/sentry_train_test/AstarTraining/DecisionNode/devel:$CMAKE_PREFIX_PATH"
-export PATH='/opt/ros/noetic/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/home/sentry_train_test/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand:/home/sentry_train_test/.vscode-server/data/User/globalStorage/github.copilot-chat/copilotCli:/home/sentry_train_test/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/bin/remote-cli:/home/sentry_train_test/.local/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/home/sentry_train_test/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'
-export PWD='/home/sentry_train_test/AstarTraining/DecisionNode/build'
-export ROSLISP_PACKAGE_DIRECTORIES="/home/sentry_train_test/AstarTraining/DecisionNode/devel/share/common-lisp:$ROSLISP_PACKAGE_DIRECTORIES"
-export ROS_PACKAGE_PATH="/home/sentry_train_test/AstarTraining/DecisionNode/src:$ROS_PACKAGE_PATH"
+export CMAKE_PREFIX_PATH="/mnt/d/decision_ws/devel:$CMAKE_PREFIX_PATH"
+export LD_LIBRARY_PATH='/mnt/d/fastlio_ws/devel/lib:/opt/ros/noetic/lib:/usr/lib/x86_64-linux-gnu'
+export PATH='/opt/ros/noetic/bin:/home/fangchuran/.local/bin:/usr/lib/qt5/bin:/home/fangchuran/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Users/Fang Churan/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand:/mnt/c/Users/Fang Churan/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/Windows/system32:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Program Files/Tailscale/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/Fang Churan/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/Fang Churan/AppData/Local/Programs/Microsoft VS Code/bin:/snap/bin'
+export PWD='/mnt/d/decision_ws/build'
+export ROSLISP_PACKAGE_DIRECTORIES="/mnt/d/decision_ws/devel/share/common-lisp:$ROSLISP_PACKAGE_DIRECTORIES"
+export ROS_PACKAGE_PATH="/mnt/d/decision_ws/src:$ROS_PACKAGE_PATH"

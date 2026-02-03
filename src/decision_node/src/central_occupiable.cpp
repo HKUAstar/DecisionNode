@@ -151,40 +151,12 @@ public:
     }
 };
 
-class CheckEnemyOccupied : public BT::ConditionNode
-{
-public:
-    CheckEnemyOccupied(const std::string& name, const BT::NodeConfiguration& config)
-        : BT::ConditionNode(name, config)
-    {
-    }
 
-    static BT::PortsList providedPorts()
-    {
-        return {
-            BT::InputPort<int>("occupy_status")
-        };
-    }
-
-    BT::NodeStatus tick() override
-    {
-        int occupy_status;
-        if (!getInput("occupy_status", occupy_status))
-        {
-            return BT::NodeStatus::FAILURE;
-        }
-        
-        // 假设2是敌方占领
-        bool is_enemy_occupied = (occupy_status == 2);
-        return is_enemy_occupied ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
-    }
-};
 
 void RegisterOccupationNodes(BT::BehaviorTreeFactory& factory)
 {
     factory.registerNodeType<TriggerOnThreshold>("TriggerOnThreshold");
     factory.registerNodeType<ResetAccumulator>("ResetAccumulator");
-    factory.registerNodeType<CheckEnemyOccupied>("CheckEnemyOccupied");
 }
 
 void RegisterAccumulateCentralOccupiable(BT::BehaviorTreeFactory& factory)
@@ -202,7 +174,3 @@ void RegisterResetAccumulator(BT::BehaviorTreeFactory& factory)
     factory.registerNodeType<ResetAccumulator>("ResetAccumulator");
 }
 
-void RegisterCheckEnemyOccupied(BT::BehaviorTreeFactory& factory)
-{
-    factory.registerNodeType<CheckEnemyOccupied>("CheckEnemyOccupied");
-}

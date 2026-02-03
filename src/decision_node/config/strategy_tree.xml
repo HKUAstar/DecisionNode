@@ -37,6 +37,21 @@
           <SetAction action="SUPPLY" />
         </Sequence>
 
+        <Sequence name="MaintainOccupy">
+          <IsAction value="OCCUPY" />
+          <SetAction action="OCCUPY" />
+        </Sequence>
+
+        <Sequence name="SwitchPushToOccupy">
+          <IsAction value="PUSH" />
+          <CheckArrived />
+          <SetAction action="OCCUPY" />
+        </Sequence>
+
+        <Sequence name="MaintainPush">
+          <IsAction value="PUSH" />
+          <SetAction action="PUSH" />
+        </Sequence>
 
         <Fallback name="ToPush">
           <Sequence name="SafePush">
@@ -66,16 +81,16 @@
         </Fallback>
 
         <!-- RADICAL Mode: Chase enemy when aggressive and bullet sufficient -->
-        <!--
+    
         <Sequence name="ToRadicalWhenAggressiveAndBulletSufficient">
-          <AggressiveAdvantage threshold="-999" />
+          <AggressiveAdvantage threshold="50" />
           <Fallback>
             <NotBulletSufficient />
             <AlwaysFailure />
           </Fallback>
           <SetAction action="RADICAL" />
         </Sequence>
-        -->
+      
 
         <!-- Default state -->
         <Sequence name="ToWaitforOP">
@@ -175,14 +190,14 @@
         </Sequence>
 
         <!-- RADICAL Mode: Chase enemy execution -->
-        <!--
         <Sequence>
           <IsAction value="RADICAL" />
+          <SetGoalFromParams ns="radical" />
           <SetMotionFlag target_motion="1" />
           <PublishMotion />
-          [TODO: Chase/Pursuit node to be implemented here]
+          <!--[TODO: Chase/Pursuit node to be implemented here] -->
         </Sequence>
-        -->
+      
 
         <Sequence>
           <IsAction value="RESPAWN" />
@@ -198,7 +213,17 @@
           <PublishBulletUp />
           <SetRecover value="0" />
           <PublishRecover />
-          <SetGoalFromParams ns="waitforop" />
+          
+          <Fallback>
+            <Sequence>
+                <IntenseHarm 
+                   threshold_activate="{harm_threshold_on}" 
+                   threshold_deactivate="{harm_threshold_off}" />
+                <SetGoalFromParams ns="retreat" />
+            </Sequence>
+            <SetGoalFromParams ns="waitforop" />
+          </Fallback>
+
           <PublishGoalPoint topic="clicked_point" />
         </Sequence>
       </ReactiveFallback>

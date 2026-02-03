@@ -3,6 +3,7 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/UInt16.h>
 #include <std_msgs/UInt8.h>
+#include <std_msgs/Bool.h>
 #include <geometry_msgs/Vector3.h>
 #include <serial/serial.h>
 #include <decision_node/mcu_comm.hpp>
@@ -38,14 +39,10 @@ public:
         nh_.param("serial_port", serial_port_, std::string("/dev/ttyUSB0"));
         nh_.param("baudrate", serial_baudrate_, 115200);
         
-        // 初始化发布者 - 对应已有的topic
         pub_game_progress_ = nh_.advertise<std_msgs::UInt8>("/referee/game_progress", 1);
         pub_remain_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/remain_hp", 1);
         pub_bullet_remain_ = nh_.advertise<std_msgs::UInt16>("/referee/bullet_remain", 1);
         pub_occupy_status_ = nh_.advertise<std_msgs::UInt8>("/referee/occupy_status", 1);
-        
-        // 新增发布者 - 导航和云台相关数据（已删除）
-        // 注：这些发布者没有在头文件中声明，已注释
         
         pub_robot_id_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_id", 1);
         pub_robot_color_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_color", 1);
@@ -65,7 +62,6 @@ public:
         pub_friendly_score_ = nh_.advertise<std_msgs::Int32>("/referee/friendly_score", 1);
         pub_enemy_score_ = nh_.advertise<std_msgs::Int32>("/referee/enemy_score", 1);
         
-        // 上位机命令
         sub_motion_ = nh_.subscribe<std_msgs::UInt8>("motion", 1, 
                                                      &MCUCommunicator::motionCallback, this);
         sub_recover_ = nh_.subscribe<std_msgs::UInt8>("recover", 1,
@@ -74,6 +70,12 @@ public:
                                                         &MCUCommunicator::bulletUpCallback, this);
         sub_bullet_num_ = nh_.subscribe<std_msgs::UInt8>("bullet_num", 1,
                                                          &MCUCommunicator::bulletNumCallback, this);
+        sub_navigation_ = nh_.subscribe<geometry_msgs::Vector3>("navigation", 1,
+                                                               &MCUCommunicator::navigationCallback, this);
+        sub_nav_received_ = nh_.subscribe<std_msgs::UInt8>("nav_received", 1,
+                                                          &MCUCommunicator::navReceivedCallback, this);
+        sub_dstar_status_ = nh_.subscribe<std_msgs::Bool>("/dstar_status", 1,
+                                                         &MCUCommunicator::dstarStatusCallback, this);
         
         try
         {
@@ -148,6 +150,9 @@ private:
     ros::Subscriber sub_recover_;
     ros::Subscriber sub_bullet_up_;
     ros::Subscriber sub_bullet_num_;
+    ros::Subscriber sub_navigation_;
+    ros::Subscriber sub_nav_received_;
+    ros::Subscriber sub_dstar_status_;
     
     // 发送缓冲
     uint8_t tx_buffer_[256];
@@ -158,17 +163,17 @@ private:
     size_t frame_buffer_index_;
     std::thread recv_thread_;
     
-    // Motion回调函数
-    // void motionCallback(const std_msgs::UInt8::ConstPtr& msg)
-    // {
-    //     sendMotionCommand(msg->data);
-    // }
-    
-    // 存储当前的 hp_up 和 bullet_up 状态
     uint8_t current_hp_up_ = 0;
     uint8_t current_bullet_up_ = 0;
     uint8_t current_bullet_num_ = 0;
     uint8_t current_motion_mode_ = 0;
+    
+    // 导航数据变量
+    float current_nav_vx_ = 0.0f;
+    float current_nav_vy_ = 0.0f;
+    float current_nav_z_angle_ = 0.0f;
+    uint8_t current_nav_received_ = 0;
+    uint8_t current_nav_arrived_ = 0;
     
     // 分数追踪变量
     int32_t friendly_score_ = 200;  // 己方初始分数
@@ -177,41 +182,60 @@ private:
     int last_occupy_status_ = 0;    // 上一帧的占领状态
     uint16_t last_red_dead_ = 0;    // 上一帧红方死亡状态
     uint16_t last_blue_dead_ = 0;   // 上一帧蓝方死亡状态
-    uint8_t robot_color_ = 0;       // 0=red, 1=blue（稍后从MCU数据更新）
+    uint8_t robot_color_ = 0;       // 0=red, 1=blue
     
-    // Motion回调函数 - 根据 motion 值和当前状态发送命令帧
+    // Motion回调函数 
     void motionCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         sendMotionCommand(msg->data);
     }
-    
-    // Recover（回血）回调函数
+
+    // Recover
     void recoverCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_hp_up_ = (msg->data != 0) ? 1 : 0;
         sendMotionCommand(current_motion_mode_);
     }
     
-    // Bullet（买弹）回调函数
+    // Bullet
     void bulletUpCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_bullet_up_ = (msg->data != 0) ? 1 : 0;
         sendMotionCommand(current_motion_mode_);
     }
     
-    // Bullet Num（买弹数量）回调函数
+    // Bullet Num
     void bulletNumCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_bullet_num_ = msg->data;
         sendMotionCommand(current_motion_mode_);
     }
     
-    // 发送Motion命令到下位机
+    // Navigation
+    void navigationCallback(const geometry_msgs::Vector3::ConstPtr& msg)
+    {
+        sendNavigationCommand(msg->x, msg->y, msg->z);
+    }
+    
+    // Nav Received
+    void navReceivedCallback(const std_msgs::UInt8::ConstPtr& msg)
+    {
+        current_nav_received_ = msg->data;
+        ROS_DEBUG("Nav received updated: received=%u", current_nav_received_);
+    }
+    
+    // D* Status
+    void dstarStatusCallback(const std_msgs::Bool::ConstPtr& msg)
+    {
+        current_nav_arrived_ = msg->data ? 1 : 0;
+        ROS_DEBUG("D* status updated: arrived=%u", current_nav_arrived_);
+    }
+    
+    // 发送命令到下位机
     void sendMotionCommand(uint8_t motion_mode)
     {
         current_motion_mode_ = motion_mode;
         
-        // 构建Motion命令帧
         MotionCommandFrame frame;
         frame.sof = 0x92;              // 0x92
         frame.motion_mode_up = motion_mode;
@@ -243,7 +267,46 @@ private:
         }
     }
     
-    // MCU 风格的 CRC8 查表实现
+    // 发送导航命令到下位机
+    void sendNavigationCommand(float vx, float vy, float z_angle)
+    {
+        current_nav_vx_ = vx;
+        current_nav_vy_ = vy;
+        current_nav_z_angle_ = z_angle;
+        
+        NavigationFrame frame;
+        frame.sof = 0x93;              // 0x93
+        frame.vx = vx;
+        frame.vy = vy;
+        frame.z_angle = z_angle;
+        frame.received = current_nav_received_;  
+        frame.arrived = current_nav_arrived_;   
+        frame.eof = 0xFE;             // 0xFE
+        
+        // CRC8校验 (计算 sof 到 arrived 的 CRC)
+        // NavigationFrame 大小为 17 字节，CRC 计算前 15 字节（从 sof 开始，不包括 crc8 和 eof）
+        frame.crc8 = calculateCRC8((uint8_t*)&frame.sof, sizeof(NavigationFrame) - 2, 0xFF);
+        
+        try
+        {
+            if (serial_.isOpen())
+            {
+                serial_.write((uint8_t*)&frame, sizeof(frame));
+                ROS_DEBUG("Navigation command sent: vx=%.4f, vy=%.4f, z_angle=%.4f, received=%u, arrived=%u (frame size=%zu)", 
+                         vx, vy, z_angle, current_nav_received_, current_nav_arrived_, sizeof(frame));
+            }
+            else
+            {
+                ROS_WARN("Serial port is not open, cannot send navigation command");
+            }
+        }
+        catch (const serial::SerialException& e)
+        {
+            ROS_ERROR("Failed to send navigation command: %s", e.what());
+        }
+    }
+    
+    // CRC8 查表实现
     uint8_t calculateCRC8(const uint8_t* pch_message, size_t dw_length, uint8_t ucCRC8 = 0xFF)
     {
         unsigned char uc_index;
@@ -255,7 +318,7 @@ private:
         return ucCRC8;
     }
     
-    // CRC8验证函数 - 用于接收数据（与 MCU 端算法完全相同）
+    // CRC8验证函数
     bool verifyCRC8(MCUDataFrame* frame)
     {
         uint8_t received_crc = frame->crc8;
@@ -412,21 +475,20 @@ private:
         std_msgs::UInt8 msg_uint8;
         std_msgs::UInt16 msg_uint16;
         std_msgs::Float32 msg_float;
-        
-        // 比赛进度
+   
         msg_uint8.data = frame.game_progress;
         pub_game_progress_.publish(msg_uint8);
-        // 自身血量
+        
         msg_uint16.data = frame.remain_hp;
         pub_remain_hp_.publish(msg_uint16);
-        // 剩余弹量
+        
         msg_uint16.data = frame.bullet_remain;
         pub_bullet_remain_.publish(msg_uint16);
-        // 占领状态
+        
         msg_uint8.data = frame.occupy_status;
         pub_occupy_status_.publish(msg_uint8);
         
-        // 发布机器人信息
+        
         msg_uint8.data = frame.robot_id;
         pub_robot_id_.publish(msg_uint8);
         
@@ -439,7 +501,7 @@ private:
         msg_uint16.data = frame.max_hp;
         pub_self_max_hp_.publish(msg_uint16);
         
-        // 发布其他机器人血量
+        
         msg_uint16.data = frame.red_1_hp;
         pub_red_1_hp_.publish(msg_uint16);
         
@@ -458,17 +520,16 @@ private:
         msg_uint16.data = frame.blue_7_hp;
         pub_blue_7_hp_.publish(msg_uint16);
         
-        // 发布死亡状态
+        
         msg_uint16.data = frame.red_dead;
         pub_red_dead_.publish(msg_uint16);
         
         msg_uint16.data = frame.blue_dead;
         pub_blue_dead_.publish(msg_uint16);
         
-        // 更新分数
         updateScore(frame);
         
-        // 发布分数
+        
         std_msgs::Int32 msg_score;
         msg_score.data = friendly_score_;
         pub_friendly_score_.publish(msg_score);
@@ -478,7 +539,7 @@ private:
         ROS_DEBUG("MCU frame parsed: game_progress=%u, remain_hp=%u, bullet=%u, friendly_score=%d, enemy_score=%d",
                  frame.game_progress, frame.remain_hp, frame.bullet_remain, friendly_score_, enemy_score_);
     }
-    
+    //分数计算部分
     void updateScore(const MCUDataFrame& frame)
     {
         ros::Time current_time = ros::Time::now();
@@ -492,6 +553,19 @@ private:
         // 检测占领状态变化 - 每秒扣1分
         if (frame.occupy_status != last_occupy_status_)
         {
+            // occupy_statu 2 到 3 的情况 - 己方扣分
+            if (last_occupy_status_ == 2 && frame.occupy_status == 3)
+            {
+                friendly_score_ = std::max(0, friendly_score_ - 1);
+                ROS_INFO("Occupy status changed from 2 to 3: friendly_score now %d", friendly_score_);
+            }
+            //  occupy_status  1 到 3  - 敌方扣分
+            else if (last_occupy_status_ == 1 && frame.occupy_status == 3)
+            {
+                enemy_score_ = std::max(0, enemy_score_ - 1);
+                ROS_INFO("Occupy status changed from 1 to 3: enemy_score now %d", enemy_score_);
+            }
+            
             last_occupy_status_ = frame.occupy_status;
             last_score_update_time_ = current_time;
         }

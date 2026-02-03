@@ -14,6 +14,9 @@
   <arg name="publish_on_change_only" default="true"/>
   <arg name="occupy_threshold" default="30"/>
   <arg name="aggressive_threshold" default="50"/>
+  <arg name="harm_threshold_on" default="50"/>
+  <arg name="harm_threshold_off" default="10"/>
+
   <!-- BehaviorTree XML -->
   <arg name="bt_xml" default="$(find decision_node)/config/strategy_tree.xml"/>
 
@@ -21,11 +24,15 @@
   <arg name="goal_topic" default="/clicked_point"/>
 
   <!-- Global goal parameters consumed by SetGoalFromParams/SetGoalFromParamsCyclic (nh, not pnh): goals/<ns>/{x,y} or goals/<ns>/point_<i>/{x,y} -->
-  <!-- Single point (for SUPPLY, WAITFOROP) -->
+  <!-- Single point (for SUPPLY, WAITFOROP, RADICAL) -->
   <arg name="supply_x" default="6.0"/>
   <arg name="supply_y" default="6.0"/>
   <arg name="waitforop_x" default="0.5"/>
   <arg name="waitforop_y" default="0.5"/>
+  <arg name="retreat_x" default="2.0"/>
+  <arg name="retreat_y" default="2.0"/>
+  <arg name="radical_x" default="5.0"/>
+  <arg name="radical_y" default="5.0"/>
   
   <!-- Cyclic points for OCCUPY (4 points in loop) -->
   <arg name="occupy_point_0_x" default="1.0"/>
@@ -73,6 +80,13 @@
   <param name="/goals/waitforop/point_3/x" value="$(arg waitforop_x)"/>
   <param name="/goals/waitforop/point_3/y" value="$(arg waitforop_y)"/>
 
+  <param name="/goals/retreat/x" value="$(arg retreat_x)"/>
+  <param name="/goals/retreat/y" value="$(arg retreat_y)"/>
+  
+  <!-- RADICAL point - for SetGoalFromParams direct access -->
+  <param name="/goals/radical/x" value="$(arg radical_x)"/>
+  <param name="/goals/radical/y" value="$(arg radical_y)"/>
+
   <node pkg="decision_node" type="strategy_node" name="strategy_node" output="screen" respawn="true">
     <!-- private params (pnh: ~) -->
     <param name="tick_hz" value="$(arg tick_hz)"/>
@@ -83,6 +97,8 @@
     <param name="publish_on_change_only" value="$(arg publish_on_change_only)"/>
     <param name="occupy_threshold" value="$(arg occupy_threshold)"/>
     <param name="aggressive_threshold" value="$(arg aggressive_threshold)"/>
+    <param name="harm_threshold_on" value="$(arg harm_threshold_on)"/>
+    <param name="harm_threshold_off" value="$(arg harm_threshold_off)"/>
     <param name="bt_xml" value="$(arg bt_xml)"/>
 
     <!-- Remap node-relative clicked_point -> desired global goal topic -->

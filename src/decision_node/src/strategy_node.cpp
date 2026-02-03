@@ -193,6 +193,48 @@ public:
     const int remain_hp = bb->get<int>("ref.remain_hp");
     const int bullet_remain = bb->get<int>("ref.bullet_remain");
     
+    // --- Damage Tracking Logic ---
+    ros::Time now = ros::Time::now();
+    
+    // Initialize last_hp_ on first run or if it was reset
+    if (last_hp_ == -1) {
+        last_hp_ = remain_hp;
+    }
+
+    // Detect damage (hp drop)
+    // Only accumulate damage if we are consistently tracking. 
+    // If massive jump up (respawn?), reset? For now just track drops.
+    if (remain_hp < last_hp_) {
+        int damage = last_hp_ - remain_hp;
+        damage_history_.push_back({now, damage});
+        // ROS_DEBUG("UpdateDerivedFlags: Detected damage %d. History size: %lu", damage, damage_history_.size());
+    } else if (remain_hp > last_hp_) {
+        // Healed or respawned
+        // Do we reset history on respawn? Maybe not necessary for small heals.
+        // If respawn (hp jump to max), maybe clear history? 
+        // Assuming standard healing, we just update last_hp_.
+    }
+    last_hp_ = remain_hp;
+
+    // Prune history older than 2 seconds
+    while (!damage_history_.empty()) {
+        double time_diff = (now - damage_history_.front().first).toSec();
+        if (time_diff > 2.0) {
+            damage_history_.pop_front();
+        } else {
+            break; 
+        }
+    }
+
+    // Sum damage in window
+    int total_damage_2s = 0;
+    for (const auto& entry : damage_history_) {
+        total_damage_2s += entry.second;
+    }
+    
+    bb->set("derived.damage_2s", total_damage_2s);
+    // ----------------------------
+
     // ROS_INFO("UpdateDerivedFlags: remain_hp=%d, bullet_remain=%d", remain_hp, bullet_remain);
 
     int danger_hp = 100;
@@ -209,15 +251,7 @@ public:
     bb->set("is_in_danger", is_in_danger);
     bb->set("bullet_sufficient", bullet_sufficient);
 
-    // V1: aggressive / central_occupiable 先作为占位，后续接裁判/受击统计
-    try
-    {
-      (void)bb->get<bool>("is_aggressive");
-    }
-    catch (...)
-    {
-      bb->set("is_aggressive", false);
-    }
+    // V1: central_occupiable 先作为占位，后续接裁判/受击统计
     try
     {
       (void)bb->get<bool>("central_occupiable");
@@ -229,6 +263,60 @@ public:
 
     return BT::NodeStatus::SUCCESS;
   }
+
+private:
+  int last_hp_ = -1;
+  std::deque<std::pair<ros::Time, int>> damage_history_;
+};
+
+class IntenseHarm : public BT::ConditionNode
+{
+public:
+  IntenseHarm(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::ConditionNode(name, config), is_active_(false)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<int>("threshold_activate", 100, "Damage threshold to activate"),
+      BT::InputPort<int>("threshold_deactivate", 50, "Damage threshold to deactivate"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    int damage_2s = 0;
+    try {
+        damage_2s = bb->get<int>("derived.damage_2s");
+    } catch (...) {
+        damage_2s = 0;
+    }
+
+    int t_on = 100;
+    int t_off = 50;
+    getInput("threshold_activate", t_on);
+    getInput("threshold_deactivate", t_off);
+
+    if (!is_active_) {
+        if (damage_2s > t_on) {
+            is_active_ = true;
+            ROS_INFO("IntenseHarm: Activated! Damage(2s)=%d >= %d", damage_2s, t_on);
+        }
+    } else {
+        if (damage_2s < t_off) {
+            is_active_ = false;
+            ROS_INFO("IntenseHarm: Deactivated! Damage(2s)=%d < %d", damage_2s, t_off);
+        }
+    }
+
+    return is_active_ ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+  }
+
+private:
+  bool is_active_;
 };
 
 // ---------------------------
@@ -257,6 +345,8 @@ public:
     
     // Return SUCCESS if actual state matches expected state
     const bool condition_met = (is_started == expect_started);
+    // ROS_INFO("IsGameStarted: game_progress=%d, is_started=%d, expect_started=%d, condition_met=%d", 
+    //          gp, is_started, expect_started, condition_met);
     return condition_met ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
@@ -329,23 +419,6 @@ public:
   }
 };
 
-class IsArrived : public BT::ConditionNode
-{
-public:
-  IsArrived(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::ConditionNode(name, config)
-  {
-  }
-
-  static BT::PortsList providedPorts() { return {}; }
-
-  BT::NodeStatus tick() override
-  {
-    const bool arrived = config().blackboard->get<bool>("nav.arrived");
-    return arrived ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
-  }
-};
-
 class AggressiveAdvantage : public BT::ConditionNode
 {
 public:
@@ -357,23 +430,23 @@ public:
   static BT::PortsList providedPorts()
   {
     return {
-      BT::InputPort<int>("threshold", 50, "friendly_score-enemy_score 阈值"),
+      BT::InputPort<int>("threshold", 50, "Score advantage threshold to be aggressive"),
     };
   }
 
   BT::NodeStatus tick() override
   {
+    const int friendly_score = config().blackboard->get<int>("ref.friendly_score");
+    const int enemy_score = config().blackboard->get<int>("ref.enemy_score");
+    
     int threshold = 50;
     (void)getInput("threshold", threshold);
 
-    const bool aggressive = config().blackboard->get<bool>("is_aggressive");
-    const int friendly = config().blackboard->get<int>("ref.friendly_score");
-    const int enemy = config().blackboard->get<int>("ref.enemy_score");
-
-    const bool ok = aggressive && (friendly - enemy >= threshold);
-    return ok ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    const int score_advantage = friendly_score - enemy_score;
+    return (score_advantage >= threshold) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
+
 
 
 class IsAction : public BT::ConditionNode
@@ -407,7 +480,10 @@ public:
       return BT::NodeStatus::FAILURE;
     }
 
-    return (toUpper(action) == toUpper(value)) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    bool result = (toUpper(action) == toUpper(value));
+    // ROS_INFO("IsAction: checking action=%s, expect=%s, result=%d", 
+    //          toUpper(action).c_str(), toUpper(value).c_str(), result);
+    return result ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
 
@@ -548,7 +624,7 @@ public:
 
     auto bb = config().blackboard;
     bb->set("goal.point", goal);
-    bb->set("goal.valid", true);  // ✅ 确保设置为 true
+    bb->set("goal.valid", true);  
     ROS_DEBUG("SetGoalFromParams: goal.valid set to TRUE");
     return BT::NodeStatus::SUCCESS;
   }
@@ -612,7 +688,7 @@ public:
     goal.point.z = 0.0;
 
     bb->set("goal.point", goal);
-    bb->set("goal.valid", true);  // ✅ 确保设置为 true
+    bb->set("goal.valid", true);  
     // ROS_INFO("SetGoalFromParamsCyclic: ns=%s, point_count=%d, cycle_index=%d, goal=(%f, %f), goal.valid set to TRUE", 
     //          ns.c_str(), point_count, cycle_index, x, y);
     
@@ -654,6 +730,7 @@ public:
     // Advance to next point and wrap around
     cycle_index = (cycle_index + 1) % point_count;
     bb->set("goal.cycle_index", cycle_index);
+    // ROS_INFO("AdvanceCycleIndex: Advanced to cycle_index=%d", cycle_index);
 
     return BT::NodeStatus::SUCCESS;
   }
@@ -691,7 +768,7 @@ public:
     }
 
     const auto goal = bb->get<geometry_msgs::PointStamped>("goal.point");
-    ROS_DEBUG("PublishGoalPoint: goal position=(%f, %f)", goal.point.x, goal.point.y);
+    // ROS_INFO("PublishGoalPoint: goal position=(%f, %f)", goal.point.x, goal.point.y);
 
     if (*publish_on_change_only_)
     {
@@ -711,7 +788,7 @@ public:
 
       if (have_last && goal.point.x == last_x && goal.point.y == last_y)
       {
-        ROS_DEBUG("PublishGoalPoint: Position unchanged, skipping publish");
+        // ROS_INFO("PublishGoalPoint: Position unchanged, skipping publish");
         return BT::NodeStatus::SUCCESS;
       }
       bb->set("goal.last_x", goal.point.x);
@@ -836,8 +913,8 @@ int main(int argc, char** argv)
   factory.registerNodeType<IsSentryDead>("IsSentryDead");
   factory.registerNodeType<IsSentryAlive>("IsSentryAlive");
   factory.registerNodeType<IsSentryInDanger>("IsSentryInDanger");
+  factory.registerNodeType<IntenseHarm>("IntenseHarm");
   factory.registerNodeType<NotBulletSufficient>("NotBulletSufficient");
-  factory.registerNodeType<IsArrived>("IsArrived");
   factory.registerNodeType<AggressiveAdvantage>("AggressiveAdvantage");
   factory.registerNodeType<IsAction>("IsAction");
 
@@ -880,6 +957,8 @@ int main(int argc, char** argv)
     int fixed_supply = 50;
     int occupy_threshold = 30;
     int aggressive_threshold = 50;
+    int harm_threshold_on = 50;
+    int harm_threshold_off = 10;
   } params;
 
 
@@ -889,6 +968,8 @@ int main(int argc, char** argv)
   pnh.param("fixed_supply", params.fixed_supply, params.fixed_supply);
   pnh.param("occupy_threshold", params.occupy_threshold, params.occupy_threshold);
   pnh.param("aggressive_threshold", params.aggressive_threshold, params.aggressive_threshold);
+  pnh.param("harm_threshold_on", params.harm_threshold_on, params.harm_threshold_on);
+  pnh.param("harm_threshold_off", params.harm_threshold_off, params.harm_threshold_off);
 
   blackboard->set("danger_hp", params.danger_hp);
   blackboard->set("sufficient_bullet", params.sufficient_bullet);
@@ -896,6 +977,8 @@ int main(int argc, char** argv)
   blackboard->set("fixed_supply", params.fixed_supply);
   blackboard->set("occupy_threshold", params.occupy_threshold);
   blackboard->set("aggressive_threshold", params.aggressive_threshold);
+  blackboard->set("harm_threshold_on", params.harm_threshold_on);
+  blackboard->set("harm_threshold_off", params.harm_threshold_off);
 
   // 日志输出参数值
   ROS_INFO("Decision Parameters loaded:");
@@ -903,6 +986,7 @@ int main(int argc, char** argv)
            params.danger_hp, params.sufficient_bullet, params.max_bullet);
   ROS_INFO("  fixed_supply=%d, occupy_threshold=%d, aggressive_threshold=%d",
            params.fixed_supply, params.occupy_threshold, params.aggressive_threshold);
+  ROS_INFO("  harm_on=%d, harm_off=%d", params.harm_threshold_on, params.harm_threshold_off);
 
   // Default action
   blackboard->set("action", std::string("INIT"));
@@ -911,7 +995,6 @@ int main(int argc, char** argv)
   blackboard->set("motion_flag", 3);  // 默认为3
   blackboard->set("motion.last_flag", 3);  // 初始化motion发送记录，防止冷启动后motion不变
   blackboard->set("attack_cooldown_end_time", ros::Time(0));
-  blackboard->set("is_aggressive", false);
   blackboard->set("central_occupiable", false);
   blackboard->set("is_enemy_occupied", false);  
   blackboard->set("central_accumulate_count", 0);
@@ -956,7 +1039,7 @@ int main(int argc, char** argv)
     bullet_num_msg.data = 0;  
     bullet_num_pub.publish(bullet_num_msg);
     
-    ROS_INFO("Initialization: Sent default values - motion=2, recover=0, bullet_up=0, bullet_num=0");
+    ROS_INFO("Initialization: Sent default values - motion=3, recover=0, bullet_up=0, bullet_num=0");
   }
 
   ros::Rate rate(std::max(1, tick_hz));
