@@ -26,20 +26,16 @@ catkin_make
 
 ## 一键测试（使用模拟器）
 ```bash
-# 准备虚拟串口（一次性）
-socat -d -d pty,raw,echo=0 pty,raw,echo=0
-# 输出两个虚拟端口号，如: /dev/pts/11 和 /dev/pts/12
-
 # 启动ROS（终端1）
 roscore
 
 # 启动通讯模块（终端2）
 source ~/decision_ws/devel/setup.bash
-rosrun decision_node mcu_communicator _serial_port:=/dev/pts/11
+rosrun decision_node mcu_communicator _serial_port:=/dev/ttyUSB0
 
 # 启动模拟器（终端3）
 source ~/decision_ws/devel/setup.bash
-rosrun decision_node mcu_simulator _serial_port:=/dev/pts/12
+rosrun decision_node mcu_simulator _serial_port:=/dev/ttyUSB1
 
 # 验证（终端4）
 source ~/decision_ws/devel/setup.bash

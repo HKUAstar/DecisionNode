@@ -8,6 +8,7 @@
 #include <serial/serial.h>
 #include <decision_node/mcu_comm.hpp>
 #include <thread>
+#include <cstdio>
 
 // CRC8 查表 - 与 MCU 端完全相同（初始值 0xFF）
 static constexpr uint8_t CRC8_TABLE[256] = {
@@ -62,17 +63,17 @@ public:
         pub_friendly_score_ = nh_.advertise<std_msgs::Int32>("/referee/friendly_score", 1);
         pub_enemy_score_ = nh_.advertise<std_msgs::Int32>("/referee/enemy_score", 1);
         
-        sub_motion_ = nh_.subscribe<std_msgs::UInt8>("motion", 1, 
+        sub_motion_ = nh_.subscribe<std_msgs::UInt8>("/motion", 1, 
                                                      &MCUCommunicator::motionCallback, this);
-        sub_recover_ = nh_.subscribe<std_msgs::UInt8>("recover", 1,
+        sub_recover_ = nh_.subscribe<std_msgs::UInt8>("/recover", 1,
                                                       &MCUCommunicator::recoverCallback, this);
-        sub_bullet_up_ = nh_.subscribe<std_msgs::UInt8>("bullet_up", 1,
+        sub_bullet_up_ = nh_.subscribe<std_msgs::UInt8>("/bullet_up", 1,
                                                         &MCUCommunicator::bulletUpCallback, this);
-        sub_bullet_num_ = nh_.subscribe<std_msgs::UInt8>("bullet_num", 1,
+        sub_bullet_num_ = nh_.subscribe<std_msgs::UInt8>("/bullet_num", 1,
                                                          &MCUCommunicator::bulletNumCallback, this);
-        sub_navigation_ = nh_.subscribe<geometry_msgs::Vector3>("navigation", 1,
+        sub_navigation_ = nh_.subscribe<geometry_msgs::Vector3>("/navigation", 1,
                                                                &MCUCommunicator::navigationCallback, this);
-        sub_nav_received_ = nh_.subscribe<std_msgs::UInt8>("nav_received", 1,
+        sub_nav_received_ = nh_.subscribe<std_msgs::UInt8>("/nav_received", 1,
                                                           &MCUCommunicator::navReceivedCallback, this);
         sub_dstar_status_ = nh_.subscribe<std_msgs::Bool>("/dstar_status", 1,
                                                          &MCUCommunicator::dstarStatusCallback, this);
@@ -93,11 +94,14 @@ public:
             else
             {
                 ROS_ERROR("Failed to open serial port: %s", serial_port_.c_str());
+                ROS_ERROR("Debugging steps:");
+                ROS_ERROR("   1. Check device exists: ls -la %s", serial_port_.c_str());
+                ROS_ERROR("   2. Check permissions: stat %s", serial_port_.c_str());
             }
         }
         catch (const serial::SerialException& e)
         {
-            ROS_ERROR("Serial exception: %s", e.what());
+            ROS_ERROR("Serial exception during port setup: %s", e.what());
         }
         
         recv_thread_ = std::thread(&MCUCommunicator::receiveThread, this);
@@ -187,6 +191,7 @@ private:
     // Motion回调函数 
     void motionCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
+        // ROS_INFO("motionCallback triggered: motion_mode=%u", msg->data);
         sendMotionCommand(msg->data);
     }
 
@@ -221,14 +226,14 @@ private:
     void navReceivedCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_nav_received_ = msg->data;
-        ROS_DEBUG("Nav received updated: received=%u", current_nav_received_);
+        // ROS_DEBUG("Nav received updated: received=%u", current_nav_received_);
     }
     
     // D* Status
     void dstarStatusCallback(const std_msgs::Bool::ConstPtr& msg)
     {
         current_nav_arrived_ = msg->data ? 1 : 0;
-        ROS_DEBUG("D* status updated: arrived=%u", current_nav_arrived_);
+        // ROS_DEBUG("D* status updated: arrived=%u", current_nav_arrived_);
     }
     
     // 发送命令到下位机
@@ -250,20 +255,33 @@ private:
         
         try
         {
-            if (serial_.isOpen())
+            if (!serial_.isOpen())
             {
-                serial_.write((uint8_t*)&frame, sizeof(frame));
-                ROS_DEBUG("Motion command sent: motion_mode=%u, hp_up=%u, bullet_up=%u, bullet_num=%u (frame size=%zu)", 
-                         motion_mode, current_hp_up_, current_bullet_up_, current_bullet_num_, sizeof(frame));
+                ROS_ERROR("Serial port is CLOSED! Port: %s. Cannot send motion command.", 
+                         serial_port_.c_str());
+                return;
+            }
+            
+            int written = serial_.write((uint8_t*)&frame, sizeof(frame));
+            
+            // 验证写入是否成功
+            if (written == (int)sizeof(frame))
+            {
+                // ROS_INFO("Motion command sent: motion_mode=%u, hp_up=%u, bullet_up=%u, bullet_num=%u", 
+                //          motion_mode, current_hp_up_, current_bullet_up_, current_bullet_num_);
+            }
+            else if (written > 0)
+            {
+                ROS_WARN("Partial write: expected %zu bytes, but only wrote %d bytes", sizeof(frame), written);
             }
             else
             {
-                ROS_WARN("Serial port is not open, cannot send motion command");
+                ROS_ERROR("Write failed: write returned %d", written);
             }
         }
         catch (const serial::SerialException& e)
         {
-            ROS_ERROR("Failed to send motion command: %s", e.what());
+            ROS_ERROR("Serial exception during write: %s", e.what());
         }
     }
     
@@ -289,20 +307,30 @@ private:
         
         try
         {
-            if (serial_.isOpen())
+            if (!serial_.isOpen())
             {
-                serial_.write((uint8_t*)&frame, sizeof(frame));
-                ROS_DEBUG("Navigation command sent: vx=%.4f, vy=%.4f, z_angle=%.4f, received=%u, arrived=%u (frame size=%zu)", 
-                         vx, vy, z_angle, current_nav_received_, current_nav_arrived_, sizeof(frame));
+                ROS_ERROR("Serial port is CLOSED! Cannot send navigation command.");
+                return;
+            }
+            
+            int written = serial_.write((uint8_t*)&frame, sizeof(frame));
+            
+            if (written == (int)sizeof(frame))
+            {
+                // ROS_INFO("Navigation command sent: vx=%.4f, vy=%.4f, z_angle=%.4f", vx, vy, z_angle);
+            }
+            else if (written > 0)
+            {
+                ROS_WARN("Partial write: expected %zu bytes, but only wrote %d bytes", sizeof(frame), written);
             }
             else
             {
-                ROS_WARN("Serial port is not open, cannot send navigation command");
+                ROS_ERROR("Write failed: write returned %d", written);
             }
         }
         catch (const serial::SerialException& e)
         {
-            ROS_ERROR("Failed to send navigation command: %s", e.what());
+            ROS_ERROR("Serial exception during navigation write: %s", e.what());
         }
     }
     
@@ -408,9 +436,8 @@ private:
                 }
                 else
                 {
-                    ROS_DEBUG("Invalid frame end marker: 0x%02X (expected 0xFE at position %u). "
-                             "Attempting re-synchronization...", 
-                            frame_buffer_[MCU_FRAME_SIZE - 1], MCU_FRAME_SIZE - 1);
+                    // ROS_DEBUG("Invalid frame end marker: 0x%02X (expected 0xFE at position %u).", 
+                    //          frame_buffer_[MCU_FRAME_SIZE - 1], MCU_FRAME_SIZE - 1);
                     
                     // 尝试重新同步：寻找缓冲区中的下一个帧头
                     bool found_resync = false;
@@ -418,7 +445,7 @@ private:
                     {
                         if (frame_buffer_[i] == MCU_FRAME_SOF)
                         {
-                            ROS_DEBUG("Found potential frame resync at offset %zu", i);
+                            // ROS_DEBUG("Found potential frame resync at offset %zu", i);
                             // 将缓冲区数据移动以对齐新的帧头
                             memmove(frame_buffer_, frame_buffer_ + i, MCU_FRAME_SIZE - i);
                             frame_buffer_index_ = MCU_FRAME_SIZE - i;
@@ -465,8 +492,8 @@ private:
             return;
         }
         
-        ROS_DEBUG("Valid frame received: robot_id=%u, game_progress=%u, crc8=0x%02X",
-                 frame.robot_id, frame.game_progress, frame.crc8);
+        // ROS_DEBUG("Valid frame received: robot_id=%u, game_progress=%u, crc8=0x%02X",
+        //          frame.robot_id, frame.game_progress, frame.crc8);
         
         // 更新机器人颜色（0=red, 1=blue）
         robot_color_ = frame.robot_color;

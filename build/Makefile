@@ -718,19 +718,6 @@ mcu_communicator/fast:
 .PHONY : mcu_communicator/fast
 
 #=============================================================================
-# Target rules for targets named mcu_simulator
-
-# Build rule for target.
-mcu_simulator: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mcu_simulator
-.PHONY : mcu_simulator
-
-# fast build rule for target.
-mcu_simulator/fast:
-	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_simulator.dir/build.make decision_node/CMakeFiles/mcu_simulator.dir/build
-.PHONY : mcu_simulator/fast
-
-#=============================================================================
 # Target rules for targets named command_test
 
 # Build rule for target.
@@ -798,7 +785,6 @@ help:
 	@echo "... gtest"
 	@echo "... gtest_main"
 	@echo "... mcu_communicator"
-	@echo "... mcu_simulator"
 	@echo "... strategy_node"
 .PHONY : help
 

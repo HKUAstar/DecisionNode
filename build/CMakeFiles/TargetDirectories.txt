@@ -68,7 +68,6 @@
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/strategy_node.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/continuous_forwarder.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/mcu_communicator.dir
-/mnt/d/decision_ws/build/decision_node/CMakeFiles/mcu_simulator.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/command_test.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/test.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/edit_cache.dir

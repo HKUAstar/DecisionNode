@@ -37,12 +37,6 @@
 },
 {
   "directory": "/mnt/d/decision_ws/build/decision_node",
-  "command": "/usr/bin/c++ -DROSCONSOLE_BACKEND_LOG4CXX -DROS_BUILD_SHARED_LIBS=1 -DROS_PACKAGE_NAME=\\\"decision_node\\\" -I/mnt/d/decision_ws/src/decision_node/include -I/opt/ros/noetic/include -I/opt/ros/noetic/share/xmlrpcpp/cmake/../../../include/xmlrpcpp  -O3 -Wall -std=gnu++14 -o CMakeFiles/mcu_simulator.dir/src/mcu_simulator.cpp.o -c /mnt/d/decision_ws/src/decision_node/src/mcu_simulator.cpp",
-  "file": "/mnt/d/decision_ws/src/decision_node/src/mcu_simulator.cpp",
-  "output": "decision_node/CMakeFiles/mcu_simulator.dir/src/mcu_simulator.cpp.o"
-},
-{
-  "directory": "/mnt/d/decision_ws/build/decision_node",
   "command": "/usr/bin/c++ -DROSCONSOLE_BACKEND_LOG4CXX -DROS_BUILD_SHARED_LIBS=1 -DROS_PACKAGE_NAME=\\\"decision_node\\\" -I/mnt/d/decision_ws/src/decision_node/include -I/opt/ros/noetic/include -I/opt/ros/noetic/share/xmlrpcpp/cmake/../../../include/xmlrpcpp  -O3 -Wall -std=gnu++14 -o CMakeFiles/command_test.dir/src/command_test.cpp.o -c /mnt/d/decision_ws/src/decision_node/src/command_test.cpp",
   "file": "/mnt/d/decision_ws/src/decision_node/src/command_test.cpp",
   "output": "decision_node/CMakeFiles/command_test.dir/src/command_test.cpp.o"

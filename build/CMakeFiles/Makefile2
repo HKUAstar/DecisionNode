@@ -89,7 +89,6 @@ clean: decision_node/clean
 decision_node/all: decision_node/CMakeFiles/strategy_node.dir/all
 decision_node/all: decision_node/CMakeFiles/continuous_forwarder.dir/all
 decision_node/all: decision_node/CMakeFiles/mcu_communicator.dir/all
-decision_node/all: decision_node/CMakeFiles/mcu_simulator.dir/all
 decision_node/all: decision_node/CMakeFiles/command_test.dir/all
 .PHONY : decision_node/all
 
@@ -131,7 +130,6 @@ decision_node/clean: decision_node/CMakeFiles/actionlib_msgs_generate_messages_p
 decision_node/clean: decision_node/CMakeFiles/strategy_node.dir/clean
 decision_node/clean: decision_node/CMakeFiles/continuous_forwarder.dir/clean
 decision_node/clean: decision_node/CMakeFiles/mcu_communicator.dir/clean
-decision_node/clean: decision_node/CMakeFiles/mcu_simulator.dir/clean
 decision_node/clean: decision_node/CMakeFiles/command_test.dir/clean
 .PHONY : decision_node/clean
 
@@ -1205,7 +1203,7 @@ decision_node/CMakeFiles/actionlib_msgs_generate_messages_py.dir/clean:
 decision_node/CMakeFiles/strategy_node.dir/all:
 	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/strategy_node.dir/build.make decision_node/CMakeFiles/strategy_node.dir/depend
 	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/strategy_node.dir/build.make decision_node/CMakeFiles/strategy_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num=17,18,19,20,21 "Built target strategy_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num=15,16,17,18,19 "Built target strategy_node"
 .PHONY : decision_node/CMakeFiles/strategy_node.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1275,32 +1273,6 @@ mcu_communicator: decision_node/CMakeFiles/mcu_communicator.dir/rule
 decision_node/CMakeFiles/mcu_communicator.dir/clean:
 	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_communicator.dir/build.make decision_node/CMakeFiles/mcu_communicator.dir/clean
 .PHONY : decision_node/CMakeFiles/mcu_communicator.dir/clean
-
-#=============================================================================
-# Target rules for target decision_node/CMakeFiles/mcu_simulator.dir
-
-# All Build rule for target.
-decision_node/CMakeFiles/mcu_simulator.dir/all:
-	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_simulator.dir/build.make decision_node/CMakeFiles/mcu_simulator.dir/depend
-	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_simulator.dir/build.make decision_node/CMakeFiles/mcu_simulator.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num=15,16 "Built target mcu_simulator"
-.PHONY : decision_node/CMakeFiles/mcu_simulator.dir/all
-
-# Build rule for subdir invocation for target.
-decision_node/CMakeFiles/mcu_simulator.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 2
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/mcu_simulator.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
-.PHONY : decision_node/CMakeFiles/mcu_simulator.dir/rule
-
-# Convenience name for target.
-mcu_simulator: decision_node/CMakeFiles/mcu_simulator.dir/rule
-.PHONY : mcu_simulator
-
-# clean rule for target.
-decision_node/CMakeFiles/mcu_simulator.dir/clean:
-	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_simulator.dir/build.make decision_node/CMakeFiles/mcu_simulator.dir/clean
-.PHONY : decision_node/CMakeFiles/mcu_simulator.dir/clean
 
 #=============================================================================
 # Target rules for target decision_node/CMakeFiles/command_test.dir

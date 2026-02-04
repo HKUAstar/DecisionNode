@@ -634,20 +634,6 @@ mcu_communicator/fast:
 .PHONY : mcu_communicator/fast
 
 # Convenience name for target.
-decision_node/CMakeFiles/mcu_simulator.dir/rule:
-	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/mcu_simulator.dir/rule
-.PHONY : decision_node/CMakeFiles/mcu_simulator.dir/rule
-
-# Convenience name for target.
-mcu_simulator: decision_node/CMakeFiles/mcu_simulator.dir/rule
-.PHONY : mcu_simulator
-
-# fast build rule for target.
-mcu_simulator/fast:
-	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_simulator.dir/build.make decision_node/CMakeFiles/mcu_simulator.dir/build
-.PHONY : mcu_simulator/fast
-
-# Convenience name for target.
 decision_node/CMakeFiles/command_test.dir/rule:
 	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/command_test.dir/rule
 .PHONY : decision_node/CMakeFiles/command_test.dir/rule
@@ -732,30 +718,6 @@ src/mcu_communicator.s: src/mcu_communicator.cpp.s
 src/mcu_communicator.cpp.s:
 	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_communicator.dir/build.make decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.s
 .PHONY : src/mcu_communicator.cpp.s
-
-src/mcu_simulator.o: src/mcu_simulator.cpp.o
-.PHONY : src/mcu_simulator.o
-
-# target to build an object file
-src/mcu_simulator.cpp.o:
-	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_simulator.dir/build.make decision_node/CMakeFiles/mcu_simulator.dir/src/mcu_simulator.cpp.o
-.PHONY : src/mcu_simulator.cpp.o
-
-src/mcu_simulator.i: src/mcu_simulator.cpp.i
-.PHONY : src/mcu_simulator.i
-
-# target to preprocess a source file
-src/mcu_simulator.cpp.i:
-	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_simulator.dir/build.make decision_node/CMakeFiles/mcu_simulator.dir/src/mcu_simulator.cpp.i
-.PHONY : src/mcu_simulator.cpp.i
-
-src/mcu_simulator.s: src/mcu_simulator.cpp.s
-.PHONY : src/mcu_simulator.s
-
-# target to generate assembly for a file
-src/mcu_simulator.cpp.s:
-	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/mcu_simulator.dir/build.make decision_node/CMakeFiles/mcu_simulator.dir/src/mcu_simulator.cpp.s
-.PHONY : src/mcu_simulator.cpp.s
 
 src/motion_change.o: src/motion_change.cpp.o
 .PHONY : src/motion_change.o
@@ -899,7 +861,6 @@ help:
 	@echo "... command_test"
 	@echo "... continuous_forwarder"
 	@echo "... mcu_communicator"
-	@echo "... mcu_simulator"
 	@echo "... strategy_node"
 	@echo "... src/central_occupiable.o"
 	@echo "... src/central_occupiable.i"
@@ -910,9 +871,6 @@ help:
 	@echo "... src/mcu_communicator.o"
 	@echo "... src/mcu_communicator.i"
 	@echo "... src/mcu_communicator.s"
-	@echo "... src/mcu_simulator.o"
-	@echo "... src/mcu_simulator.i"
-	@echo "... src/mcu_simulator.s"
 	@echo "... src/motion_change.o"
 	@echo "... src/motion_change.i"
 	@echo "... src/motion_change.s"

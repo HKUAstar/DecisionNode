@@ -63,6 +63,7 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o
  /opt/ros/noetic/include/rosconsole/macros_generated.h
  /opt/ros/noetic/include/serial/serial.h
  /opt/ros/noetic/include/serial/v8stdint.h
+ /opt/ros/noetic/include/std_msgs/Bool.h
  /opt/ros/noetic/include/std_msgs/Float32.h
  /opt/ros/noetic/include/std_msgs/Int32.h
  /opt/ros/noetic/include/std_msgs/UInt16.h
