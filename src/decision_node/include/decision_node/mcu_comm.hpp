@@ -46,8 +46,7 @@ struct MCUDataFrame
     uint8_t  eof;            // 0xFE
 } __attribute__((packed));
 
-// Note: The actual size is determined by the compiler with __attribute__((packed))
-// Do not hardcode the size as it may vary by platform
+static_assert(sizeof(MCUDataFrame) == 89, "MCUDataFrame must be exactly 89 bytes (must match STM32 nuc_tx_t)");
 
 // 上位机发送的Motion命令帧结构 (共7字节)
 struct MotionCommandFrame

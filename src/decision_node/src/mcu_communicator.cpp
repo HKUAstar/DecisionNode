@@ -103,6 +103,9 @@ public:
         {
             serial_.setPort(serial_port_);
             serial_.setBaudrate(serial_baudrate_);
+            serial_.setBytesize(serial::eightbits);      // 数据位：8
+            serial_.setParity(serial::parity_none);      // 校验位：None
+            serial_.setStopbits(serial::stopbits_one);   // 停止位：1
             serial::Timeout timeout = serial::Timeout::simpleTimeout(1000);
             serial_.setTimeout(timeout);
             serial_.open();
