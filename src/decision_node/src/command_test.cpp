@@ -3,6 +3,7 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/Bool.h>
 #include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/Twist.h>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -19,7 +20,7 @@ public:
         pub_recover_ = nh_.advertise<std_msgs::UInt8>("recover", 1);
         pub_bullet_up_ = nh_.advertise<std_msgs::UInt8>("bullet_up", 1);
         pub_bullet_num_ = nh_.advertise<std_msgs::UInt8>("bullet_num", 1);
-        pub_navigation_ = nh_.advertise<geometry_msgs::Vector3>("navigation", 10);
+        pub_cmd_vel_ = nh_.advertise<geometry_msgs::Twist>("cmd_vel", 10);
         pub_nav_received_ = nh_.advertise<std_msgs::UInt8>("nav_received", 1);
         pub_dstar_status_ = nh_.advertise<std_msgs::Bool>("/dstar_status", 1);
         
@@ -29,7 +30,7 @@ public:
         ROS_INFO("  - recover (std_msgs::UInt8)");
         ROS_INFO("  - bullet_up (std_msgs::UInt8)");
         ROS_INFO("  - bullet_num (std_msgs::UInt8)");
-        ROS_INFO("  - navigation (geometry_msgs::Vector3) - 50Hz continuous publishing");
+        ROS_INFO("  - cmd_vel (geometry_msgs::Twist) - variable frequency publishing");
         ROS_INFO("  - nav_received (std_msgs::UInt8)");
         ROS_INFO("  - /dstar_status (std_msgs::Bool)");
         
@@ -191,8 +192,8 @@ public:
                                 nav_enabled_ = true;  // 启用导航发送
                             }
                             
-                            ROS_INFO("🌍 Navigation set: vx=%.4f, vy=%.4f, z_angle=%.4f", vx, vy, z_angle);
-                            ROS_INFO("   Now publishing at %.0f Hz frequency...", (double)nav_frequency_);
+                            ROS_INFO("Navigation (cmd_vel) set: vx=%.4f, vy=%.4f, z_angle=%.4f", vx, vy, z_angle);
+                            ROS_INFO("   Publishing to /cmd_vel topic...");
                         }
                         else
                         {
@@ -280,7 +281,7 @@ private:
     ros::Publisher pub_recover_;
     ros::Publisher pub_bullet_up_;
     ros::Publisher pub_bullet_num_;
-    ros::Publisher pub_navigation_;
+    ros::Publisher pub_cmd_vel_;
     ros::Publisher pub_nav_received_;
     ros::Publisher pub_dstar_status_;
     
@@ -311,19 +312,19 @@ private:
                     z_angle = nav_z_angle_;
                 }
                 
-                // 发布导航消息
-                geometry_msgs::Vector3 msg;
-                msg.x = vx;
-                msg.y = vy;
-                msg.z = z_angle;
-                pub_navigation_.publish(msg);
+                // 发布导航消息为Twist
+                geometry_msgs::Twist msg;
+                msg.linear.x = vx;
+                msg.linear.y = vy;
+                msg.angular.z = z_angle;
+                pub_cmd_vel_.publish(msg);
                 
                 // 每 50 帧输出一次日志
                 static int publish_count = 0;
                 publish_count++;
                 if (publish_count % 50 == 0)
                 {
-                    ROS_DEBUG("✉️  Navigation published: vx=%.4f, vy=%.4f, z_angle=%.4f (count=%d)", 
+                    ROS_DEBUG("Twist published: vx=%.4f, vy=%.4f, z_angle=%.4f (count=%d)", 
                              vx, vy, z_angle, publish_count);
                 }
             }
@@ -340,7 +341,7 @@ private:
         std::cout << "  bullet_up  - Send bullet_up command (0-255)" << std::endl;
         std::cout << "  bullet_num - Send bullet_num command (0-255)" << std::endl;
         std::cout << "  navigation - Set & start navigation (vx, vy, z_angle as floats)" << std::endl;
-        std::cout << "              设置后以 50Hz 频率持续发送" << std::endl;
+        std::cout << "              Publish to /cmd_vel topic" << std::endl;
         std::cout << "  nav_received - Send nav_received command (0-255)" << std::endl;
         std::cout << "  dstar      - Send /dstar_status command (0=not arrived, 1=arrived)" << std::endl;
         std::cout << "  quit       - Exit program" << std::endl;

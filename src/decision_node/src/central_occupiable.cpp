@@ -59,10 +59,7 @@ public:
                 current_count = 0;
             }
         }
-        else
-        {
-            current_count = 0;
-        }
+        // 受攻击时不清零，保留积累值
         
         
         bb->set("central_accumulate_count", current_count);

@@ -3,6 +3,8 @@ file(REMOVE_RECURSE
   "/mnt/d/decision_ws/devel/lib/decision_node/strategy_node.pdb"
   "CMakeFiles/strategy_node.dir/src/central_occupiable.cpp.o"
   "CMakeFiles/strategy_node.dir/src/central_occupiable.cpp.o.d"
+  "CMakeFiles/strategy_node.dir/src/chase.cpp.o"
+  "CMakeFiles/strategy_node.dir/src/chase.cpp.o.d"
   "CMakeFiles/strategy_node.dir/src/motion_change.cpp.o"
   "CMakeFiles/strategy_node.dir/src/motion_change.cpp.o.d"
   "CMakeFiles/strategy_node.dir/src/recover_change.cpp.o"

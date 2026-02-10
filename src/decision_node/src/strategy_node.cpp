@@ -12,11 +12,13 @@
 */
 #include <behaviortree_cpp_v3/bt_factory.h>
 #include <behaviortree_cpp_v3/blackboard.h>
+#include <behaviortree_cpp_v3/decorators/inverter_node.h>
 #include <ros/ros.h>
 #include <std_msgs/UInt16.h>
 #include <ros/package.h>
 
 #include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/Point.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/UInt8.h>
@@ -30,6 +32,7 @@
 #include "decision_node/central_occupiable.hpp"
 #include "decision_node/motion_change.hpp"
 #include "decision_node/recover_change.hpp"
+#include "decision_node/chase.hpp"
 namespace
 {
 constexpr int kDefaultTickHz = 20;
@@ -68,6 +71,18 @@ struct RefereeState
   int blue_7_hp = 400;    // 蓝哨兵血量
   int red_dead = 0;       // 红方死亡位
   int blue_dead = 0;      // 蓝方死亡位
+  // Enemy positions for chase mode
+  float enemy_hero_x = 0.0f;
+  float enemy_hero_y = 0.0f;
+  float enemy_engineer_x = 0.0f;
+  float enemy_engineer_y = 0.0f;
+  float enemy_standard_3_x = 0.0f;
+  float enemy_standard_3_y = 0.0f;
+  float enemy_standard_4_x = 0.0f;
+  float enemy_standard_4_y = 0.0f;
+  float enemy_sentry_x = 0.0f;
+  float enemy_sentry_y = 0.0f;
+  uint8_t suggested_target = 0;  // Target suggestion from radar
 };
 
 struct NavigationState
@@ -82,7 +97,12 @@ class UpdateRefereeBB : public BT::SyncActionNode
 {
 public:
   UpdateRefereeBB(const std::string& name, const BT::NodeConfiguration& config, const RefereeState* state)
-    : BT::SyncActionNode(name, config), state_(state)
+    : BT::SyncActionNode(name, config), state_(state),
+      cached_enemy_hero_x_(0.0f), cached_enemy_hero_y_(0.0f),
+      cached_enemy_engineer_x_(0.0f), cached_enemy_engineer_y_(0.0f),
+      cached_enemy_standard_3_x_(0.0f), cached_enemy_standard_3_y_(0.0f),
+      cached_enemy_standard_4_x_(0.0f), cached_enemy_standard_4_y_(0.0f),
+      cached_enemy_sentry_x_(0.0f), cached_enemy_sentry_y_(0.0f)
   {
   }
 
@@ -109,11 +129,47 @@ public:
     bb->set("ref.blue_7_hp", state_->blue_7_hp);
     bb->set("ref.red_dead", state_->red_dead);
     bb->set("ref.blue_dead", state_->blue_dead);
+    
+    // Enemy positions - 检测-8888无效值，只在有效时更新缓存
+    if (state_->enemy_hero_x != -8888.0f) cached_enemy_hero_x_ = state_->enemy_hero_x;
+    if (state_->enemy_hero_y != -8888.0f) cached_enemy_hero_y_ = state_->enemy_hero_y;
+    if (state_->enemy_engineer_x != -8888.0f) cached_enemy_engineer_x_ = state_->enemy_engineer_x;
+    if (state_->enemy_engineer_y != -8888.0f) cached_enemy_engineer_y_ = state_->enemy_engineer_y;
+    if (state_->enemy_standard_3_x != -8888.0f) cached_enemy_standard_3_x_ = state_->enemy_standard_3_x;
+    if (state_->enemy_standard_3_y != -8888.0f) cached_enemy_standard_3_y_ = state_->enemy_standard_3_y;
+    if (state_->enemy_standard_4_x != -8888.0f) cached_enemy_standard_4_x_ = state_->enemy_standard_4_x;
+    if (state_->enemy_standard_4_y != -8888.0f) cached_enemy_standard_4_y_ = state_->enemy_standard_4_y;
+    if (state_->enemy_sentry_x != -8888.0f) cached_enemy_sentry_x_ = state_->enemy_sentry_x;
+    if (state_->enemy_sentry_y != -8888.0f) cached_enemy_sentry_y_ = state_->enemy_sentry_y;
+    
+    // 发布缓存中的敌方位置到blackboard
+    bb->set("ref.enemy_hero_x", cached_enemy_hero_x_);
+    bb->set("ref.enemy_hero_y", cached_enemy_hero_y_);
+    bb->set("ref.enemy_engineer_x", cached_enemy_engineer_x_);
+    bb->set("ref.enemy_engineer_y", cached_enemy_engineer_y_);
+    bb->set("ref.enemy_standard_3_x", cached_enemy_standard_3_x_);
+    bb->set("ref.enemy_standard_3_y", cached_enemy_standard_3_y_);
+    bb->set("ref.enemy_standard_4_x", cached_enemy_standard_4_x_);
+    bb->set("ref.enemy_standard_4_y", cached_enemy_standard_4_y_);
+    bb->set("ref.enemy_sentry_x", cached_enemy_sentry_x_);
+    bb->set("ref.enemy_sentry_y", cached_enemy_sentry_y_);
+    bb->set("ref.suggested_target", state_->suggested_target);
     return BT::NodeStatus::SUCCESS;
   }
 
 private:
   const RefereeState* state_;
+  // 缓存敌方位置 - 用于处理-8888无效值
+  float cached_enemy_hero_x_;
+  float cached_enemy_hero_y_;
+  float cached_enemy_engineer_x_;
+  float cached_enemy_engineer_y_;
+  float cached_enemy_standard_3_x_;
+  float cached_enemy_standard_3_y_;
+  float cached_enemy_standard_4_x_;
+  float cached_enemy_standard_4_y_;
+  float cached_enemy_sentry_x_;
+  float cached_enemy_sentry_y_;
 };
 
 class UpdateNavigationBB : public BT::SyncActionNode
@@ -875,6 +931,31 @@ int main(int argc, char** argv)
     ref.blue_dead = msg->data;
   });
   
+  // Enemy positions (for chase mode)
+  auto sub_enemy_hero = nh.subscribe<geometry_msgs::Point>("/enemy/hero_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
+    ref.enemy_hero_x = msg->x;
+    ref.enemy_hero_y = msg->y;
+  });
+  auto sub_enemy_engineer = nh.subscribe<geometry_msgs::Point>("/enemy/engineer_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
+    ref.enemy_engineer_x = msg->x;
+    ref.enemy_engineer_y = msg->y;
+  });
+  auto sub_enemy_standard_3 = nh.subscribe<geometry_msgs::Point>("/enemy/standard_3_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
+    ref.enemy_standard_3_x = msg->x;
+    ref.enemy_standard_3_y = msg->y;
+  });
+  auto sub_enemy_standard_4 = nh.subscribe<geometry_msgs::Point>("/enemy/standard_4_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
+    ref.enemy_standard_4_x = msg->x;
+    ref.enemy_standard_4_y = msg->y;
+  });
+  auto sub_enemy_sentry = nh.subscribe<geometry_msgs::Point>("/enemy/sentry_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
+    ref.enemy_sentry_x = msg->x;
+    ref.enemy_sentry_y = msg->y;
+  });
+  auto sub_suggested_target = nh.subscribe<std_msgs::UInt8>("/radar/suggested_target", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
+    ref.suggested_target = msg->data;
+  });
+  
   // Navigation arrived (复用现有语义)
   auto sub_arrived = nh.subscribe<std_msgs::Bool>("/dstar_status", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
     nav.arrived = msg->data;
@@ -893,6 +974,9 @@ int main(int argc, char** argv)
   pnh.param("publish_on_change_only", publish_on_change_only, publish_on_change_only);
 
   BT::BehaviorTreeFactory factory;
+
+  // Register built-in nodes
+  factory.registerNodeType<BT::Inverter>("Inverter");
 
   // Register custom nodes.
   factory.registerBuilder<UpdateRefereeBB>(
@@ -946,6 +1030,7 @@ int main(int argc, char** argv)
 
   RegisterRecoverChangeNodes(factory, &recover_pub, &bullet_up_pub);
   RegisterBulletSupplyNodes(factory, &bullet_num_pub);
+  RegisterChaseNodes(factory, &goal_pub, &publish_on_change_only);
 
   // ---------------------------
   // Decision Parameters (集中定义)
@@ -992,8 +1077,8 @@ int main(int argc, char** argv)
   blackboard->set("action", std::string("INIT"));
   blackboard->set("goal.valid", false);
   blackboard->set("goal.cycle_index", 0);
-  blackboard->set("motion_flag", 3);  // 默认为3
-  blackboard->set("motion.last_flag", 3);  // 初始化motion发送记录，防止冷启动后motion不变
+  blackboard->set("motion_flag", 0);  // 默认为0
+  blackboard->set("motion.last_flag", 0);  // 初始化motion发送记录，防止冷启动后motion不变
   blackboard->set("attack_cooldown_end_time", ros::Time(0));
   blackboard->set("central_occupiable", false);
   blackboard->set("is_enemy_occupied", false);  
@@ -1002,6 +1087,13 @@ int main(int argc, char** argv)
   blackboard->set("recover", 0);  // 回血标志，默认为0
   blackboard->set("bullet_up", 0);  // 补弹标志，默认为0
   blackboard->set("bullet_num", 0);  // 补弹数量，默认为0
+  
+  // Chase mode initialization
+  blackboard->set("chase.target_id", 0);
+  blackboard->set("chase.target_x", 0.0f);
+  blackboard->set("chase.target_y", 0.0f);
+  blackboard->set("chase.initialized", false);
+  
   std::string bt_xml_path;
   pnh.param<std::string>("bt_xml", bt_xml_path, std::string(""));
   if (bt_xml_path.empty())
@@ -1024,7 +1116,7 @@ int main(int argc, char** argv)
   // 初始化时发送一次默认数据到下位机
   {
     std_msgs::UInt8 motion_msg;
-    motion_msg.data = 3;   
+    motion_msg.data = 0;   
     motion_pub.publish(motion_msg);
     
     std_msgs::UInt8 recover_msg;
@@ -1039,7 +1131,7 @@ int main(int argc, char** argv)
     bullet_num_msg.data = 0;  
     bullet_num_pub.publish(bullet_num_msg);
     
-    ROS_INFO("Initialization: Sent default values - motion=3, recover=0, bullet_up=0, bullet_num=0");
+    ROS_INFO("Initialization: Sent default values - motion=0, recover=0, bullet_up=0, bullet_num=0");
   }
 
   ros::Rate rate(std::max(1, tick_hz));

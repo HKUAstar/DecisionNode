@@ -4,6 +4,8 @@
 decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o
  /mnt/d/decision_ws/src/decision_node/src/mcu_communicator.cpp
  /mnt/d/decision_ws/src/decision_node/include/decision_node/mcu_comm.hpp
+ /opt/ros/noetic/include/geometry_msgs/Point.h
+ /opt/ros/noetic/include/geometry_msgs/Twist.h
  /opt/ros/noetic/include/geometry_msgs/Vector3.h
  /opt/ros/noetic/include/ros/advertise_options.h
  /opt/ros/noetic/include/ros/advertise_service_options.h

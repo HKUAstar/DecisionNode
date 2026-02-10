@@ -1182,4 +1182,5 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: \
  /usr/include/c++/9/bits/fstream.tcc \
  /mnt/d/decision_ws/src/decision_node/include/decision_node/central_occupiable.hpp \
  /mnt/d/decision_ws/src/decision_node/include/decision_node/motion_change.hpp \
- /mnt/d/decision_ws/src/decision_node/include/decision_node/recover_change.hpp
+ /mnt/d/decision_ws/src/decision_node/include/decision_node/recover_change.hpp \
+ /mnt/d/decision_ws/src/decision_node/include/decision_node/chase.hpp

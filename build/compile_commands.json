@@ -25,6 +25,12 @@
 },
 {
   "directory": "/mnt/d/decision_ws/build/decision_node",
+  "command": "/usr/bin/c++ -DROSCONSOLE_BACKEND_LOG4CXX -DROS_BUILD_SHARED_LIBS=1 -DROS_PACKAGE_NAME=\\\"decision_node\\\" -I/mnt/d/decision_ws/src/decision_node/include -I/opt/ros/noetic/include -I/opt/ros/noetic/share/xmlrpcpp/cmake/../../../include/xmlrpcpp  -O3 -Wall -std=gnu++14 -o CMakeFiles/strategy_node.dir/src/chase.cpp.o -c /mnt/d/decision_ws/src/decision_node/src/chase.cpp",
+  "file": "/mnt/d/decision_ws/src/decision_node/src/chase.cpp",
+  "output": "decision_node/CMakeFiles/strategy_node.dir/src/chase.cpp.o"
+},
+{
+  "directory": "/mnt/d/decision_ws/build/decision_node",
   "command": "/usr/bin/c++ -DROSCONSOLE_BACKEND_LOG4CXX -DROS_BUILD_SHARED_LIBS=1 -DROS_PACKAGE_NAME=\\\"decision_node\\\" -I/mnt/d/decision_ws/src/decision_node/include -I/opt/ros/noetic/include -I/opt/ros/noetic/share/xmlrpcpp/cmake/../../../include/xmlrpcpp  -O3 -Wall -std=gnu++14 -o CMakeFiles/continuous_forwarder.dir/src/test.cpp.o -c /mnt/d/decision_ws/src/decision_node/src/test.cpp",
   "file": "/mnt/d/decision_ws/src/decision_node/src/test.cpp",
   "output": "decision_node/CMakeFiles/continuous_forwarder.dir/src/test.cpp.o"

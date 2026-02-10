@@ -5,6 +5,8 @@
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Bool.h>
 #include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Twist.h>
 #include <serial/serial.h>
 #include <decision_node/mcu_comm.hpp>
 #include <thread>
@@ -40,6 +42,11 @@ public:
         nh_.param("serial_port", serial_port_, std::string("/dev/ttyUSB0"));
         nh_.param("baudrate", serial_baudrate_, 115200);
         
+        // 读取导航发布频率 (默认50Hz)
+        double nav_frequency = 50.0;
+        nh_.param("nav_frequency", nav_frequency, 50.0);
+        double nav_period = 1.0 / nav_frequency;  // 转换为周期(秒)
+        
         pub_game_progress_ = nh_.advertise<std_msgs::UInt8>("/referee/game_progress", 1);
         pub_remain_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/remain_hp", 1);
         pub_bullet_remain_ = nh_.advertise<std_msgs::UInt16>("/referee/bullet_remain", 1);
@@ -63,6 +70,14 @@ public:
         pub_friendly_score_ = nh_.advertise<std_msgs::Int32>("/referee/friendly_score", 1);
         pub_enemy_score_ = nh_.advertise<std_msgs::Int32>("/referee/enemy_score", 1);
         
+        pub_enemy_hero_ = nh_.advertise<geometry_msgs::Point>("/enemy/hero_position", 1);
+        pub_enemy_engineer_ = nh_.advertise<geometry_msgs::Point>("/enemy/engineer_position", 1);
+        pub_enemy_standard_3_ = nh_.advertise<geometry_msgs::Point>("/enemy/standard_3_position", 1);
+        pub_enemy_standard_4_ = nh_.advertise<geometry_msgs::Point>("/enemy/standard_4_position", 1);
+        pub_enemy_sentry_ = nh_.advertise<geometry_msgs::Point>("/enemy/sentry_position", 1);
+        pub_suggested_target_ = nh_.advertise<std_msgs::UInt8>("/radar/suggested_target", 1);
+        // pub_radar_flags_ = nh_.advertise<std_msgs::UInt16>("/radar/radar_flags", 1);
+        
         sub_motion_ = nh_.subscribe<std_msgs::UInt8>("/motion", 1, 
                                                      &MCUCommunicator::motionCallback, this);
         sub_recover_ = nh_.subscribe<std_msgs::UInt8>("/recover", 1,
@@ -77,6 +92,12 @@ public:
                                                           &MCUCommunicator::navReceivedCallback, this);
         sub_dstar_status_ = nh_.subscribe<std_msgs::Bool>("/dstar_status", 1,
                                                          &MCUCommunicator::dstarStatusCallback, this);
+        sub_cmd_vel_ = nh_.subscribe<geometry_msgs::Twist>("/cmd_vel", 1,
+                                                          &MCUCommunicator::cmdVelCallback, this);
+        
+        // 创建导航命令定时器
+        navigation_timer_ = nh_.createTimer(ros::Duration(nav_period),
+                                            &MCUCommunicator::navigationTimerCallback, this);
         
         try
         {
@@ -149,6 +170,14 @@ private:
     ros::Publisher pub_friendly_score_;
     ros::Publisher pub_enemy_score_;
     
+    ros::Publisher pub_enemy_hero_;
+    ros::Publisher pub_enemy_engineer_;
+    ros::Publisher pub_enemy_standard_3_;
+    ros::Publisher pub_enemy_standard_4_;
+    ros::Publisher pub_enemy_sentry_;
+    ros::Publisher pub_suggested_target_;
+    ros::Publisher pub_radar_flags_;
+    
     // ROS 订阅者
     ros::Subscriber sub_motion_;
     ros::Subscriber sub_recover_;
@@ -157,6 +186,8 @@ private:
     ros::Subscriber sub_navigation_;
     ros::Subscriber sub_nav_received_;
     ros::Subscriber sub_dstar_status_;
+    ros::Subscriber sub_cmd_vel_;
+    ros::Timer navigation_timer_;
     
     // 发送缓冲
     uint8_t tx_buffer_[256];
@@ -178,6 +209,18 @@ private:
     float current_nav_z_angle_ = 0.0f;
     uint8_t current_nav_received_ = 0;
     uint8_t current_nav_arrived_ = 0;
+    
+    // 敌方位置缓存 - 用于处理-8888无效值
+    float cached_enemy_hero_x_ = 0.0f;
+    float cached_enemy_hero_y_ = 0.0f;
+    float cached_enemy_engineer_x_ = 0.0f;
+    float cached_enemy_engineer_y_ = 0.0f;
+    float cached_enemy_standard_3_x_ = 0.0f;
+    float cached_enemy_standard_3_y_ = 0.0f;
+    float cached_enemy_standard_4_x_ = 0.0f;
+    float cached_enemy_standard_4_y_ = 0.0f;
+    float cached_enemy_sentry_x_ = 0.0f;
+    float cached_enemy_sentry_y_ = 0.0f;
     
     // 分数追踪变量
     int32_t friendly_score_ = 200;  // 己方初始分数
@@ -234,6 +277,60 @@ private:
     {
         current_nav_arrived_ = msg->data ? 1 : 0;
         // ROS_DEBUG("D* status updated: arrived=%u", current_nav_arrived_);
+    }
+    
+    // Cmd Vel: 订阅速度命令，更新导航数据变量
+    void cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg)
+    {
+        // 提取线速度和角速度，只更新变量，由定时器固定频率发送
+        current_nav_vx_ = msg->linear.x;
+        current_nav_vy_ = msg->linear.y;
+        current_nav_z_angle_ = msg->angular.z;
+        
+        ROS_DEBUG("CmdVel received: vx=%.4f, vy=%.4f, z_angle=%.4f", 
+                  current_nav_vx_, current_nav_vy_, current_nav_z_angle_);
+    }
+    
+    // 导航命令定时器回调 - 固定频率发送NavigationFrame到下位机
+    void navigationTimerCallback(const ros::TimerEvent& event)
+    {
+        sendNavigationCommand(current_nav_vx_, current_nav_vy_, current_nav_z_angle_);
+    }
+    
+    // 验证敌方坐标有效性（-8888为无效值）
+    float validateEnemyCoordinate(float new_value, float cached_value)
+    {
+        // 如果新值为-8888（无效值），返回缓存的旧值
+        if (new_value == -8888.0f)
+        {
+            return cached_value;
+        }
+        // 否则返回新值并更新缓存
+        return new_value;
+    }
+    
+    // 更新敌方位置数据，处理-8888无效值
+    void updateEnemyPositions(const MCUDataFrame& frame)
+    {
+        // 验证并更新英雄位置
+        cached_enemy_hero_x_ = validateEnemyCoordinate(frame.enemy_hero_x, cached_enemy_hero_x_);
+        cached_enemy_hero_y_ = validateEnemyCoordinate(frame.enemy_hero_y, cached_enemy_hero_y_);
+        
+        // 验证并更新工程位置
+        cached_enemy_engineer_x_ = validateEnemyCoordinate(frame.enemy_engineer_x, cached_enemy_engineer_x_);
+        cached_enemy_engineer_y_ = validateEnemyCoordinate(frame.enemy_engineer_y, cached_enemy_engineer_y_);
+        
+        // 验证并更新步兵3位置
+        cached_enemy_standard_3_x_ = validateEnemyCoordinate(frame.enemy_standard_3_x, cached_enemy_standard_3_x_);
+        cached_enemy_standard_3_y_ = validateEnemyCoordinate(frame.enemy_standard_3_y, cached_enemy_standard_3_y_);
+        
+        // 验证并更新步兵4位置
+        cached_enemy_standard_4_x_ = validateEnemyCoordinate(frame.enemy_standard_4_x, cached_enemy_standard_4_x_);
+        cached_enemy_standard_4_y_ = validateEnemyCoordinate(frame.enemy_standard_4_y, cached_enemy_standard_4_y_);
+        
+        // 验证并更新哨兵位置
+        cached_enemy_sentry_x_ = validateEnemyCoordinate(frame.enemy_sentry_x, cached_enemy_sentry_x_);
+        cached_enemy_sentry_y_ = validateEnemyCoordinate(frame.enemy_sentry_y, cached_enemy_sentry_y_);
     }
     
     // 发送命令到下位机
@@ -495,6 +592,9 @@ private:
         // ROS_DEBUG("Valid frame received: robot_id=%u, game_progress=%u, crc8=0x%02X",
         //          frame.robot_id, frame.game_progress, frame.crc8);
         
+        // 更新敌方位置数据（处理-8888无效值）
+        updateEnemyPositions(frame);
+        
         // 更新机器人颜色（0=red, 1=blue）
         robot_color_ = frame.robot_color;
         
@@ -506,7 +606,7 @@ private:
         msg_uint8.data = frame.game_progress;
         pub_game_progress_.publish(msg_uint8);
         
-        msg_uint16.data = frame.remain_hp;
+        msg_uint16.data = frame.self_hp;
         pub_remain_hp_.publish(msg_uint16);
         
         msg_uint16.data = frame.bullet_remain;
@@ -522,10 +622,10 @@ private:
         msg_uint8.data = frame.robot_color;
         pub_robot_color_.publish(msg_uint8);
         
-        msg_uint16.data = frame.remain_hp;
+        msg_uint16.data = frame.self_hp;
         pub_self_hp_.publish(msg_uint16);
         
-        msg_uint16.data = frame.max_hp;
+        msg_uint16.data = frame.self_max_hp;
         pub_self_max_hp_.publish(msg_uint16);
         
         
@@ -547,6 +647,39 @@ private:
         msg_uint16.data = frame.blue_7_hp;
         pub_blue_7_hp_.publish(msg_uint16);
         
+        // 发布敌方位置数据
+        geometry_msgs::Point enemy_pos;
+        
+        enemy_pos.x = cached_enemy_hero_x_;
+        enemy_pos.y = cached_enemy_hero_y_;
+        enemy_pos.z = 0.0f;
+        pub_enemy_hero_.publish(enemy_pos);
+        
+        enemy_pos.x = cached_enemy_engineer_x_;
+        enemy_pos.y = cached_enemy_engineer_y_;
+        enemy_pos.z = 0.0f;
+        pub_enemy_engineer_.publish(enemy_pos);
+        
+        enemy_pos.x = cached_enemy_standard_3_x_;
+        enemy_pos.y = cached_enemy_standard_3_y_;
+        enemy_pos.z = 0.0f;
+        pub_enemy_standard_3_.publish(enemy_pos);
+        
+        enemy_pos.x = cached_enemy_standard_4_x_;
+        enemy_pos.y = cached_enemy_standard_4_y_;
+        enemy_pos.z = 0.0f;
+        pub_enemy_standard_4_.publish(enemy_pos);
+        
+        enemy_pos.x = cached_enemy_sentry_x_;
+        enemy_pos.y = cached_enemy_sentry_y_;
+        enemy_pos.z = 0.0f;
+        pub_enemy_sentry_.publish(enemy_pos);
+        
+        msg_uint8.data = frame.suggested_target;
+        pub_suggested_target_.publish(msg_uint8);
+        
+        msg_uint16.data = frame.radar_flags;
+        pub_radar_flags_.publish(msg_uint16);
         
         msg_uint16.data = frame.red_dead;
         pub_red_dead_.publish(msg_uint16);
@@ -563,8 +696,8 @@ private:
         msg_score.data = enemy_score_;
         pub_enemy_score_.publish(msg_score);
         
-        ROS_DEBUG("MCU frame parsed: game_progress=%u, remain_hp=%u, bullet=%u, friendly_score=%d, enemy_score=%d",
-                 frame.game_progress, frame.remain_hp, frame.bullet_remain, friendly_score_, enemy_score_);
+        ROS_DEBUG("MCU frame parsed: game_progress=%u, self_hp=%u, bullet=%u, friendly_score=%d, enemy_score=%d",
+                 frame.game_progress, frame.self_hp, frame.bullet_remain, friendly_score_, enemy_score_);
     }
     //分数计算部分
     void updateScore(const MCUDataFrame& frame)

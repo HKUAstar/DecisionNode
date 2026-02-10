@@ -1111,6 +1111,8 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: \
  /opt/ros/noetic/include/std_msgs/UInt8.h \
  /opt/ros/noetic/include/std_msgs/Bool.h \
  /opt/ros/noetic/include/geometry_msgs/Vector3.h \
+ /opt/ros/noetic/include/geometry_msgs/Point.h \
+ /opt/ros/noetic/include/geometry_msgs/Twist.h \
  /opt/ros/noetic/include/serial/serial.h \
  /opt/ros/noetic/include/serial/v8stdint.h \
  /mnt/d/decision_ws/src/decision_node/include/decision_node/mcu_comm.hpp \

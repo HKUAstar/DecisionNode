@@ -24,12 +24,12 @@ public:
   }
 };
 
-// CheckAttacked: Checks if the robot is currently under attack
+// CheckAttacked: Checks if the robot is currently under attack by detecting HP decrease
 class CheckAttacked : public BT::ConditionNode
 {
 public:
   CheckAttacked(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::ConditionNode(name, config)
+    : BT::ConditionNode(name, config), last_hp_(-1)
   {
   }
 
@@ -39,19 +39,42 @@ public:
   {
     auto bb = config().blackboard;
     
-    // Check if motion_flag is 1 (under attack state)
+    // Get current HP from blackboard
     try
     {
-      int motion_flag = bb->get<int>("motion_flag");
-      bool is_under_attack = (motion_flag == 1);
-      // ROS_DEBUG("CheckAttacked: motion_flag=%d, under_attack=%d", motion_flag, is_under_attack);
+      int current_hp = bb->get<int>("ref.remain_hp");
+      
+      // Initialize last_hp on first call
+      if (last_hp_ == -1) {
+        last_hp_ = current_hp;
+        return BT::NodeStatus::FAILURE;  // First frame, not under attack
+      }
+      
+      // Check if HP decreased (被攻击了)
+      bool is_under_attack = (current_hp < last_hp_);
+      
+      // Update last_hp for next frame
+      if (current_hp > last_hp_) {
+        // HP increased (healed or respawned), update last_hp
+        last_hp_ = current_hp;
+      } else if (current_hp < last_hp_) {
+        // HP decreased (taking damage)
+        last_hp_ = current_hp;
+      }
+      // If equal, don't update and remember the decreased state
+      
+      // ROS_DEBUG("CheckAttacked: current_hp=%d, last_hp=%d, is_under_attack=%d", current_hp, last_hp_, is_under_attack);
       return is_under_attack ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
     }
-    catch (...)
+    catch (const std::exception& e)
     {
+      ROS_WARN("CheckAttacked: Exception caught - %s", e.what());
       return BT::NodeStatus::FAILURE;
     }
   }
+
+private:
+  int last_hp_;  // Track HP from previous frame
 };
 
 class SetMotionFlag : public BT::SyncActionNode

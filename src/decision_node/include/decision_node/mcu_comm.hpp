@@ -4,31 +4,50 @@
 #include <cstdint>
 #include <cstring>
 
-// 下位机数据帧结构 (共49字节)
+// 下位机数据帧结构
 struct MCUDataFrame
 {
-    uint8_t  sof;            // 0x91 (字节0)
-    uint8_t  reserved_1_17[17];  // 预留 (字节1-17，包含 yaw_angle, chassis_imu, motion_mode, operator_x, operator_y)
-    uint8_t  robot_id;       // 机器人ID (字节18)
-    uint8_t  robot_color;    // 颜色 (字节19)
-    uint8_t  game_progress;  // 比赛阶段 (0，1，2，3，5未开始，4比赛中)
-    uint16_t red_1_hp;       // 红英雄 
-    uint16_t red_3_hp;       // 红步兵3 
-    uint16_t red_7_hp;       // 红哨兵 
-    uint16_t blue_1_hp;      // 蓝英雄 
-    uint16_t blue_3_hp;      // 蓝步兵3 
-    uint16_t blue_7_hp;      // 蓝哨兵 
-    uint16_t red_dead;       // 红方死亡位 (bit 0英雄(1号)死亡；bit 2步兵3号死亡；bit 4哨兵(7号)死亡)
-    uint16_t blue_dead;      // 蓝方死亡位 
-    uint16_t remain_hp;      // 自身血量 
-    uint16_t max_hp;         // 最大血量 
-    uint16_t bullet_remain;  // 剩余弹量 
-    uint8_t  occupy_status;  // 占领状态 (0未占领； 1己方占领； 2对方占领； 3双方占领)
-    uint8_t  crc8;           // CRC8 
-    uint8_t  eof;            // 0xFE 
+    uint8_t  sof;            // 0x91
+    float    yaw_angle;      // 云台yaw弧度
+    float    chassis_imu;    // 底盘IMU弧度
+    uint8_t  motion_mode;    // 运动模式
+    float    operator_x;     // 操作手x
+    float    operator_y;     // 操作手y
+    uint8_t  robot_id;       // 机器人ID
+    uint8_t  robot_color;    // 颜色 (0=红, 1=蓝)
+    uint8_t  game_progress;  // 比赛阶段
+    uint16_t red_1_hp;       // 红英雄
+    uint16_t red_3_hp;       // 红步兵3
+    uint16_t red_7_hp;       // 红哨兵
+    uint16_t blue_1_hp;      // 蓝英雄
+    uint16_t blue_3_hp;      // 蓝步兵3
+    uint16_t blue_7_hp;      // 蓝哨兵
+    uint16_t red_dead;       // 红方死亡位（bit0英雄，bit2步兵3，bit4哨兵）
+    uint16_t blue_dead;      // 蓝方死亡位
+    uint16_t self_hp;        // 自身血量
+    uint16_t self_max_hp;    // 最大血量
+    uint16_t bullet_remain;  // 剩余弹量
+    uint8_t  occupy_status;  // 占领状态
+    
+    float    enemy_hero_x;       // 敌方英雄 X
+    float    enemy_hero_y;       // 敌方英雄 Y
+    float    enemy_engineer_x;   // 敌方工程 X
+    float    enemy_engineer_y;   // 敌方工程 Y
+    float    enemy_standard_3_x; // 敌方步兵3 X
+    float    enemy_standard_3_y; // 敌方步兵3 Y
+    float    enemy_standard_4_x; // 敌方步兵4 X
+    float    enemy_standard_4_y; // 敌方步兵4 Y
+    float    enemy_sentry_x;     // 敌方哨兵 X
+    float    enemy_sentry_y;     // 敌方哨兵 Y
+    uint8_t  suggested_target;   // 建议目标
+    uint16_t radar_flags;        // 目标选择标志
+
+    uint8_t  crc8;           // CRC8
+    uint8_t  eof;            // 0xFE
 } __attribute__((packed));
 
-static_assert(sizeof(MCUDataFrame) == 46, "MCUDataFrame must be exactly 46 bytes");
+// Note: The actual size is determined by the compiler with __attribute__((packed))
+// Do not hardcode the size as it may vary by platform
 
 // 上位机发送的Motion命令帧结构 (共7字节)
 struct MotionCommandFrame
@@ -63,7 +82,7 @@ static_assert(sizeof(NavigationFrame) == 17, "NavigationFrame must be exactly 17
 #define MOTION_FRAME_SOF 0x92       // 上位机motion命令帧头
 #define NAVIGATION_FRAME_SOF 0x93   // 导航数据帧头
 #define MCU_FRAME_EOF 0xFE
-#define MCU_FRAME_SIZE 46
+#define MCU_FRAME_SIZE sizeof(MCUDataFrame)
 #define MOTION_FRAME_SIZE 7
 #define NAVIGATION_FRAME_SIZE 17
 

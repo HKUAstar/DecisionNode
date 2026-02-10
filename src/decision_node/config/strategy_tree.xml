@@ -18,7 +18,7 @@
         <Sequence name="ToPushWhenGameStart">
           <IsGameStarted expect_started="true" />
           <IsAction value="INIT" />
-          <SetAction action="OCCUPY" />
+          <SetAction action="INITPUSH" />
         </Sequence>
 
         <Sequence name="ToRespawnWhenDead">
@@ -37,6 +37,14 @@
           <SetAction action="SUPPLY" />
         </Sequence>
 
+        <Sequence name="MaintainSupply">
+          <IsAction value="SUPPLY" />
+          <Inverter>
+            <IsHealthFull />
+          </Inverter>
+          <SetAction action="SUPPLY" />
+        </Sequence>
+
         <Sequence name="MaintainOccupy">
           <IsAction value="OCCUPY" />
           <SetAction action="OCCUPY" />
@@ -48,9 +56,9 @@
           <SetAction action="OCCUPY" />
         </Sequence>
 
-        <Sequence name="MaintainPush">
-          <IsAction value="PUSH" />
-          <SetAction action="PUSH" />
+        <Sequence name="MaintainPushwhenStart">
+          <IsAction value="INITPUSH" />
+          <SetAction action="INITPUSH" />
         </Sequence>
 
         <Fallback name="ToPush">
@@ -69,25 +77,18 @@
             <ResetAccumulator />
           </Sequence>
           
-          <Fallback name="AggressiveOccupy">
-            <Sequence>
-              <Fallback>
-                <NotBulletSufficient />
-                <AggressiveAdvantage threshold="{aggressive_threshold}" />
-              </Fallback>
-              <SetAction action="PUSH"/>
-            </Sequence>
-          </Fallback>
+          <Sequence name="AggressiveOccupy">
+            <NotBulletSufficient />
+            <AggressiveAdvantage threshold="{aggressive_threshold}" />
+            <SetAction action="PUSH"/>  
+          </Sequence>
         </Fallback>
-
-        <!-- RADICAL Mode: Chase enemy when aggressive and bullet sufficient -->
     
         <Sequence name="ToRadicalWhenAggressiveAndBulletSufficient">
           <AggressiveAdvantage threshold="50" />
-          <Fallback>
+          <Inverter>
             <NotBulletSufficient />
-            <AlwaysFailure />
-          </Fallback>
+          </Inverter>
           <SetAction action="RADICAL" />
         </Sequence>
       
@@ -101,7 +102,7 @@
       <ReactiveFallback name="ExecuteAction">
         <Sequence>
           <IsAction value="INIT" />
-          <SetMotionFlag target_motion="3" />
+          <SetMotionFlag target_motion="0" />
           <PublishMotion />
           <SetBulletUp value="0" />
           <PublishBulletUp />
@@ -113,7 +114,7 @@
         <Sequence>
           <IsAction value="PUSH" />
           <!-- Navigate to first cycle point (moving state) -->
-          <SetMotionFlag target_motion="2" />
+          <SetMotionFlag target_motion="3" />
           <PublishMotion />
           <SetGoalFromParamsCyclic ns="occupy" point_count="4" />
           <PublishGoalPoint topic="clicked_point" />
@@ -136,9 +137,9 @@
           <Fallback>
             <Sequence>
               <CheckAttacked />
-              <SetMotionFlag target_motion="1" />
+              <SetMotionFlag target_motion="2" />
             </Sequence>
-            <SetMotionFlag target_motion="0" />
+            <SetMotionFlag target_motion="1" />
           </Fallback>
           <PublishMotion />
           <SetGoalFromParamsCyclic ns="occupy" point_count="4" />
@@ -147,7 +148,7 @@
 
         <Sequence>
           <IsAction value="SUPPLY" />
-          <SetMotionFlag target_motion="2" />
+          <SetMotionFlag target_motion="3" />
           <PublishMotion />
           <SetGoalFromParams ns="supply" />
           <PublishGoalPoint topic="clicked_point" />
@@ -189,25 +190,27 @@
           </Fallback>
         </Sequence>
 
-        <!-- RADICAL Mode: Chase enemy execution -->
+        
         <Sequence>
           <IsAction value="RADICAL" />
-          <SetGoalFromParams ns="radical" />
+          <InitChase />
+          <UpdateChaseTarget />
+          [TODO:接入视觉模块]
           <SetMotionFlag target_motion="1" />
           <PublishMotion />
-          <!--[TODO: Chase/Pursuit node to be implemented here] -->
+          <PublishChaseGoal />
         </Sequence>
       
 
         <Sequence>
           <IsAction value="RESPAWN" />
-          <SetMotionFlag target_motion="3" />
+          <SetMotionFlag target_motion="0" />
           <PublishMotion />
         </Sequence>
 
         <Sequence>
           <IsAction value="WAITFOROP" />
-          <SetMotionFlag target_motion="2" />
+          <SetMotionFlag target_motion="3" />
           <PublishMotion />
           <SetBulletUp value="0" />
           <PublishBulletUp />

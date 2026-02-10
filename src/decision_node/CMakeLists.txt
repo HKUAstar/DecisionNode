@@ -38,6 +38,7 @@ add_executable(strategy_node
     src/central_occupiable.cpp
     src/motion_change.cpp
     src/recover_change.cpp
+    src/chase.cpp
 )
 
 add_executable(continuous_forwarder src/test.cpp)
