@@ -274,7 +274,7 @@ public:
 
     try
     {
-      bb->set("chase.target_id", 0);
+      bb->set("chase.target_id", uint8_t(0));
       bb->set("chase.target_x", 0.0f);
       bb->set("chase.target_y", 0.0f);
       bb->set("chase.initialized", false);

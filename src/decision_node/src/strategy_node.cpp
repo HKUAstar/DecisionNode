@@ -401,8 +401,6 @@ public:
     
     // Return SUCCESS if actual state matches expected state
     const bool condition_met = (is_started == expect_started);
-    // ROS_INFO("IsGameStarted: game_progress=%d, is_started=%d, expect_started=%d, condition_met=%d", 
-    //          gp, is_started, expect_started, condition_met);
     return condition_met ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
@@ -975,9 +973,6 @@ int main(int argc, char** argv)
 
   BT::BehaviorTreeFactory factory;
 
-  // Register built-in nodes
-  factory.registerNodeType<BT::Inverter>("Inverter");
-
   // Register custom nodes.
   factory.registerBuilder<UpdateRefereeBB>(
     "UpdateRefereeBB", [&](const std::string& name, const BT::NodeConfiguration& config) {
@@ -1042,6 +1037,7 @@ int main(int argc, char** argv)
     int fixed_supply = 50;
     int occupy_threshold = 30;
     int aggressive_threshold = 50;
+    int attack_threshold = 5;
     int harm_threshold_on = 50;
     int harm_threshold_off = 10;
   } params;
@@ -1053,6 +1049,7 @@ int main(int argc, char** argv)
   pnh.param("fixed_supply", params.fixed_supply, params.fixed_supply);
   pnh.param("occupy_threshold", params.occupy_threshold, params.occupy_threshold);
   pnh.param("aggressive_threshold", params.aggressive_threshold, params.aggressive_threshold);
+  pnh.param("attack_threshold", params.attack_threshold, params.attack_threshold);
   pnh.param("harm_threshold_on", params.harm_threshold_on, params.harm_threshold_on);
   pnh.param("harm_threshold_off", params.harm_threshold_off, params.harm_threshold_off);
 
@@ -1062,6 +1059,7 @@ int main(int argc, char** argv)
   blackboard->set("fixed_supply", params.fixed_supply);
   blackboard->set("occupy_threshold", params.occupy_threshold);
   blackboard->set("aggressive_threshold", params.aggressive_threshold);
+  blackboard->set("attack_threshold", params.attack_threshold);
   blackboard->set("harm_threshold_on", params.harm_threshold_on);
   blackboard->set("harm_threshold_off", params.harm_threshold_off);
 
@@ -1071,7 +1069,8 @@ int main(int argc, char** argv)
            params.danger_hp, params.sufficient_bullet, params.max_bullet);
   ROS_INFO("  fixed_supply=%d, occupy_threshold=%d, aggressive_threshold=%d",
            params.fixed_supply, params.occupy_threshold, params.aggressive_threshold);
-  ROS_INFO("  harm_on=%d, harm_off=%d", params.harm_threshold_on, params.harm_threshold_off);
+  ROS_INFO("  attack_threshold=%d, harm_on=%d, harm_off=%d", 
+           params.attack_threshold, params.harm_threshold_on, params.harm_threshold_off);
 
   // Default action
   blackboard->set("action", std::string("INIT"));
@@ -1089,7 +1088,7 @@ int main(int argc, char** argv)
   blackboard->set("bullet_num", 0);  // 补弹数量，默认为0
   
   // Chase mode initialization
-  blackboard->set("chase.target_id", 0);
+  blackboard->set("chase.target_id", uint8_t(0));
   blackboard->set("chase.target_x", 0.0f);
   blackboard->set("chase.target_y", 0.0f);
   blackboard->set("chase.initialized", false);

@@ -24,7 +24,7 @@ public:
   }
 };
 
-// CheckAttacked: Checks if the robot is currently under attack by detecting HP decrease
+// CheckAttacked: Checks if the robot is currently under attack by detecting HP decrease above a threshold
 class CheckAttacked : public BT::ConditionNode
 {
 public:
@@ -33,11 +33,19 @@ public:
   {
   }
 
-  static BT::PortsList providedPorts() { return {}; }
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<int>("attack_threshold", 5, "Minimum damage required to trigger attack response"),
+    };
+  }
 
   BT::NodeStatus tick() override
   {
     auto bb = config().blackboard;
+    
+    int attack_threshold = 5;
+    (void)getInput("attack_threshold", attack_threshold);
     
     // Get current HP from blackboard
     try
@@ -50,8 +58,9 @@ public:
         return BT::NodeStatus::FAILURE;  // First frame, not under attack
       }
       
-      // Check if HP decreased (被攻击了)
-      bool is_under_attack = (current_hp < last_hp_);
+      // Check if HP decreased by at least the threshold (被攻击了)
+      int damage_taken = last_hp_ - current_hp;
+      bool is_under_attack = (damage_taken >= attack_threshold);
       
       // Update last_hp for next frame
       if (current_hp > last_hp_) {
@@ -63,7 +72,8 @@ public:
       }
       // If equal, don't update and remember the decreased state
       
-      // ROS_DEBUG("CheckAttacked: current_hp=%d, last_hp=%d, is_under_attack=%d", current_hp, last_hp_, is_under_attack);
+      // ROS_DEBUG("CheckAttacked: current_hp=%d, last_hp=%d, damage_taken=%d, threshold=%d, is_under_attack=%d", 
+      //           current_hp, last_hp_, damage_taken, attack_threshold, is_under_attack);
       return is_under_attack ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
     }
     catch (const std::exception& e)

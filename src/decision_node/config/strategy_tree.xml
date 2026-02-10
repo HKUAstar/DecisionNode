@@ -45,20 +45,13 @@
           <SetAction action="SUPPLY" />
         </Sequence>
 
-        <Sequence name="MaintainOccupy">
-          <IsAction value="OCCUPY" />
-          <SetAction action="OCCUPY" />
-        </Sequence>
-
         <Sequence name="SwitchPushToOccupy">
-          <IsAction value="PUSH" />
+          <Fallback>
+            <IsAction value="PUSH" />
+            <IsAction value="INITPUSH" />
+          </Fallback>
           <CheckArrived />
           <SetAction action="OCCUPY" />
-        </Sequence>
-
-        <Sequence name="MaintainPushwhenStart">
-          <IsAction value="INITPUSH" />
-          <SetAction action="INITPUSH" />
         </Sequence>
 
         <Fallback name="ToPush">
@@ -92,6 +85,15 @@
           <SetAction action="RADICAL" />
         </Sequence>
       
+        <Sequence name="MaintainPushwhenStart">
+          <IsAction value="INITPUSH" />
+          <SetAction action="INITPUSH" />
+        </Sequence>
+
+        <Sequence name="MaintainOccupy">
+          <IsAction value="OCCUPY" />
+          <SetAction action="OCCUPY" />
+        </Sequence>
 
         <!-- Default state -->
         <Sequence name="ToWaitforOP">
@@ -112,7 +114,10 @@
         </Sequence>
 
         <Sequence>
-          <IsAction value="PUSH" />
+          <Fallback>
+            <IsAction value="PUSH" />
+            <IsAction value="INITPUSH" />
+          </Fallback>
           <!-- Navigate to first cycle point (moving state) -->
           <SetMotionFlag target_motion="3" />
           <PublishMotion />
@@ -136,7 +141,7 @@
           </Fallback>
           <Fallback>
             <Sequence>
-              <CheckAttacked />
+              <CheckAttacked attack_threshold="{attack_threshold}" />
               <SetMotionFlag target_motion="2" />
             </Sequence>
             <SetMotionFlag target_motion="1" />
@@ -195,7 +200,7 @@
           <IsAction value="RADICAL" />
           <InitChase />
           <UpdateChaseTarget />
-          [TODO:接入视觉模块]
+          <!-- TODO: 接入视觉模块 -->
           <SetMotionFlag target_motion="1" />
           <PublishMotion />
           <PublishChaseGoal />
