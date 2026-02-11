@@ -148,7 +148,32 @@ public:
     }
 };
 
+class ResetCentralOccupiable : public BT::SyncActionNode
+{
+public:
+    ResetCentralOccupiable(const std::string& name, const BT::NodeConfiguration& config)
+        : BT::SyncActionNode(name, config)
+    {
+    }
 
+    static BT::PortsList providedPorts()
+    {
+        return {};
+    }
+
+    BT::NodeStatus tick() override
+    {
+        auto bb = config().blackboard;
+
+        // Reset central occupiable-related values
+        bb->set("central_accumulate_count", 0);
+        bb->set("central_occupiable_triggered", false);
+
+        ROS_INFO_STREAM("[ResetCentralOccupiable] Reset central occupiable values.");
+
+        return BT::NodeStatus::SUCCESS;
+    }
+};
 
 void RegisterOccupationNodes(BT::BehaviorTreeFactory& factory)
 {
@@ -169,5 +194,10 @@ void RegisterTriggerOnThreshold(BT::BehaviorTreeFactory& factory)
 void RegisterResetAccumulator(BT::BehaviorTreeFactory& factory)
 {
     factory.registerNodeType<ResetAccumulator>("ResetAccumulator");
+}
+
+void RegisterResetCentralOccupiable(BT::BehaviorTreeFactory& factory)
+{
+    factory.registerNodeType<ResetCentralOccupiable>("ResetCentralOccupiable");
 }
 

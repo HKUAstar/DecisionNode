@@ -4,6 +4,7 @@
     <arg name="baudrate" default="115200" doc="Serial port baudrate"/>
     <arg name="nav_frequency" default="50" doc="NavigationFrame publishing frequency (Hz)"/>
     <arg name="output" default="screen" doc="Launch output target"/>
+    <arg name="bt_xml" default="$(find decision_node)/config/strategy_tree.xml" doc="Path to behavior tree XML file"/>
     
     <!-- MCU通讯节点 - 接收下位机数据 -->
     <node name="mcu_communicator" pkg="decision_node" type="mcu_communicator" output="$(arg output)">
@@ -16,6 +17,7 @@
     <!-- 决策节点 - 消费MCU发布的Topics -->
     <node name="strategy_node" pkg="decision_node" type="strategy_node" output="$(arg output)">
         <!-- 决策相关参数可在这里配置 -->
+        <param name="bt_xml" value="$(arg bt_xml)" />
     </node>
     
 </launch>

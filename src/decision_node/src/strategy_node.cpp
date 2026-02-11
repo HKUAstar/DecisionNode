@@ -492,11 +492,18 @@ public:
   {
     const int friendly_score = config().blackboard->get<int>("ref.friendly_score");
     const int enemy_score = config().blackboard->get<int>("ref.enemy_score");
-    
+
     int threshold = 50;
     (void)getInput("threshold", threshold);
 
     const int score_advantage = friendly_score - enemy_score;
+
+    // Add logging for debugging
+    // ROS_INFO_STREAM("[AggressiveAdvantage] Friendly Score: " << friendly_score);
+    // ROS_INFO_STREAM("[AggressiveAdvantage] Enemy Score: " << enemy_score);
+    // ROS_INFO_STREAM("[AggressiveAdvantage] Score Advantage: " << score_advantage);
+    // ROS_INFO_STREAM("[AggressiveAdvantage] Threshold: " << threshold);
+
     return (score_advantage >= threshold) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
@@ -1021,6 +1028,7 @@ int main(int argc, char** argv)
     });
 
   RegisterAccumulateCentralOccupiable(factory);
+  RegisterResetCentralOccupiable(factory);
   RegisterOccupationNodes(factory);
 
   RegisterRecoverChangeNodes(factory, &recover_pub, &bullet_up_pub);
@@ -1097,7 +1105,8 @@ int main(int argc, char** argv)
   pnh.param<std::string>("bt_xml", bt_xml_path, std::string(""));
   if (bt_xml_path.empty())
   {
-    bt_xml_path = ros::package::getPath("bot_sim") + "/config/strategy_tree.xml";
+    //修改路径
+    bt_xml_path = ros::package::getPath("decision_node") + "/config/strategy_tree.xml";
   }
 
   std::ifstream xml_file(bt_xml_path);

@@ -12,6 +12,7 @@
       <ReactiveFallback name="DecideAction">
         <Sequence name="ToInitWhenNotInGame">
           <IsGameStarted expect_started="false" />
+          <ResetCentralOccupiable />
           <SetAction action="INIT" />
         </Sequence>
 

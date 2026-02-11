@@ -12,7 +12,7 @@
   <arg name="max_bullet" default="150"/>
   <arg name="fixed_supply" default="50"/>
   <arg name="publish_on_change_only" default="true"/>
-  <arg name="occupy_threshold" default="30"/>
+  <arg name="occupy_threshold" default="10000"/>
   <arg name="aggressive_threshold" default="50"/>
   <arg name="attack_threshold" default="5"/>
   <arg name="harm_threshold_on" default="50"/>
@@ -30,8 +30,8 @@
   <arg name="supply_y" default="6.0"/>
   <arg name="waitforop_x" default="0.5"/>
   <arg name="waitforop_y" default="0.5"/>
-  <arg name="retreat_x" default="2.0"/>
-  <arg name="retreat_y" default="2.0"/>
+  <arg name="retreat_x" default="9.0"/>
+  <arg name="retreat_y" default="9.0"/>
   <arg name="radical_x" default="5.0"/>
   <arg name="radical_y" default="5.0"/>
   

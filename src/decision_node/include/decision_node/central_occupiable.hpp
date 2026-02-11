@@ -6,4 +6,5 @@ void RegisterOccupationNodes(BT::BehaviorTreeFactory& factory);
 void RegisterAccumulateCentralOccupiable(BT::BehaviorTreeFactory& factory);
 void RegisterTriggerOnThreshold(BT::BehaviorTreeFactory& factory);
 void RegisterResetAccumulator(BT::BehaviorTreeFactory& factory);
+void RegisterResetCentralOccupiable(BT::BehaviorTreeFactory& factory);
 void RegisterCheckEnemyOccupied(BT::BehaviorTreeFactory& factory);

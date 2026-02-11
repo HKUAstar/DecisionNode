@@ -705,6 +705,20 @@ private:
     //分数计算部分
     void updateScore(const MCUDataFrame& frame)
     {
+        // 只有在游戏开始(game_progress == 4)时才计算分数
+        // 否则分数保持在200不变
+        if (frame.game_progress != 4)
+        {
+            friendly_score_ = 200;
+            enemy_score_ = 200;
+            // 重置时间戳，为下一次游戏开始做准备
+            last_score_update_time_ = ros::Time(0);
+            last_occupy_status_ = 0;
+            last_red_dead_ = 0;
+            last_blue_dead_ = 0;
+            return;
+        }
+        
         ros::Time current_time = ros::Time::now();
         
         // 初始化时间戳
