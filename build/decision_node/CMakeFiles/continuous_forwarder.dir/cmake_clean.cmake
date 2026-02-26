@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder"
-  "/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder.pdb"
+  "/home/sentry_train_test/AstarTraining/DecisionNode/devel/lib/decision_node/continuous_forwarder"
+  "/home/sentry_train_test/AstarTraining/DecisionNode/devel/lib/decision_node/continuous_forwarder.pdb"
   "CMakeFiles/continuous_forwarder.dir/src/test.cpp.o"
   "CMakeFiles/continuous_forwarder.dir/src/test.cpp.o.d"
 )

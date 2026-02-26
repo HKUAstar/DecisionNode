@@ -8,133 +8,9 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Twist.h>
 #include <serial/serial.h>
-#include <decision_node/mcu_comm.hpp>
+#include <bot_sim/mcu_comm.hpp>
 #include <thread>
 #include <cstdio>
-#include <algorithm>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/buffer.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include<geometry_msgs/PointStamped.h>
-#include <vector>
-
-const double PI = 3.14159265358979323846;
-
-geometry_msgs::TransformStamped transformRotbaseToVirtual;
-geometry_msgs::TransformStamped transformGimbalToRotbase;
-geometry_msgs::TransformStamped transformMapToGimbal;
-geometry_msgs::TransformStamped loc;
-bool status = 0;
-
-geometry_msgs::Twist cmd_vel;
-
-void cmdVelCallback(const geometry_msgs::Twist::ConstPtr &msg)
-{
-    cmd_vel = *msg;
-    // printf("msg_received");
-    // std::cout<<cmd_vel.linear.x<<' '<<cmd_vel.linear.y<<std::endl;
-}
-void StatusCallback(const std_msgs::Bool::ConstPtr &msg)
-{
-    // cmd_vel = *msg;
-    status = 1;
-    // printf("msg_received");
-    // std::cout<<cmd_vel.linear.x<<' '<<cmd_vel.linear.y<<std::endl;
-}
-// std::pair<double, double> getGoalType[]={
-// {8.215254783630371, 8.674027442932129},    //0
-// {8.011299133300781, 25.099763870239258},   //1
-// {5.136077880859375, 13.348814010620117},   //2
-// {10.739795684814453, 20.710840225219727},  //3
-// {2.661466598510742, 17.89205551147461},    //4
-// {13.056159973144531,  15.860123634338379}, //5
-// {4.178987979888916, 20.687192916870117},   //6
-// {4.229683876037598, 11.059250831604004},   //7
-// {11.635642051696777, 22.893033981323242},  //8
-// {13.664833068847656, 11.683853149414062},  //9
-// {14.618308067321777, 5.061775207519531},   //10
-// {13.056159973144531,  15.860123634338379}  //11
-// };
-// double angles[2]={0.0, -35.0/180.0*3.14159265};
-
-
-/* The following are for testing at Jul29*/
-// std::vector<std::pair<double, double> > getGoalType[]={
-// {{0.3, 1.45}, {0.58, -1.7}},    //0
-// {{1.82, 2.06}},   //1
-// {{2.15, -2.05}},//2
-// {{10.739795684814453, 20.710840225219727}},  //3
-// {{3.51, -1.79}},    //4
-// {{3.51, -1.80}, {3.57, -3.96}},  //5
-// {{0.7, -1.6}}, //6
-// {{4.229683876037598, 11.059250831604004}},   //7
-// {{3.3, -5.8}},   //8
-// {{0.3, 1.45}},  //9
-// {{3.52, 2.08}},   //10
-// {{13.056159973144531,  15.860123634338379}}  //11
-// };
-/*
-    UC MAP    
-// */
-// UL MAP
-// std::vector<std::pair<double, double> > getGoalType[]={
-// {{10.2, -8.0}, {5.73, -8.0}},    //0
-// {{7.5,-1.0}},   //1
-// {{4.6,-1.0}},//2
-// {{1.15,-1.0}},  //3
-// {{7.2,-8.33}},    //4
-// {{4.5,-6.2}},  //5
-// {{1.5,-4.75}}, //6
-// {{7.47,-11.5}},   //7
-// {{4.6,-11.5}},   //8
-// {{1.15,-11.5}},  //9
-// {{4.5,-6.2},{3.0,-3.0},{7.0,-3.0},{7.0,-6.0}},//10 patrol in our base
-// {{4.5,-6.2},{5.0,-10.0},{2.25,-9.4},{2.0,-7.0}},//11 patrol in enemy's base
-// {{5.0,-6.0},{4.5,-6.4},{3.8,-6.0}}//12
-// };
-std::vector<std::pair<double, double> > getGoalType[]={
-    {{10.2, -8.0}, {5.73, -8.0}},    //0
-    {{7.5,-1.0}},   //1
-    {{4.6,-1.0}},//2
-    {{1.15,-1.0}},  //3
-    {{7.2,-8.33}},    //4
-    {{1.0,-1.0},{7.0,-3.0}},  //5
-    {{1.5,-4.75}}, //6
-    {{7.47,-11.5}},   //7
-    {{4.6,-11.5}},   //8
-    {{1.15,-11.5}},  //9
-    {{1.0,-1.0},{7.0,-3.0}},//10 patrol in our base
-    {{1.0,-1.0},{7.0,-3.0}},//11 patrol in enemy's base
-    {{1.0,-1.0},{7.0,-3.0}}//12
-    };
-// std::vector<std::pair<double, double> > getGoalType[]={
-// {{}},
-// {{-2.0,0.0}},
-// {{-3.0,-1.8}},
-// {{}},
-// {{0.0,0.0}},
-// {{0.0,-2.0}}
-// };
-// std::vector<std::pair<double, double> > getGoalType[]={
-// {{}},
-// {{2.0,0.0}},
-// {{8.0,2.0}},
-// {{8.0,0.0}},
-// {{2.5,-3.0}},
-// {{0.0,0.0},{8.0,0.0}},
-// {{8.0,2.0},{2.5,-3.0}}
-// };
-
-// std::vector<std::pair<double, double> > getGoalType[]={
-// {{3.0, -3.0}, {1.0, -4.0}},    //0
-// {{-2.0, -1.5}},   //1
-// {{1.16, 0.71}},//2
-// {{-2.56775765, -4.34567654567}} //3
-// };
-double angles[2]={0.0, 0.0};
 
 // CRC8 查表 - 与 MCU 端完全相同（初始值 0xFF）
 static constexpr uint8_t CRC8_TABLE[256] = {
@@ -200,7 +76,12 @@ public:
         pub_enemy_standard_4_ = nh_.advertise<geometry_msgs::Point>("/enemy/standard_4_position", 1);
         pub_enemy_sentry_ = nh_.advertise<geometry_msgs::Point>("/enemy/sentry_position", 1);
         pub_suggested_target_ = nh_.advertise<std_msgs::UInt8>("/radar/suggested_target", 1);
-        // pub_radar_flags_ = nh_.advertise<std_msgs::UInt16>("/radar/radar_flags", 1);
+        pub_radar_flags_ = nh_.advertise<std_msgs::UInt16>("/radar/radar_flags", 1);
+        
+        // ===== 新增：发布分离的TF数据 =====
+        pub_yaw_angle_ = nh_.advertise<std_msgs::Float32>("/mcu/yaw_angle", 1);
+        pub_chassis_imu_ = nh_.advertise<std_msgs::Float32>("/mcu/chassis_imu", 1);
+        // ===== 新增结束 =====
         
         sub_motion_ = nh_.subscribe<std_msgs::UInt8>("/motion", 1, 
                                                      &MCUCommunicator::motionCallback, this);
@@ -223,7 +104,6 @@ public:
         navigation_timer_ = nh_.createTimer(ros::Duration(nav_period),
                                             &MCUCommunicator::navigationTimerCallback, this);
         
-        // ==================== 串口通信初始化 ====================
         try
         {
             serial_.setPort(serial_port_);
@@ -254,43 +134,8 @@ public:
         }
         
         recv_thread_ = std::thread(&MCUCommunicator::receiveThread, this);
-        
-        // 新增部分
-        nh_.param("virtual_frame", virtual_frame_, std::string("virtual_frame"));
-        nh_.param("rotbase_frame", rotbase_frame_, std::string("rotbase_frame"));
-        nh_.param("gimbal_frame", gimbal_frame_, std::string("gimbal_frame"));
-        nh_.param("_3DLidar_frame", _3DLidar_frame_, std::string("_3DLidar_frame"));
-        // For 云台手
-        nh_.param("theta", theta_, 0.0);
-        nh_.param("shift_x", shift_x_, 0.0);
-        nh_.param("shift_y", shift_y_, 0.0);
-        nh_.param("delta_time", delta_time_, 0.02f);
-        
-        clicked_point_pub_ = nh_.advertise<geometry_msgs::PointStamped>("clicked_point", 1);
-        
-        tfb_ = new tf2_ros::TransformBroadcaster();
-        tfBuffer_ = new tf2_ros::Buffer();
-        tfListener_ = new tf2_ros::TransformListener(*tfBuffer_);
-        
-        tf2::Quaternion q1;
-        transformRotbaseToVirtual.header.frame_id = rotbase_frame_;
-        transformRotbaseToVirtual.child_frame_id = virtual_frame_;
-        transformRotbaseToVirtual.transform.translation.x = 0.0;
-        transformRotbaseToVirtual.transform.translation.y = 0.0;
-        transformRotbaseToVirtual.transform.translation.z = -0.1;
-
-        
-        tf2::Quaternion q2;
-        transformGimbalToRotbase.header.frame_id = gimbal_frame_;
-        transformGimbalToRotbase.child_frame_id = rotbase_frame_;
-        transformGimbalToRotbase.transform.translation.x = 0.0;
-        transformGimbalToRotbase.transform.translation.y = 0.0;
-        transformGimbalToRotbase.transform.translation.z = -0.3;
-
-        loc.header.frame_id = "map";
-        loc.child_frame_id = virtual_frame_;
     }
-    //新增结束
+    
     ~MCUCommunicator()
     {
         if (recv_thread_.joinable())
@@ -301,9 +146,6 @@ public:
         {
             serial_.close();
         }
-        delete tfListener_;
-        delete tfBuffer_;
-        delete tfb_;
     }
     
 private:
@@ -343,6 +185,11 @@ private:
     ros::Publisher pub_enemy_sentry_;
     ros::Publisher pub_suggested_target_;
     ros::Publisher pub_radar_flags_;
+    
+    // ===== 新增：分离的TF数据topic =====
+    ros::Publisher pub_yaw_angle_;      // 云台yaw弧度
+    ros::Publisher pub_chassis_imu_;    // 底盘IMU弧度
+    // ===== 新增结束 =====
     
     // ROS 订阅者
     ros::Subscriber sub_motion_;
@@ -397,27 +244,6 @@ private:
     uint16_t last_blue_dead_ = 0;   // 上一帧蓝方死亡状态
     uint8_t robot_color_ = 0;       // 0=red, 1=blue
     
-    // TF相关参数（新增部分）
-    std::string virtual_frame_;
-    std::string rotbase_frame_;
-    std::string gimbal_frame_;
-    std::string _3DLidar_frame_;
-    // For 云台手
-    double theta_ = 0;
-    double shift_x_ = 0;
-    double shift_y_ = 0;
-    float delta_time_ = 0.02f;
-    
-    ros::Publisher clicked_point_pub_;
-    
-    tf2_ros::TransformBroadcaster* tfb_;
-    tf2_ros::Buffer* tfBuffer_;
-    tf2_ros::TransformListener* tfListener_;
-    
-    int last_goal_ = -1, current_goal_ = -1, current_index_ = 0, cnt_ = 0;
-    double last_goal_x_, last_goal_y_;
-    bool first_arrive_flag_ = 0, cnt_flag_ = 0;
-    //新增结束
     // Motion回调函数 
     void motionCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
@@ -874,120 +700,14 @@ private:
         msg_uint16.data = frame.blue_dead;
         pub_blue_dead_.publish(msg_uint16);
         
-        //新增部分
-        // 数据流对接：
-        // frame.yaw_angle 对应老代码的 relative_angle (云台yaw弧度)
-        // frame.chassis_imu 对应老代码的 imu_angle (底盘IMU弧度)
-        // frame.motion_mode 对应老代码的 goal_type
-        // frame.operator_x, frame.operator_y 对应老代码的 goal_x, goal_y
-        float imu_angle = frame.chassis_imu;
-        float relative_angle = frame.yaw_angle;
-        int goal_type = frame.motion_mode;
-        float goal_x = frame.operator_x;
-        float goal_y = frame.operator_y;
+        // ===== 新增：发布分离的TF数据 =====
+        msg_float.data = frame.yaw_angle;
+        pub_yaw_angle_.publish(msg_float);
         
-        //Calculate virtual frame
-        {
-            tf2::Quaternion q1;
-            q1.setRPY(0,0,-imu_angle);
-            transformRotbaseToVirtual.transform.rotation.x = q1.x();
-            transformRotbaseToVirtual.transform.rotation.y = q1.y();
-            transformRotbaseToVirtual.transform.rotation.z = q1.z();
-            transformRotbaseToVirtual.transform.rotation.w = q1.w();
-            transformRotbaseToVirtual.header.stamp = ros::Time::now();
-            // tfb_->sendTransform(transformRotbaseToVirtual);
-
-            tf2::Quaternion q2;
-            q2.setRPY(0,0,-relative_angle);
-            transformGimbalToRotbase.transform.rotation.x = q2.x();
-            transformGimbalToRotbase.transform.rotation.y = q2.y();
-            transformGimbalToRotbase.transform.rotation.z = q2.z();
-            transformGimbalToRotbase.transform.rotation.w = q2.w();
-            transformGimbalToRotbase.header.stamp = ros::Time::now();
-            // tfb_->sendTransform(transformGimbalToRotbase);
-            
-            tf2::Transform gimbalframe;
-            tf2::Transform rotbaseframe;
-            tf2::Transform virtualframe;
-            tf2::Transform location;
-
-            try{
-                transformMapToGimbal = tfBuffer_->lookupTransform("map", "gimbal_frame",ros::Time(0),ros::Duration(5.0));
-            }
-            catch(tf2::TransformException &ex){
-                ROS_WARN("%s",ex.what());
-            }
-            tf2::fromMsg(transformMapToGimbal.transform, gimbalframe);
-            tf2::fromMsg(transformGimbalToRotbase.transform,rotbaseframe);
-            tf2::fromMsg(transformRotbaseToVirtual.transform,virtualframe);
-            // location = gimbalframe;
-            // // * rotbaseframe * virtualframe;
-            location = gimbalframe * rotbaseframe * virtualframe;
-            loc.transform = tf2::toMsg(location);
-            loc.header.stamp = ros::Time::now();
-            tfb_->sendTransform(loc);
-            
-        }
-        // ROS_INFO("continue 1");
-        //send goal
-        {
-            ROS_INFO("goal_type: %d",goal_type);
-            if(goal_type != current_goal_ || (last_goal_ == 0xF0 && (goal_x != last_goal_x_ || goal_y != last_goal_y_))){
-                last_goal_ = current_goal_;
-                current_goal_ = goal_type;
-                last_goal_x_ = goal_x;
-                last_goal_y_ = goal_y;
-                current_index_ = 0;
-                cnt_ = cnt_flag_ = 0;
-                first_arrive_flag_ = 0;
-            }
-            // ROS_INFO("continue 1 1");
-            if(goal_type != 13){
-                geometry_msgs::PointStamped clicked_point;
-                clicked_point.header.frame_id="map";
-                clicked_point.header.stamp=ros::Time::now();
-                // ROS_INFO("continue 1 2");
-                if(goal_type != 0xF0){
-                    if(status){
-                        cnt_flag_ = 1;
-                    } 
-                    if(cnt_flag_){
-                        cnt_++;
-                    }
-                    if (cnt_ == int(1 / delta_time_)&&(goal_type == 11 || goal_type == 10 || goal_type == 12 || goal_type == 5)){
-                        cnt_ = cnt_flag_ = 0;
-                        current_index_ = (current_index_ + 1) %  getGoalType[goal_type].size();
-                    }
-                    // if(cnt_ == int(8 / delta_time_) && (goal_type==5)){
-                    //     cnt_ = cnt_flag_ = 0;
-                    //     current_index_ = (current_index_ + 1) %  getGoalType[goal_type].size();
-                    // }
-                    // if(cnt_ == int(1 / delta_time_) && goal_type == 0){
-                    //     cnt_ = cnt_flag_ = 0;
-                    //     current_index_ = (current_index_ + 1) %  getGoalType[goal_type].size();
-                    // }
-                    clicked_point.point.x=getGoalType[goal_type][current_index_].first;
-                    clicked_point.point.y=getGoalType[goal_type][current_index_].second;
-                    clicked_point.point.z=0;
-                }
-                else{
-                    clicked_point.point.x=cos(theta_)*goal_x - sin(theta_)*goal_y + shift_x_;
-                    clicked_point.point.y=sin(theta_)*goal_x + cos(theta_)*goal_y + shift_y_;
-                    ROS_INFO("shift_x: %f, shift_y: %f", shift_x_, shift_y_);
-                    ROS_INFO("x: %.3f,y: %.3f", goal_x, goal_y);
-                    clicked_point.point.z=0;
-                }
-                //clicked_point_pub_.publish(clicked_point);
-            }
-        }
-        // ROS_INFO("continue 2");
-        //whether arrived
-        {
-            first_arrive_flag_ |= status;
-            // arrived.f = first_arrive_flag_ | (goal_type == 13);
-            status = 0;
-        }
-        //新增结束
+        msg_float.data = frame.chassis_imu;
+        pub_chassis_imu_.publish(msg_float);
+        // ===== 新增结束 ====
+        
         updateScore(frame);
         
         
