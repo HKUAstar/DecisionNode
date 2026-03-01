@@ -7,14 +7,14 @@
 
   <!-- Tuning args -->
   <arg name="tick_hz" default="20"/>
-  <arg name="danger_hp" default="100"/>
-  <arg name="sufficient_bullet" default="10"/>
+  <arg name="danger_hp" default="200"/>
+  <arg name="sufficient_bullet" default="20"/>
   <arg name="max_bullet" default="150"/>
   <arg name="fixed_supply" default="50"/>
   <arg name="publish_on_change_only" default="true"/>
-  <arg name="occupy_threshold" default="10000"/>
+  <arg name="occupy_threshold" default="50"/>
   <arg name="aggressive_threshold" default="50"/>
-  <arg name="attack_threshold" default="5"/>
+  <arg name="attack_threshold" default="30"/>
   <arg name="harm_threshold_on" default="50"/>
   <arg name="harm_threshold_off" default="10"/>
 
