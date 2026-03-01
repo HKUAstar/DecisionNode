@@ -199,12 +199,20 @@
         
         <Sequence>
           <IsAction value="RADICAL" />
-          <InitChase />
-          <UpdateChaseTarget />
+          <!-- <InitChase /> -->
+          <!-- <UpdateChaseTarget /> -->
           <!-- TODO: 接入视觉模块 -->
-          <SetMotionFlag target_motion="1" />
+          <Fallback>
+            <Sequence>
+              <CheckAttacked attack_threshold="{attack_threshold}" />
+              <SetMotionFlag target_motion="2" />
+            </Sequence>
+            <SetMotionFlag target_motion="1" />
+          </Fallback>
           <PublishMotion />
-          <PublishChaseGoal />
+          <SetGoalFromParams ns="radical" />
+          <PublishGoalPoint topic="clicked_point" />
+          <!-- <PublishChaseGoal /> -->
         </Sequence>
       
 
