@@ -67,14 +67,14 @@ set(decision_node_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
-  set(decision_node_SOURCE_PREFIX /home/sentry_train_test/AstarTraining/DecisionNode/src/decision_node)
-  set(decision_node_DEVEL_PREFIX /home/sentry_train_test/AstarTraining/DecisionNode/devel)
+  set(decision_node_SOURCE_PREFIX /home/sentry/AstarTraining/DecisionNode/src/decision_node)
+  set(decision_node_DEVEL_PREFIX /home/sentry/AstarTraining/DecisionNode/devel)
   set(decision_node_INSTALL_PREFIX "")
   set(decision_node_PREFIX ${decision_node_DEVEL_PREFIX})
 else()
   set(decision_node_SOURCE_PREFIX "")
   set(decision_node_DEVEL_PREFIX "")
-  set(decision_node_INSTALL_PREFIX /home/sentry_train_test/AstarTraining/DecisionNode/install)
+  set(decision_node_INSTALL_PREFIX /home/sentry/AstarTraining/DecisionNode/install)
   set(decision_node_PREFIX ${decision_node_INSTALL_PREFIX})
 endif()
 
@@ -156,7 +156,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/sentry_train_test/AstarTraining/DecisionNode/install/lib;/home/sentry_train_test/AstarTraining/HIT_code/sentry_planning_ws/devel/lib;/home/sentry_train_test/AstarTraining/Navigation-filter-test/ws_cloud/devel/lib;/home/sentry_train_test/AstarTraining/sim_nav/devel/lib;/home/sentry_train_test/AstarTraining/ws_livox/devel/lib;/opt/ros/noetic/lib)
+    foreach(path /home/sentry/AstarTraining/DecisionNode/install/lib;/home/sentry/AstarTraining/Old_nav/Navigation-filter-test/devel/lib;/home/sentry/AstarTraining/Old_nav/sim_nav/devel/lib;/home/sentry/AstarTraining/Old_nav/livox_ws/devel/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
@@ -187,7 +187,7 @@ foreach(t ${decision_node_EXPORTED_TARGETS})
   endif()
 endforeach()
 
-set(depends "roscpp;std_msgs;geometry_msgs;nav_msgs;serial")
+set(depends "roscpp;std_msgs;geometry_msgs;nav_msgs;serial;tf2;tf2_ros;tf2_geometry_msgs;behaviortree_cpp_v3")
 foreach(depend ${depends})
   string(REPLACE " " ";" depend_list ${depend})
   # the package name of the dependency must be kept in a unique variable so that it is not overwritten in recursive calls

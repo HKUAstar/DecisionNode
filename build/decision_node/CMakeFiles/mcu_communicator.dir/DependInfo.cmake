@@ -8,15 +8,11 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/sentry_train_test/AstarTraining/DecisionNode/src/decision_node/src/mcu_communicator.cpp" "decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o" "gcc" "decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o.d"
+  "/home/sentry/AstarTraining/DecisionNode/src/decision_node/src/mcu_communicator.cpp" "decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o" "gcc" "decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o.d"
   )
 
-# Targets to which this target links which contain Fortran sources.
-set(CMAKE_Fortran_TARGET_LINKED_INFO_FILES
-  )
-
-# Targets to which this target links which contain Fortran sources.
-set(CMAKE_Fortran_TARGET_FORWARD_LINKED_INFO_FILES
+# Targets to which this target links.
+set(CMAKE_TARGET_LINKED_INFO_FILES
   )
 
 # Fortran module output directory.
