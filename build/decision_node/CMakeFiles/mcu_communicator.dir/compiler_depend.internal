@@ -1233,50 +1233,29 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o
  /opt/ros/noetic/include/ros/param.h
  /opt/ros/noetic/include/ros/topic.h
  /opt/ros/noetic/include/ros/node_handle.h
- /opt/ros/noetic/include/std_msgs/Int32.h
- /opt/ros/noetic/include/ros/message_operations.h
  /opt/ros/noetic/include/std_msgs/Float32.h
- /opt/ros/noetic/include/std_msgs/UInt16.h
- /opt/ros/noetic/include/std_msgs/UInt8.h
- /opt/ros/noetic/include/std_msgs/Bool.h
- /opt/ros/noetic/include/geometry_msgs/Vector3.h
- /opt/ros/noetic/include/geometry_msgs/Point.h
+ /opt/ros/noetic/include/ros/message_operations.h
  /opt/ros/noetic/include/geometry_msgs/Twist.h
+ /opt/ros/noetic/include/geometry_msgs/Vector3.h
  /home/sentry/AstarTraining/DecisionNode/src/decision_node/include/decision_node/mcu_comm.hpp
  /usr/include/c++/9/thread
- /usr/include/linux/can.h
- /usr/include/linux/types.h
- /usr/include/x86_64-linux-gnu/asm/types.h
- /usr/include/asm-generic/types.h
- /usr/include/asm-generic/int-ll64.h
- /usr/include/x86_64-linux-gnu/asm/bitsperlong.h
- /usr/include/asm-generic/bitsperlong.h
- /usr/include/linux/posix_types.h
- /usr/include/linux/stddef.h
- /usr/include/x86_64-linux-gnu/asm/posix_types.h
- /usr/include/x86_64-linux-gnu/asm/posix_types_64.h
- /usr/include/asm-generic/posix_types.h
- /usr/include/linux/socket.h
- /usr/include/linux/can/raw.h
- /usr/include/net/if.h
- /usr/include/x86_64-linux-gnu/sys/socket.h
+ /usr/include/fcntl.h
+ /usr/include/x86_64-linux-gnu/bits/fcntl.h
+ /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h
  /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h
- /usr/include/x86_64-linux-gnu/bits/socket.h
- /usr/include/x86_64-linux-gnu/bits/socket_type.h
- /usr/include/x86_64-linux-gnu/bits/sockaddr.h
- /usr/include/x86_64-linux-gnu/asm/socket.h
- /usr/include/asm-generic/socket.h
- /usr/include/x86_64-linux-gnu/asm/sockios.h
- /usr/include/asm-generic/sockios.h
- /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h
- /usr/include/x86_64-linux-gnu/bits/socket2.h
- /usr/include/x86_64-linux-gnu/sys/ioctl.h
- /usr/include/x86_64-linux-gnu/bits/ioctls.h
- /usr/include/x86_64-linux-gnu/asm/ioctls.h
- /usr/include/asm-generic/ioctls.h
- /usr/include/linux/ioctl.h
- /usr/include/x86_64-linux-gnu/asm/ioctl.h
- /usr/include/asm-generic/ioctl.h
- /usr/include/x86_64-linux-gnu/bits/ioctl-types.h
+ /usr/include/linux/falloc.h
+ /usr/include/x86_64-linux-gnu/bits/stat.h
+ /usr/include/x86_64-linux-gnu/bits/fcntl2.h
+ /usr/include/termios.h
+ /usr/include/x86_64-linux-gnu/bits/termios.h
+ /usr/include/x86_64-linux-gnu/bits/termios-struct.h
+ /usr/include/x86_64-linux-gnu/bits/termios-c_cc.h
+ /usr/include/x86_64-linux-gnu/bits/termios-c_iflag.h
+ /usr/include/x86_64-linux-gnu/bits/termios-c_oflag.h
+ /usr/include/x86_64-linux-gnu/bits/termios-baud.h
+ /usr/include/x86_64-linux-gnu/bits/termios-c_cflag.h
+ /usr/include/x86_64-linux-gnu/bits/termios-c_lflag.h
+ /usr/include/x86_64-linux-gnu/bits/termios-tcflow.h
+ /usr/include/x86_64-linux-gnu/bits/termios-misc.h
  /usr/include/x86_64-linux-gnu/sys/ttydefaults.h
 

@@ -1232,101 +1232,56 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
   /opt/ros/noetic/include/ros/param.h \
   /opt/ros/noetic/include/ros/topic.h \
   /opt/ros/noetic/include/ros/node_handle.h \
-  /opt/ros/noetic/include/std_msgs/Int32.h \
-  /opt/ros/noetic/include/ros/message_operations.h \
   /opt/ros/noetic/include/std_msgs/Float32.h \
-  /opt/ros/noetic/include/std_msgs/UInt16.h \
-  /opt/ros/noetic/include/std_msgs/UInt8.h \
-  /opt/ros/noetic/include/std_msgs/Bool.h \
-  /opt/ros/noetic/include/geometry_msgs/Vector3.h \
-  /opt/ros/noetic/include/geometry_msgs/Point.h \
+  /opt/ros/noetic/include/ros/message_operations.h \
   /opt/ros/noetic/include/geometry_msgs/Twist.h \
+  /opt/ros/noetic/include/geometry_msgs/Vector3.h \
   /home/sentry/AstarTraining/DecisionNode/src/decision_node/include/decision_node/mcu_comm.hpp \
   /usr/include/c++/9/thread \
-  /usr/include/linux/can.h \
-  /usr/include/linux/types.h \
-  /usr/include/x86_64-linux-gnu/asm/types.h \
-  /usr/include/asm-generic/types.h \
-  /usr/include/asm-generic/int-ll64.h \
-  /usr/include/x86_64-linux-gnu/asm/bitsperlong.h \
-  /usr/include/asm-generic/bitsperlong.h \
-  /usr/include/linux/posix_types.h \
-  /usr/include/linux/stddef.h \
-  /usr/include/x86_64-linux-gnu/asm/posix_types.h \
-  /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
-  /usr/include/asm-generic/posix_types.h \
-  /usr/include/linux/socket.h \
-  /usr/include/linux/can/raw.h \
-  /usr/include/net/if.h \
-  /usr/include/x86_64-linux-gnu/sys/socket.h \
+  /usr/include/fcntl.h \
+  /usr/include/x86_64-linux-gnu/bits/fcntl.h \
+  /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
-  /usr/include/x86_64-linux-gnu/bits/socket.h \
-  /usr/include/x86_64-linux-gnu/bits/socket_type.h \
-  /usr/include/x86_64-linux-gnu/bits/sockaddr.h \
-  /usr/include/x86_64-linux-gnu/asm/socket.h \
-  /usr/include/asm-generic/socket.h \
-  /usr/include/x86_64-linux-gnu/asm/sockios.h \
-  /usr/include/asm-generic/sockios.h \
-  /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
-  /usr/include/x86_64-linux-gnu/bits/socket2.h \
-  /usr/include/x86_64-linux-gnu/sys/ioctl.h \
-  /usr/include/x86_64-linux-gnu/bits/ioctls.h \
-  /usr/include/x86_64-linux-gnu/asm/ioctls.h \
-  /usr/include/asm-generic/ioctls.h \
-  /usr/include/linux/ioctl.h \
-  /usr/include/x86_64-linux-gnu/asm/ioctl.h \
-  /usr/include/asm-generic/ioctl.h \
-  /usr/include/x86_64-linux-gnu/bits/ioctl-types.h \
+  /usr/include/linux/falloc.h \
+  /usr/include/x86_64-linux-gnu/bits/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/fcntl2.h \
+  /usr/include/termios.h \
+  /usr/include/x86_64-linux-gnu/bits/termios.h \
+  /usr/include/x86_64-linux-gnu/bits/termios-struct.h \
+  /usr/include/x86_64-linux-gnu/bits/termios-c_cc.h \
+  /usr/include/x86_64-linux-gnu/bits/termios-c_iflag.h \
+  /usr/include/x86_64-linux-gnu/bits/termios-c_oflag.h \
+  /usr/include/x86_64-linux-gnu/bits/termios-baud.h \
+  /usr/include/x86_64-linux-gnu/bits/termios-c_cflag.h \
+  /usr/include/x86_64-linux-gnu/bits/termios-c_lflag.h \
+  /usr/include/x86_64-linux-gnu/bits/termios-tcflow.h \
+  /usr/include/x86_64-linux-gnu/bits/termios-misc.h \
   /usr/include/x86_64-linux-gnu/sys/ttydefaults.h
 
 
-/usr/include/asm-generic/ioctl.h:
+/usr/include/x86_64-linux-gnu/bits/termios-misc.h:
 
-/usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h:
+/usr/include/x86_64-linux-gnu/bits/termios-baud.h:
 
-/usr/include/asm-generic/socket.h:
+/usr/include/x86_64-linux-gnu/bits/termios-c_oflag.h:
 
-/usr/include/x86_64-linux-gnu/asm/socket.h:
+/usr/include/termios.h:
 
-/usr/include/x86_64-linux-gnu/bits/ioctl-types.h:
+/usr/include/x86_64-linux-gnu/bits/fcntl2.h:
 
-/usr/include/linux/ioctl.h:
-
-/usr/include/x86_64-linux-gnu/bits/sockaddr.h:
+/usr/include/linux/falloc.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h:
 
-/usr/include/linux/can/raw.h:
+/usr/include/x86_64-linux-gnu/bits/fcntl-linux.h:
 
-/usr/include/asm-generic/posix_types.h:
-
-/usr/include/x86_64-linux-gnu/asm/posix_types_64.h:
-
-/usr/include/x86_64-linux-gnu/asm/posix_types.h:
-
-/usr/include/linux/stddef.h:
-
-/usr/include/linux/posix_types.h:
-
-/usr/include/asm-generic/bitsperlong.h:
-
-/usr/include/x86_64-linux-gnu/asm/bitsperlong.h:
-
-/usr/include/asm-generic/int-ll64.h:
-
-/usr/include/asm-generic/types.h:
-
-/usr/include/linux/types.h:
-
-/usr/include/linux/can.h:
+/usr/include/x86_64-linux-gnu/bits/fcntl.h:
 
 /opt/ros/noetic/include/geometry_msgs/Twist.h:
 
 /opt/ros/noetic/include/ros/master.h:
 
 /opt/ros/noetic/include/xmlrpcpp/XmlRpcDecl.h:
-
-/usr/include/asm-generic/ioctls.h:
 
 /opt/ros/noetic/include/ros/service_client_options.h:
 
@@ -1376,8 +1331,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/preprocessor/seq/cat.hpp:
 
-/usr/include/x86_64-linux-gnu/asm/sockios.h:
-
 /usr/include/boost/utility/binary.hpp:
 
 /usr/include/boost/utility.hpp:
@@ -1423,8 +1376,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 /usr/include/boost/range/detail/msvc_has_iterator_workaround.hpp:
 
 /usr/include/boost/range/detail/extract_optional_type.hpp:
-
-/usr/include/x86_64-linux-gnu/bits/socket2.h:
 
 /usr/include/boost/range/range_fwd.hpp:
 
@@ -1606,6 +1557,8 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/predef/compiler/edg.h:
 
+/usr/include/x86_64-linux-gnu/bits/termios-c_iflag.h:
+
 /usr/include/boost/predef/compiler/digitalmars.h:
 
 /usr/include/boost/predef/compiler/diab.h:
@@ -1756,8 +1709,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/date_time/compiler_config.hpp:
 
-/usr/include/x86_64-linux-gnu/asm/ioctls.h:
-
 /usr/include/boost/date_time/time_clock.hpp:
 
 /usr/include/boost/thread/lock_options.hpp:
@@ -1772,8 +1723,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/type_traits/remove_bounds.hpp:
 
-/usr/include/x86_64-linux-gnu/asm/ioctl.h:
-
 /usr/include/boost/config/abi_suffix.hpp:
 
 /usr/include/boost/config/abi_prefix.hpp:
@@ -1787,8 +1736,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 /opt/ros/noetic/include/std_msgs/Float32.h:
 
 /usr/include/boost/system/detail/std_interoperability.hpp:
-
-/usr/include/x86_64-linux-gnu/bits/socket.h:
 
 /usr/include/boost/system/detail/generic_category.hpp:
 
@@ -1877,8 +1824,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 /usr/include/boost/mpl/aux_/nested_type_wknd.hpp:
 
 /usr/include/c++/9/bits/stl_function.h:
-
-/usr/include/linux/socket.h:
 
 /usr/include/boost/preprocessor/arithmetic/sub.hpp:
 
@@ -2006,9 +1951,9 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/mpl/aux_/na_fwd.hpp:
 
-/usr/include/x86_64-linux-gnu/bits/ioctls.h:
-
 /opt/ros/noetic/include/ros/serialized_message.h:
+
+/usr/include/x86_64-linux-gnu/bits/termios-c_cc.h:
 
 /usr/include/boost/mpl/aux_/config/workaround.hpp:
 
@@ -2192,6 +2137,8 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/config/platform/linux.hpp:
 
+/usr/include/x86_64-linux-gnu/bits/termios-c_lflag.h:
+
 /usr/include/x86_64-linux-gnu/bits/unistd_ext.h:
 
 /usr/include/boost/preprocessor/control/detail/while.hpp:
@@ -2288,8 +2235,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/config/user.hpp:
 
-/opt/ros/noetic/include/std_msgs/UInt8.h:
-
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h:
 
 /usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
@@ -2351,8 +2296,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 /usr/include/boost/config/requires_threads.hpp:
 
 /usr/include/c++/9/bits/nested_exception.h:
-
-/usr/include/x86_64-linux-gnu/sys/socket.h:
 
 /usr/include/c++/9/backward/binders.h:
 
@@ -2424,6 +2367,8 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/c++/9/bits/predefined_ops.h:
 
+/usr/include/x86_64-linux-gnu/bits/stat.h:
+
 /opt/ros/noetic/include/ros/init.h:
 
 /usr/include/boost/predef/hardware/simd/x86/versions.h:
@@ -2486,8 +2431,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/c++/9/initializer_list:
 
-/usr/include/x86_64-linux-gnu/sys/ioctl.h:
-
 /usr/include/boost/mpl/multiplies.hpp:
 
 /usr/include/x86_64-linux-gnu/c++/9/bits/gthr-default.h:
@@ -2497,8 +2440,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 /usr/include/boost/type_traits/function_traits.hpp:
 
 /usr/include/pthread.h:
-
-/opt/ros/noetic/include/std_msgs/Int32.h:
 
 /usr/include/boost/predef/library/c/vms.h:
 
@@ -2658,8 +2599,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/mpl/aux_/preprocessed/gcc/not_equal_to.hpp:
 
-/usr/include/net/if.h:
-
 /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h:
 
 /usr/include/boost/predef/os/os400.h:
@@ -2692,6 +2631,8 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/predef/os/bsd.h:
 
+/usr/include/x86_64-linux-gnu/bits/termios-tcflow.h:
+
 /usr/include/boost/integer.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/errno.h:
@@ -2703,8 +2644,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
-
-/usr/include/x86_64-linux-gnu/bits/socket_type.h:
 
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
 
@@ -2739,6 +2678,8 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 /usr/include/c++/9/bits/stl_tree.h:
 
 /usr/include/boost/smart_ptr/allocate_shared_array.hpp:
+
+/usr/include/x86_64-linux-gnu/bits/termios-c_cflag.h:
 
 /usr/include/c++/9/debug/assertions.h:
 
@@ -3100,6 +3041,8 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/mpl/aux_/has_apply.hpp:
 
+/usr/include/fcntl.h:
+
 /usr/include/boost/mpl/aux_/config/arrays.hpp:
 
 /usr/include/boost/type_traits/is_complete.hpp:
@@ -3153,8 +3096,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 /usr/include/boost/mpl/aux_/preprocessed/gcc/placeholders.hpp:
 
 /usr/include/boost/mpl/bind.hpp:
-
-/opt/ros/noetic/include/std_msgs/Bool.h:
 
 /usr/include/boost/type_traits/is_bounded_array.hpp:
 
@@ -3234,13 +3175,9 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/mpl/aux_/fold_impl.hpp:
 
-/opt/ros/noetic/include/std_msgs/UInt16.h:
-
 /usr/include/boost/mpl/reverse_fold.hpp:
 
 /usr/include/boost/mpl/aux_/inserter_algorithm.hpp:
-
-/usr/include/asm-generic/sockios.h:
 
 /usr/include/boost/predef/compiler/mpw.h:
 
@@ -3416,8 +3353,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/exception/exception.hpp:
 
-/opt/ros/noetic/include/geometry_msgs/Point.h:
-
 /usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
@@ -3507,6 +3442,8 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 /usr/include/boost/type_traits/is_member_pointer.hpp:
 
 /usr/include/boost/predef/os/bsd/dragonfly.h:
+
+/usr/include/x86_64-linux-gnu/bits/termios.h:
 
 /usr/include/boost/predef/os/bsd/free.h:
 
@@ -3718,6 +3655,8 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 
 /usr/include/boost/integer_fwd.hpp:
 
+/usr/include/x86_64-linux-gnu/bits/termios-struct.h:
+
 /usr/include/boost/range/detail/misc_concept.hpp:
 
 /usr/include/c++/9/bits/stl_map.h:
@@ -3771,8 +3710,6 @@ decision_node/CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o: /home/
 /usr/include/boost/bind/mem_fn_template.hpp:
 
 /usr/include/boost/bind/mem_fn_cc.hpp:
-
-/usr/include/x86_64-linux-gnu/asm/types.h:
 
 /usr/include/boost/iterator/interoperable.hpp:
 

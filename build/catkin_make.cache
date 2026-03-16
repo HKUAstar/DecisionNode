@@ -1,2 +1,2 @@
 decision_node
--DCATKIN_DEVEL_PREFIX=/home/sentry/AstarTraining/DecisionNode/devel -DCMAKE_INSTALL_PREFIX=/home/sentry/AstarTraining/DecisionNode/install -DCATKIN_WHITELIST_PACKAGES=decision_node -G Unix Makefiles
+-DCATKIN_DEVEL_PREFIX=/home/sentry/AstarTraining/DecisionNode/devel -DCMAKE_INSTALL_PREFIX=/home/sentry/AstarTraining/DecisionNode/install -G Unix Makefiles
