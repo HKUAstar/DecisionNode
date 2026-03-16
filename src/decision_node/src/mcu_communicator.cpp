@@ -14,7 +14,7 @@
 class MCUCommunicator
 {
 public:
-    MCUCommunicator() : nh_("~"), serial_fd_(-1), serial_port_("/dev/ttyACM0"),
+    MCUCommunicator() : nh_("~"), serial_fd_(-1), serial_port_("/dev/mcu_gimbal"),
                         serial_baudrate_(115200)
     {
         // 读取参数
@@ -38,7 +38,7 @@ public:
         pub_yaw_angle_ = nh_.advertise<std_msgs::Float32>("/mcu/yaw_angle", 1);
         
         // 创建订阅者 - 订阅速度命令
-        sub_cmd_vel_ = nh_.subscribe<geometry_msgs::Twist>("/new_cmd_vel", 1,
+        sub_cmd_vel_ = nh_.subscribe<geometry_msgs::Twist>("/cmd_vel", 1,
                                                           &MCUCommunicator::cmdVelCallback, this);
         
         // 启动接收线程
@@ -97,9 +97,12 @@ private:
         cfsetispeed(&options, baud);
         cfsetospeed(&options, baud);
         
-        // 8N1: 8数据位, 无奇偶校验, 1停止位
+        // 强制设置 8N1: 8数据位, 无奇偶校验, 1停止位
+        // 校验位: None
         options.c_cflag &= ~PARENB;
+        // 停止位: 1
         options.c_cflag &= ~CSTOPB;
+        // 数据位: 8
         options.c_cflag &= ~CSIZE;
         options.c_cflag |= CS8;
         
@@ -131,32 +134,53 @@ private:
         }
     }
     
-    // 速度命令回调 - 发送v和w到C板
+    // 速度命令回调 - 发送v_x和v_y到C板
     void cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg)
     {
-        float v = msg->linear.x ;
-        float w = msg->angular.z;
+        float v_x = msg->linear.x ;
+        float v_y = msg->linear.y;
         
-        sendCommand(v, w);
+        sendCommand(v_x, v_y);
         
-        ROS_DEBUG("CmdVel received: linear.x=%.4f, linear.y=%.4f, angular.z=%.4f, v=%.4f, w=%.4f",
-                  msg->linear.x, msg->linear.y, msg->angular.z, v, w);
+        ROS_DEBUG("CmdVel received: linear.x=%.4f, linear.y=%.4f, angular.z=%.4f, v_x=%.4f, v_y=%.4f",
+                  msg->linear.x, msg->linear.y, msg->angular.z, v_x, v_y);
     }
     
     // 发送命令到C板 (NUC→C板)
-    void sendCommand(float v, float w)
+    void sendCommand(float v_x, float v_y)
     {
-        CANCommandFrame cmd_frame;
-        cmd_frame.v = v;
-        cmd_frame.w = w;
+        if (serial_fd_ < 0)
+        {
+            ROS_WARN("Serial port not open, cannot send command");
+            return;
+        }
         
-        if (write(serial_fd_, (uint8_t*)&cmd_frame, MCU_COMMAND_FRAME_SIZE) < 0)
+        CANCommandFrame cmd_frame;
+        cmd_frame.v_x = v_x;
+        cmd_frame.v_y = v_y;
+        
+        // 打印发送的原始数据用于调试
+        uint8_t* bytes = (uint8_t*)&cmd_frame;
+        ROS_INFO("Sending command: v_x=%.4f v_y=%.4f | Raw bytes: %02X %02X %02X %02X %02X %02X %02X %02X",
+                 v_x, v_y,
+                 bytes[0], bytes[1], bytes[2], bytes[3],
+                 bytes[4], bytes[5], bytes[6], bytes[7]);
+        
+        ssize_t nbytes_written = write(serial_fd_, (const uint8_t*)&cmd_frame, MCU_COMMAND_FRAME_SIZE);
+        
+        if (nbytes_written < 0)
         {
             ROS_ERROR("Failed to send serial data: %s", strerror(errno));
             return;
         }
+        else if (nbytes_written != (ssize_t)MCU_COMMAND_FRAME_SIZE)
+        {
+            ROS_WARN("Incomplete write: expected %zu bytes, wrote %zd bytes", MCU_COMMAND_FRAME_SIZE, nbytes_written);
+            return;
+        }
         
-        ROS_DEBUG("Command sent: v=%.4f, w=%.4f", v, w);
+        // 刷新缓冲区
+        tcflush(serial_fd_, TCOFLUSH);
     }
     
     // 接收线程

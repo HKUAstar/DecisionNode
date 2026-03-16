@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <arg name="serial_port" default="/dev/ttyACM0" doc="USB Serial port device (STM32 Virtual COM Port)"/>
+    <arg name="serial_port" default="/dev/ttyACM1" doc="USB Serial port device (STM32 Virtual COM Port)"/>
     <arg name="baudrate" default="115200" doc="USB CDC baudrate"/>
     <arg name="nav_frequency" default="50" doc="NavigationFrame publishing frequency (Hz)"/>
     <arg name="output" default="screen" doc="Launch output target"/>

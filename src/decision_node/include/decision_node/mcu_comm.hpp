@@ -16,8 +16,8 @@ static_assert(sizeof(CANDataFrame) == 8, "CANDataFrame must be exactly 8 bytes")
 // 上板→下板 (NUC→C板)
 struct CANCommandFrame
 {
-    float    v;               // 线速度
-    float    w;               // 角速度
+    float    v_x;             // x方向线速度
+    float    v_y;             // y方向线速度
 } __attribute__((packed));
 
 static_assert(sizeof(CANCommandFrame) == 8, "CANCommandFrame must be exactly 8 bytes");
