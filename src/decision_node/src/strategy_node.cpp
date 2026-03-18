@@ -130,7 +130,7 @@ public:
     bb->set("ref.red_dead", state_->red_dead);
     bb->set("ref.blue_dead", state_->blue_dead);
     
-    // Enemy positions - 检测-8888无效值，只在有效时更新缓存
+    // -8888无效检测
     if (state_->enemy_hero_x != -8888.0f) cached_enemy_hero_x_ = state_->enemy_hero_x;
     if (state_->enemy_hero_y != -8888.0f) cached_enemy_hero_y_ = state_->enemy_hero_y;
     if (state_->enemy_engineer_x != -8888.0f) cached_enemy_engineer_x_ = state_->enemy_engineer_x;

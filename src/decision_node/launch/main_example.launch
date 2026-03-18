@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!--
+示例: 在另一个包 (robot_bringup) 中集成 decision_node 的 MCU CAN 通讯
+
+假设你有以下包结构:
+  catkin_ws/src/
+    ├── decision_node/
+    │   ├── launch/mcu_communicator_can.launch
+    │   └── ...
+    │
+    └── robot_bringup/
+        ├── launch/main.launch (本文件)
+        └── ...
+
+这个例子展示了如何在 robot_bringup 包的 main.launch 中
+启动 decision_node 包的 MCU CAN 通讯
+-->
+
+<launch>
+  <arg name="robot_ns" default="/robot" doc="Robot namespace" />
+  <arg name="can_interface" default="can0" doc="CAN interface" />
+  <arg name="nav_frequency" default="50" doc="Navigation data publish frequency" />
+  
+  <!-- =============================================
+       方式 1: 使用 <include> 标签 (推荐)
+       ============================================= -->
+  
+  <include file="$(find decision_node)/launch/mcu_communicator_can.launch">
+    <arg name="can_interface" value="$(arg can_interface)" />
+    <arg name="nav_frequency" value="$(arg nav_frequency)" />
+  </include>
+  
+  
+  <!-- =============================================
+       其他节点启动示例
+       ============================================= -->
+  
+  <!-- 导航节点 -->
+  <!-- <node name="navigation" pkg="your_nav_package" type="navigation_node" output="screen" /> -->
+  
+  <!-- 规划节点 -->
+  <!-- <node name="planning" pkg="your_planning_package" type="planner_node" output="screen" /> -->
+  
+  <!-- RViz 可视化 (可选) -->
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robot_bringup)/config/robot.rviz" /> -->
+  
+</launch>

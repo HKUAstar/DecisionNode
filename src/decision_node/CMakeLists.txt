@@ -48,6 +48,8 @@ add_executable(continuous_forwarder src/test.cpp)
 
 add_executable(mcu_communicator src/mcu_communicator.cpp)
 
+add_executable(mcu_communicator_can src/mcu_communicator_can.cpp)
+
 add_executable(command_test src/command_test.cpp)
 
 target_link_libraries(strategy_node
@@ -59,12 +61,14 @@ target_link_libraries(continuous_forwarder ${catkin_LIBRARIES})
 
 target_link_libraries(mcu_communicator ${catkin_LIBRARIES})
 
+target_link_libraries(mcu_communicator_can ${catkin_LIBRARIES})
+
 target_link_libraries(command_test ${catkin_LIBRARIES})
 
 # 安装规则 mcu_communicator
 install(DIRECTORY config launch
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(TARGETS strategy_node continuous_forwarder mcu_communicator command_test
+install(TARGETS strategy_node continuous_forwarder mcu_communicator mcu_communicator_can command_test
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 

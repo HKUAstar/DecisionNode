@@ -1,17 +1,28 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
+<!--
+  跨包包含: 在其他包的 launch 文件中
+     <include file="$(find decision_node)/launch/mcu_communicator_can.launch">
+       <arg name="can_interface" value="can0" />
+       <arg name="nav_frequency" value="50" />
+     </include>
+-->
+
 <launch>
-    <arg name="serial_port" default="/dev/ttyUSB0" doc="Serial port device"/>
-    <arg name="baudrate" default="115200" doc="Serial port baudrate"/>
-    <arg name="nav_frequency" default="50" doc="NavigationFrame publishing frequency (Hz)"/>
-    <arg name="output" default="screen" doc="Launch output target"/>
+  <!-- 参数声明 -->
+  <arg name="can_interface" default="can0" doc="CAN 接口名称 (can0, can1 等)" />
+  <arg name="nav_frequency" default="50" doc="导航数据发布频率 (Hz)" />
+  
+  <!-- MCU CAN 通讯节点 -->
+  <node name="mcu_communicator" pkg="decision_node" type="mcu_communicator_can" output="screen">
+    <!-- CAN 接口配置 -->
+    <param name="can_interface" value="$(arg can_interface)" />
     
-    <!-- MCU通讯节点 - 接收下位机数据并发布ROS Topics -->
-    <node name="mcu_communicator" pkg="decision_node" type="mcu_communicator" output="$(arg output)">
-        <!-- 串口配置 -->
-        <param name="serial_port" value="$(arg serial_port)" />
-        <param name="baudrate" value="$(arg baudrate)" />
-        <!-- 导航数据发布频率 (Hz) -->
-        <param name="nav_frequency" value="$(arg nav_frequency)" />
-    </node>
+    <!-- 导航数据发布频率 (Hz) -->
+    <param name="nav_frequency" value="$(arg nav_frequency)" />
     
+    <!-- 话题重映射
+    <remap from="/cmd_vel" to="/robot/cmd_vel" />
+    -->
+  </node>
+  
 </launch>
