@@ -12,24 +12,40 @@
 #include <thread>
 #include <cstdio>
 
-// CRC8 查表 - 与 MCU 端完全相同（初始值 0xFF）
-static constexpr uint8_t CRC8_TABLE[256] = {
-    0x00, 0x5e, 0xbc, 0xe2, 0x61, 0x3f, 0xdd, 0x83, 0xc2, 0x9c, 0x7e, 0x20, 0xa3, 0xfd, 0x1f, 0x41,
-    0x9d, 0xc3, 0x21, 0x7f, 0xfc, 0xa2, 0x40, 0x1e, 0x5f, 0x01, 0xe3, 0xbd, 0x3e, 0x60, 0x82, 0xdc,
-    0x23, 0x7d, 0x9f, 0xc1, 0x42, 0x1c, 0xfe, 0xa0, 0xe1, 0xbf, 0x5d, 0x03, 0x80, 0xde, 0x3c, 0x62,
-    0xbe, 0xe0, 0x02, 0x5c, 0xdf, 0x81, 0x63, 0x3d, 0x7c, 0x22, 0xc0, 0x9e, 0x1d, 0x43, 0xa1, 0xff,
-    0x46, 0x18, 0xfa, 0xa4, 0x27, 0x79, 0x9b, 0xc5, 0x84, 0xda, 0x38, 0x66, 0xe5, 0xbb, 0x59, 0x07,
-    0xdb, 0x85, 0x67, 0x39, 0xba, 0xe4, 0x06, 0x58, 0x19, 0x47, 0xa5, 0xfb, 0x78, 0x26, 0xc4, 0x9a,
-    0x65, 0x3b, 0xd9, 0x87, 0x04, 0x5a, 0xb8, 0xe6, 0xa7, 0xf9, 0x1b, 0x45, 0xc6, 0x98, 0x7a, 0x24,
-    0xf8, 0xa6, 0x44, 0x1a, 0x99, 0xc7, 0x25, 0x7b, 0x3a, 0x64, 0x86, 0xd8, 0x5b, 0x05, 0xe7, 0xb9,
-    0x8c, 0xd2, 0x30, 0x6e, 0xed, 0xb3, 0x51, 0x0f, 0x4e, 0x10, 0xf2, 0xac, 0x2f, 0x71, 0x93, 0xcd,
-    0x11, 0x4f, 0xad, 0xf3, 0x70, 0x2e, 0xcc, 0x92, 0xd3, 0x8d, 0x6f, 0x31, 0xb2, 0xec, 0x0e, 0x50,
-    0xaf, 0xf1, 0x13, 0x4d, 0xce, 0x90, 0x72, 0x2c, 0x6d, 0x33, 0xd1, 0x8f, 0x0c, 0x52, 0xb0, 0xee,
-    0x32, 0x6c, 0x8e, 0xd0, 0x53, 0x0d, 0xef, 0xb1, 0xf0, 0xae, 0x4c, 0x12, 0x91, 0xcf, 0x2d, 0x73,
-    0xca, 0x94, 0x76, 0x28, 0xab, 0xf5, 0x17, 0x49, 0x08, 0x56, 0xb4, 0xea, 0x69, 0x37, 0xd5, 0x8b,
-    0x57, 0x09, 0xeb, 0xb5, 0x36, 0x68, 0x8a, 0xd4, 0x95, 0xcb, 0x29, 0x77, 0xf4, 0xaa, 0x48, 0x16,
-    0xe9, 0xb7, 0x55, 0x0b, 0x88, 0xd6, 0x34, 0x6a, 0x2b, 0x75, 0x97, 0xc9, 0x4a, 0x14, 0xf6, 0xa8,
-    0x74, 0x2a, 0xc8, 0x96, 0x15, 0x4b, 0xa9, 0xf7, 0xb6, 0xe8, 0x0a, 0x54, 0xd7, 0x89, 0x6b, 0x35,
+// CRC16 查表 - DJI标准（与头文件中的表保持一致）
+static constexpr uint16_t CRC16_TABLE[256] = {
+    0x0000, 0x1189, 0x2312, 0x329B, 0x4624, 0x57AD, 0x6536, 0x74BF,
+    0x8C48, 0x9DC1, 0xAF5A, 0xBED3, 0xCA6C, 0xDBE5, 0xE97E, 0xF8F7,
+    0x1081, 0x0108, 0x3393, 0x221A, 0x56A5, 0x472C, 0x75B7, 0x643E,
+    0x9CC9, 0x8D40, 0xBFDB, 0xAE52, 0xDAED, 0xCB64, 0xF9FF, 0xE876,
+    0x2102, 0x308B, 0x0210, 0x1399, 0x6726, 0x76AF, 0x4434, 0x55BD,
+    0xAD4A, 0xBCC3, 0x8E58, 0x9FD1, 0xEB6E, 0xFAE7, 0xC87C, 0xD9F5,
+    0x3183, 0x200A, 0x1291, 0x0318, 0x77A7, 0x662E, 0x54B5, 0x453C,
+    0xBDCB, 0xAC42, 0x9ED9, 0x8F50, 0xFBEF, 0xEA66, 0xD8FD, 0xC974,
+    0x4204, 0x538D, 0x6116, 0x709F, 0x0420, 0x15A9, 0x2732, 0x36BB,
+    0xCE4C, 0xDFC5, 0xED5E, 0xFCD7, 0x8868, 0x99E1, 0xAB7A, 0xBAF3,
+    0x5285, 0x430C, 0x7197, 0x601E, 0x14A1, 0x0528, 0x37B3, 0x263A,
+    0xDECD, 0xCF44, 0xFDDF, 0xEC56, 0x98E9, 0x8960, 0xBBFB, 0xAA72,
+    0x6306, 0x728F, 0x4014, 0x519D, 0x2522, 0x34AB, 0x0630, 0x17B9,
+    0xEF4E, 0xFEC7, 0xCC5C, 0xDDD5, 0xA96A, 0xB8E3, 0x8A78, 0x9BF1,
+    0x7387, 0x620E, 0x5095, 0x411C, 0x35A3, 0x242A, 0x16B1, 0x0738,
+    0xFFCF, 0xEE46, 0xDCDD, 0xCD54, 0xB9EB, 0xA862, 0x9AF9, 0x8B70,
+    0x8408, 0x9581, 0xA71A, 0xB693, 0xC22C, 0xD3A5, 0xE13E, 0xF0B7,
+    0x0840, 0x19C9, 0x2B52, 0x3ADB, 0x4E64, 0x5FED, 0x6D76, 0x7CFF,
+    0x9489, 0x8500, 0xB79B, 0xA612, 0xD2AD, 0xC324, 0xF1BF, 0xE036,
+    0x18C1, 0x0948, 0x3BD3, 0x2A5A, 0x5EE5, 0x4F6C, 0x7DF7, 0x6C7E,
+    0xA50A, 0xB483, 0x8618, 0x9791, 0xE32E, 0xF2A7, 0xC03C, 0xD1B5,
+    0x2942, 0x38CB, 0x0A50, 0x1BD9, 0x6F66, 0x7EEF, 0x4C74, 0x5DFD,
+    0xB58B, 0xA402, 0x9699, 0x8710, 0xF3AF, 0xE226, 0xD0BD, 0xC134,
+    0x39C3, 0x284A, 0x1AD1, 0x0B58, 0x7FE7, 0x6E6E, 0x5CF5, 0x4D7C,
+    0xC60C, 0xD785, 0xE51E, 0xF497, 0x8028, 0x91A1, 0xA33A, 0xB2B3,
+    0x4A44, 0x5BCD, 0x6956, 0x78DF, 0x0C60, 0x1DE9, 0x2F72, 0x3EFB,
+    0xD68D, 0xC704, 0xF59F, 0xE416, 0x90A9, 0x8120, 0xB3BB, 0xA232,
+    0x5AC5, 0x4B4C, 0x79D7, 0x685E, 0x1CE1, 0x0D68, 0x3FF3, 0x2E7A,
+    0xE70E, 0xF687, 0xC41C, 0xD595, 0xA12A, 0xB0A3, 0x8238, 0x93B1,
+    0x6B46, 0x7ACF, 0x4854, 0x59DD, 0x2D62, 0x3CEB, 0x0E70, 0x1FF9,
+    0xF78F, 0xE606, 0xD49D, 0xC514, 0xB1AB, 0xA022, 0x92B9, 0x8330,
+    0x7BC7, 0x6A4E, 0x58D5, 0x495C, 0x3DE3, 0x2C6A, 0x1EF1, 0x0F78,
 };
 
 class MCUCommunicator
@@ -322,30 +338,6 @@ private:
         return new_value;
     }
     
-    // 更新敌方位置数据，处理-8888无效值
-    void updateEnemyPositions(const MCUDataFrame& frame)
-    {
-        // 验证并更新英雄位置
-        cached_enemy_hero_x_ = validateEnemyCoordinate(frame.enemy_hero_x, cached_enemy_hero_x_);
-        cached_enemy_hero_y_ = validateEnemyCoordinate(frame.enemy_hero_y, cached_enemy_hero_y_);
-        
-        // 验证并更新工程位置
-        cached_enemy_engineer_x_ = validateEnemyCoordinate(frame.enemy_engineer_x, cached_enemy_engineer_x_);
-        cached_enemy_engineer_y_ = validateEnemyCoordinate(frame.enemy_engineer_y, cached_enemy_engineer_y_);
-        
-        // 验证并更新步兵3位置
-        cached_enemy_standard_3_x_ = validateEnemyCoordinate(frame.enemy_standard_3_x, cached_enemy_standard_3_x_);
-        cached_enemy_standard_3_y_ = validateEnemyCoordinate(frame.enemy_standard_3_y, cached_enemy_standard_3_y_);
-        
-        // 验证并更新步兵4位置
-        cached_enemy_standard_4_x_ = validateEnemyCoordinate(frame.enemy_standard_4_x, cached_enemy_standard_4_x_);
-        cached_enemy_standard_4_y_ = validateEnemyCoordinate(frame.enemy_standard_4_y, cached_enemy_standard_4_y_);
-        
-        // 验证并更新哨兵位置
-        cached_enemy_sentry_x_ = validateEnemyCoordinate(frame.enemy_sentry_x, cached_enemy_sentry_x_);
-        cached_enemy_sentry_y_ = validateEnemyCoordinate(frame.enemy_sentry_y, cached_enemy_sentry_y_);
-    }
-    
     // 发送命令到下位机
     void sendMotionCommand(uint8_t motion_mode)
     {
@@ -444,32 +436,41 @@ private:
         }
     }
     
-    // CRC8 查表实现
-    uint8_t calculateCRC8(const uint8_t* pch_message, size_t dw_length, uint8_t ucCRC8 = 0xFF)
+    // CRC16 查表实现 - DJI标准
+    // 计算从start_pos开始，长度为len的字节的CRC16
+    uint16_t calculateCRC16(const uint8_t* data, size_t len, uint16_t crc = 0xFFFF)
     {
-        unsigned char uc_index;
-        while (dw_length--)
+        for (size_t i = 0; i < len; i++)
         {
-            uc_index = ucCRC8 ^ (*pch_message++);
-            ucCRC8 = CRC8_TABLE[uc_index];
+            uint8_t index = (crc ^ data[i]) & 0xFF;
+            crc = (crc >> 8) ^ CRC16_TABLE[index];
         }
-        return ucCRC8;
+        return crc;
     }
     
-    // CRC8验证函数
-    bool verifyCRC8(MCUDataFrame* frame)
+    // CRC16验证函数 - 验证HK协议数据帧
+    bool verifyCRC16(MCUDataFrame* frame)
     {
-        uint8_t received_crc = frame->crc8;
+        uint16_t received_crc = frame->packet_crc16;
         
-        // 按照 MCU 的方式计算：get_CRC8_check_sum((uint8_t*)&frame, MCU_FRAME_SIZE - 2, 0xFF)
-        // MCU_FRAME_SIZE = 46, 所以计算前 44 字节的 CRC
-        uint8_t calculated_crc = calculateCRC8((uint8_t*)&frame->sof, MCU_FRAME_SIZE - 2, 0xFF);
+        // Packet CRC16: 对字节0到Data结束计算（0-73共74字节）
+        // 即从sof[0]开始到data末尾的所有数据，初始值0xFFFF
+        uint16_t calculated_crc = calculateCRC16((uint8_t*)&frame->header, HK_FRAME_HEADER_SIZE + HK_FRAME_DATA_SIZE, 0xFFFF);
         
         if (received_crc != calculated_crc)
         {
-            ROS_WARN("CRC8 mismatch: received=0x%02X, calculated=0x%02X", received_crc, calculated_crc);
+            ROS_WARN("CRC16 mismatch: received=0x%04X, calculated=0x%04X", received_crc, calculated_crc);
             return false;
         }
+        return true;
+    }
+    
+    // Header CRC8 验证函数 - 验证HK协议帧头
+    bool verifyHeaderCRC8(MCUDataFrame* frame)
+    {
+        // 这里可以添加Header CRC8验证，如果需要的话
+        // 但根据协议，主要依赖Packet CRC16
+        // 暂时保留此函数以便后续扩展
         return true;
     }
     
@@ -522,12 +523,32 @@ private:
     {
         for (uint8_t byte : data)
         {
-            // 寻找帧头
+            // 寻找HK协议帧头 ('H' = 0x48)
             if (frame_buffer_index_ == 0)
             {
-                if (byte == MCU_FRAME_SOF)
+                if (byte == HK_FRAME_SOF_H)
                 {
                     frame_buffer_[frame_buffer_index_++] = byte;
+                }
+                continue;
+            }
+            
+            // 检查第二个字节是否为'K' (0x4B)
+            if (frame_buffer_index_ == 1)
+            {
+                if (byte == HK_FRAME_SOF_K)
+                {
+                    frame_buffer_[frame_buffer_index_++] = byte;
+                }
+                else
+                {
+                    // 不是有效的帧头，重置
+                    frame_buffer_index_ = 0;
+                    // 检查当前字节是否为'H'（准备下一个帧）
+                    if (byte == HK_FRAME_SOF_H)
+                    {
+                        frame_buffer_[frame_buffer_index_++] = byte;
+                    }
                 }
                 continue;
             }
@@ -535,30 +556,31 @@ private:
             // 接收数据
             frame_buffer_[frame_buffer_index_++] = byte;
             
-            // 检查是否接收完整帧
-            if (frame_buffer_index_ == MCU_FRAME_SIZE)
+            // 检查是否接收完整帧 (78字节)
+            if (frame_buffer_index_ == HK_FRAME_SIZE)
             {
-                // 验证帧尾
-                if (frame_buffer_[MCU_FRAME_SIZE - 1] == MCU_FRAME_EOF)
+                // 验证帧尾 ('K', 'H')
+                if (frame_buffer_[HK_FRAME_SIZE - 2] == HK_FRAME_TRAILER_K &&
+                    frame_buffer_[HK_FRAME_SIZE - 1] == HK_FRAME_TRAILER_H)
                 {
                     // 解析并发布数据
                     parseAndPublish();
                 }
                 else
                 {
-                    // ROS_DEBUG("Invalid frame end marker: 0x%02X (expected 0xFE at position %u).", 
-                    //          frame_buffer_[MCU_FRAME_SIZE - 1], MCU_FRAME_SIZE - 1);
+                    ROS_DEBUG("Invalid frame trailer: received 0x%02X 0x%02X (expected 0x%02X 0x%02X)",
+                             frame_buffer_[HK_FRAME_SIZE - 2], frame_buffer_[HK_FRAME_SIZE - 1],
+                             HK_FRAME_TRAILER_K, HK_FRAME_TRAILER_H);
                     
-                    // 尝试重新同步：寻找缓冲区中的下一个帧头
+                    // 尝试重新同步：寻找缓冲区中的下一个帧头 ('H')
                     bool found_resync = false;
-                    for (size_t i = 1; i < MCU_FRAME_SIZE; i++)
+                    for (size_t i = 1; i < HK_FRAME_SIZE; i++)
                     {
-                        if (frame_buffer_[i] == MCU_FRAME_SOF)
+                        if (frame_buffer_[i] == HK_FRAME_SOF_H && i + 1 < HK_FRAME_SIZE && 
+                            frame_buffer_[i + 1] == HK_FRAME_SOF_K)
                         {
-                            // ROS_DEBUG("Found potential frame resync at offset %zu", i);
-                            // 将缓冲区数据移动以对齐新的帧头
-                            memmove(frame_buffer_, frame_buffer_ + i, MCU_FRAME_SIZE - i);
-                            frame_buffer_index_ = MCU_FRAME_SIZE - i;
+                            memmove(frame_buffer_, frame_buffer_ + i, HK_FRAME_SIZE - i);
+                            frame_buffer_index_ = HK_FRAME_SIZE - i;
                             found_resync = true;
                             break;
                         }
@@ -571,7 +593,8 @@ private:
                 }
                 
                 // 如果成功解析，重置缓冲区
-                if (frame_buffer_[MCU_FRAME_SIZE - 1] == MCU_FRAME_EOF)
+                if (frame_buffer_[HK_FRAME_SIZE - 2] == HK_FRAME_TRAILER_K &&
+                    frame_buffer_[HK_FRAME_SIZE - 1] == HK_FRAME_TRAILER_H)
                 {
                     frame_buffer_index_ = 0;
                 }
@@ -583,86 +606,114 @@ private:
     {
         // 将原始字节数据复制到结构体
         MCUDataFrame frame;
-        memcpy(&frame, frame_buffer_, MCU_FRAME_SIZE);
+        memcpy(&frame, frame_buffer_, HK_FRAME_SIZE);
         
-        // 验证帧头和帧尾
-        if (frame.sof != MCU_FRAME_SOF || frame.eof != MCU_FRAME_EOF)
+        // 验证帧头
+        if (frame.header.sof[0] != HK_FRAME_SOF_H || frame.header.sof[1] != HK_FRAME_SOF_K)
         {
-            ROS_WARN("Invalid frame markers: SOF=0x%02X (expected 0x%02X), EOF=0x%02X (expected 0x%02X)", 
-                    frame.sof, MCU_FRAME_SOF, frame.eof, MCU_FRAME_EOF);
+            ROS_WARN("Invalid frame header: SOF=0x%02X 0x%02X (expected 0x%02X 0x%02X)",
+                    frame.header.sof[0], frame.header.sof[1], HK_FRAME_SOF_H, HK_FRAME_SOF_K);
             return;
         }
         
-        // 验证CRC8校验
-        if (!verifyCRC8(&frame))
+        // 验证帧尾
+        if (frame.trailer[0] != HK_FRAME_TRAILER_K || frame.trailer[1] != HK_FRAME_TRAILER_H)
         {
-            ROS_WARN("CRC8 verification failed - Frame details: "
-                    "robot_id=%u, game_progress=%u, crc8=0x%02X, EOF=0x%02X",
-                    frame.robot_id, frame.game_progress, frame.crc8, frame.eof);
+            ROS_WARN("Invalid frame trailer: 0x%02X 0x%02X (expected 0x%02X 0x%02X)",
+                    frame.trailer[0], frame.trailer[1], HK_FRAME_TRAILER_K, HK_FRAME_TRAILER_H);
             return;
         }
         
-        // ROS_DEBUG("Valid frame received: robot_id=%u, game_progress=%u, crc8=0x%02X",
-        //          frame.robot_id, frame.game_progress, frame.crc8);
+        // 验证Packet Type
+        if (frame.header.packet_type != HK_PACKET_TYPE_GAME)
+        {
+            ROS_WARN("Invalid packet type: 0x%02X (expected 0x%02X)", 
+                    frame.header.packet_type, HK_PACKET_TYPE_GAME);
+            return;
+        }
         
-        // 更新敌方位置数据（处理-8888无效值）
-        updateEnemyPositions(frame);
+        // 验证CRC16校验
+        if (!verifyCRC16(&frame))
+        {
+            ROS_WARN("CRC16 verification failed");
+            return;
+        }
+        
+        ROS_DEBUG("Valid HK frame received: game_progress=%u, self_hp=%u, crc16=0x%04X",
+                 frame.data.game_progress, frame.data.self_hp, frame.packet_crc16);
+        
+        // 更新敌方位置数据（处理坐标有效性，单位转换cm -> m）
+        cached_enemy_hero_x_ = frame.data.enemy_hero_x / 100.0f;
+        cached_enemy_hero_y_ = frame.data.enemy_hero_y / 100.0f;
+        cached_enemy_engineer_x_ = frame.data.enemy_engineer_x / 100.0f;
+        cached_enemy_engineer_y_ = frame.data.enemy_engineer_y / 100.0f;
+        cached_enemy_standard_3_x_ = frame.data.enemy_std3_x / 100.0f;
+        cached_enemy_standard_3_y_ = frame.data.enemy_std3_y / 100.0f;
+        cached_enemy_standard_4_x_ = frame.data.enemy_std4_x / 100.0f;
+        cached_enemy_standard_4_y_ = frame.data.enemy_std4_y / 100.0f;
+        cached_enemy_sentry_x_ = frame.data.enemy_sentry_x / 100.0f;
+        cached_enemy_sentry_y_ = frame.data.enemy_sentry_y / 100.0f;
         
         // 更新机器人颜色（0=red, 1=blue）
-        robot_color_ = frame.robot_color;
+        robot_color_ = frame.data.robot_color;
         
-        // 发布已有topic的数据
+        // 发布数据到各个Topic
         std_msgs::UInt8 msg_uint8;
         std_msgs::UInt16 msg_uint16;
         std_msgs::Float32 msg_float;
-   
-        msg_uint8.data = frame.game_progress;
-        pub_game_progress_.publish(msg_uint8);
-        
-        msg_uint16.data = frame.self_hp;
-        pub_remain_hp_.publish(msg_uint16);
-        
-        msg_uint16.data = frame.bullet_remain;
-        pub_bullet_remain_.publish(msg_uint16);
-        
-        msg_uint8.data = frame.occupy_status;
-        pub_occupy_status_.publish(msg_uint8);
-        
-        
-        msg_uint8.data = frame.robot_id;
-        pub_robot_id_.publish(msg_uint8);
-        
-        msg_uint8.data = frame.robot_color;
-        pub_robot_color_.publish(msg_uint8);
-        
-        msg_uint16.data = frame.self_hp;
-        pub_self_hp_.publish(msg_uint16);
-        
-        msg_uint16.data = frame.self_max_hp;
-        pub_self_max_hp_.publish(msg_uint16);
-        
-        
-        msg_uint16.data = frame.red_1_hp;
-        pub_red_1_hp_.publish(msg_uint16);
-        
-        msg_uint16.data = frame.red_3_hp;
-        pub_red_3_hp_.publish(msg_uint16);
-        
-        msg_uint16.data = frame.red_7_hp;
-        pub_red_7_hp_.publish(msg_uint16);
-        
-        msg_uint16.data = frame.blue_1_hp;
-        pub_blue_1_hp_.publish(msg_uint16);
-        
-        msg_uint16.data = frame.blue_3_hp;
-        pub_blue_3_hp_.publish(msg_uint16);
-        
-        msg_uint16.data = frame.blue_7_hp;
-        pub_blue_7_hp_.publish(msg_uint16);
-        
-        // 发布敌方位置数据
+        std_msgs::Int32 msg_int32;
         geometry_msgs::Point enemy_pos;
         
+        // 比赛状态
+        msg_uint8.data = frame.data.game_progress;
+        pub_game_progress_.publish(msg_uint8);
+        
+        // 自身血量（从robot_state中获取）
+        msg_uint16.data = frame.data.self_hp;
+        pub_remain_hp_.publish(msg_uint16);
+        
+        msg_uint16.data = frame.data.bullet_remain;
+        pub_bullet_remain_.publish(msg_uint16);
+        
+        // 占领状态
+        msg_uint8.data = frame.data.occupy_status;
+        pub_occupy_status_.publish(msg_uint8);
+        
+        // 机器人ID和颜色
+        msg_uint8.data = frame.data.robot_id;
+        pub_robot_id_.publish(msg_uint8);
+        
+        msg_uint8.data = frame.data.robot_color;
+        pub_robot_color_.publish(msg_uint8);
+        
+        // 自身血量信息
+        msg_uint16.data = frame.data.self_hp;
+        pub_self_hp_.publish(msg_uint16);
+        
+        msg_uint16.data = frame.data.self_max_hp;
+        pub_self_max_hp_.publish(msg_uint16);
+        
+        // 红方血量
+        msg_uint16.data = frame.data.red_1_hp;
+        pub_red_1_hp_.publish(msg_uint16);
+        
+        msg_uint16.data = frame.data.red_3_hp;
+        pub_red_3_hp_.publish(msg_uint16);
+        
+        msg_uint16.data = frame.data.red_7_hp;
+        pub_red_7_hp_.publish(msg_uint16);
+        
+        // 蓝方血量
+        msg_uint16.data = frame.data.blue_1_hp;
+        pub_blue_1_hp_.publish(msg_uint16);
+        
+        msg_uint16.data = frame.data.blue_3_hp;
+        pub_blue_3_hp_.publish(msg_uint16);
+        
+        msg_uint16.data = frame.data.blue_7_hp;
+        pub_blue_7_hp_.publish(msg_uint16);
+        
+        // 敌方位置数据
         enemy_pos.x = cached_enemy_hero_x_;
         enemy_pos.y = cached_enemy_hero_y_;
         enemy_pos.z = 0.0f;
@@ -688,44 +739,38 @@ private:
         enemy_pos.z = 0.0f;
         pub_enemy_sentry_.publish(enemy_pos);
         
-        msg_uint8.data = frame.suggested_target;
+        // 雷达相关
+        msg_uint8.data = frame.data.suggested_target;
         pub_suggested_target_.publish(msg_uint8);
         
-        msg_uint16.data = frame.radar_flags;
+        msg_uint16.data = frame.data.radar_flags;
         pub_radar_flags_.publish(msg_uint16);
         
-        msg_uint16.data = frame.red_dead;
+        // 死亡位标记
+        msg_uint16.data = frame.data.red_dead_bits;
         pub_red_dead_.publish(msg_uint16);
         
-        msg_uint16.data = frame.blue_dead;
+        msg_uint16.data = frame.data.blue_dead_bits;
         pub_blue_dead_.publish(msg_uint16);
         
-        // ===== 新增：发布分离的TF数据 =====
-        msg_float.data = frame.yaw_angle;
-        pub_yaw_angle_.publish(msg_float);
+        // 分数更新
+        updateScore(frame.data);
         
-        msg_float.data = frame.chassis_imu;
-        pub_chassis_imu_.publish(msg_float);
-        // ===== 新增结束 ====
-        
-        updateScore(frame);
-        
-        
-        std_msgs::Int32 msg_score;
-        msg_score.data = friendly_score_;
-        pub_friendly_score_.publish(msg_score);
-        msg_score.data = enemy_score_;
-        pub_enemy_score_.publish(msg_score);
+        msg_int32.data = friendly_score_;
+        pub_friendly_score_.publish(msg_int32);
+        msg_int32.data = enemy_score_;
+        pub_enemy_score_.publish(msg_int32);
         
         ROS_DEBUG("MCU frame parsed: game_progress=%u, self_hp=%u, bullet=%u, friendly_score=%d, enemy_score=%d",
-                 frame.game_progress, frame.self_hp, frame.bullet_remain, friendly_score_, enemy_score_);
+                 frame.data.game_progress, frame.data.self_hp, frame.data.bullet_remain, 
+                 friendly_score_, enemy_score_);
     }
     //分数计算部分
-    void updateScore(const MCUDataFrame& frame)
+    void updateScore(const HKGameData& data)
     {
         // 只有在游戏开始(game_progress == 4)时才计算分数
         // 否则分数保持在200不变
-        if (frame.game_progress != 4)
+        if (data.game_progress != 4)
         {
             friendly_score_ = 200;
             enemy_score_ = 200;
@@ -746,43 +791,43 @@ private:
         }
         
         // 检测占领状态变化 - 每秒扣1分
-        if (frame.occupy_status != last_occupy_status_)
+        if (data.occupy_status != last_occupy_status_)
         {
-            // occupy_statu 2 到 3 的情况 - 己方扣分
-            if (last_occupy_status_ == 2 && frame.occupy_status == 3)
+            // occupy_status 2 到 3 的情况 - 己方扣分
+            if (last_occupy_status_ == 2 && data.occupy_status == 3)
             {
                 friendly_score_ = std::max(0, friendly_score_ - 1);
                 ROS_INFO("Occupy status changed from 2 to 3: friendly_score now %d", friendly_score_);
             }
             //  occupy_status  1 到 3  - 敌方扣分
-            else if (last_occupy_status_ == 1 && frame.occupy_status == 3)
+            else if (last_occupy_status_ == 1 && data.occupy_status == 3)
             {
                 enemy_score_ = std::max(0, enemy_score_ - 1);
                 ROS_INFO("Occupy status changed from 1 to 3: enemy_score now %d", enemy_score_);
             }
             
-            last_occupy_status_ = frame.occupy_status;
+            last_occupy_status_ = data.occupy_status;
             last_score_update_time_ = current_time;
         }
         else if ((current_time - last_score_update_time_).toSec() >= 1.0)
         {
             // occupy_status == 2: 对方占领 → 己方扣1分
-            if (frame.occupy_status == 2)
+            if (data.occupy_status == 2)
             {
                 friendly_score_ = std::max(0, friendly_score_ - 1);
             }
             // occupy_status == 1: 己方占领 → 对方扣1分
-            else if (frame.occupy_status == 1)
+            else if (data.occupy_status == 1)
             {
                 enemy_score_ = std::max(0, enemy_score_ - 1);
             }
             last_score_update_time_ = current_time;
         }
         
-        // 检测红方死亡状态变化
-        if (frame.red_dead != last_red_dead_)
+        // 检测红方死亡状态变化 (使用red_dead_bits而不是red_dead)
+        if (data.red_dead_bits != last_red_dead_)
         {
-            uint16_t new_deaths = frame.red_dead - last_red_dead_;
+            uint16_t new_deaths = data.red_dead_bits - last_red_dead_;
             for (uint16_t i = 0; i < new_deaths; i++)
             {
                 if (robot_color_ == 0)  // 己方是红色
@@ -798,13 +843,13 @@ private:
                     ROS_INFO("Red robot killed (enemy): enemy_score now %d", enemy_score_);
                 }
             }
-            last_red_dead_ = frame.red_dead;
+            last_red_dead_ = data.red_dead_bits;
         }
         
-        // 检测蓝方死亡状态变化
-        if (frame.blue_dead != last_blue_dead_)
+        // 检测蓝方死亡状态变化 (使用blue_dead_bits而不是blue_dead)
+        if (data.blue_dead_bits != last_blue_dead_)
         {
-            uint16_t new_deaths = frame.blue_dead - last_blue_dead_;
+            uint16_t new_deaths = data.blue_dead_bits - last_blue_dead_;
             for (uint16_t i = 0; i < new_deaths; i++)
             {
                 if (robot_color_ == 1)  // 己方是蓝色
@@ -820,7 +865,7 @@ private:
                     ROS_INFO("Blue robot killed (enemy): enemy_score now %d", enemy_score_);
                 }
             }
-            last_blue_dead_ = frame.blue_dead;
+            last_blue_dead_ = data.blue_dead_bits;
         }
     }
 };
