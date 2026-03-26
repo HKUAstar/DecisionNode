@@ -27,7 +27,7 @@ catkin_package(
     INCLUDE_DIRS include
     # LIBRARIES decision_node
     CATKIN_DEPENDS roscpp std_msgs geometry_msgs nav_msgs serial tf2 tf2_ros tf2_geometry_msgs
-    DEPENDS BehaviorTree
+    DEPENDS behaviortree_cpp_v3
 )
 
 include_directories(

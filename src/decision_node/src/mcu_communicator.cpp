@@ -8,45 +8,9 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Twist.h>
 #include <serial/serial.h>
-#include <bot_sim/mcu_comm.hpp>
+#include <decision_node/mcu_comm.hpp>
 #include <thread>
 #include <cstdio>
-
-// CRC16 查表 - DJI标准（与头文件中的表保持一致）
-static constexpr uint16_t CRC16_TABLE[256] = {
-    0x0000, 0x1189, 0x2312, 0x329B, 0x4624, 0x57AD, 0x6536, 0x74BF,
-    0x8C48, 0x9DC1, 0xAF5A, 0xBED3, 0xCA6C, 0xDBE5, 0xE97E, 0xF8F7,
-    0x1081, 0x0108, 0x3393, 0x221A, 0x56A5, 0x472C, 0x75B7, 0x643E,
-    0x9CC9, 0x8D40, 0xBFDB, 0xAE52, 0xDAED, 0xCB64, 0xF9FF, 0xE876,
-    0x2102, 0x308B, 0x0210, 0x1399, 0x6726, 0x76AF, 0x4434, 0x55BD,
-    0xAD4A, 0xBCC3, 0x8E58, 0x9FD1, 0xEB6E, 0xFAE7, 0xC87C, 0xD9F5,
-    0x3183, 0x200A, 0x1291, 0x0318, 0x77A7, 0x662E, 0x54B5, 0x453C,
-    0xBDCB, 0xAC42, 0x9ED9, 0x8F50, 0xFBEF, 0xEA66, 0xD8FD, 0xC974,
-    0x4204, 0x538D, 0x6116, 0x709F, 0x0420, 0x15A9, 0x2732, 0x36BB,
-    0xCE4C, 0xDFC5, 0xED5E, 0xFCD7, 0x8868, 0x99E1, 0xAB7A, 0xBAF3,
-    0x5285, 0x430C, 0x7197, 0x601E, 0x14A1, 0x0528, 0x37B3, 0x263A,
-    0xDECD, 0xCF44, 0xFDDF, 0xEC56, 0x98E9, 0x8960, 0xBBFB, 0xAA72,
-    0x6306, 0x728F, 0x4014, 0x519D, 0x2522, 0x34AB, 0x0630, 0x17B9,
-    0xEF4E, 0xFEC7, 0xCC5C, 0xDDD5, 0xA96A, 0xB8E3, 0x8A78, 0x9BF1,
-    0x7387, 0x620E, 0x5095, 0x411C, 0x35A3, 0x242A, 0x16B1, 0x0738,
-    0xFFCF, 0xEE46, 0xDCDD, 0xCD54, 0xB9EB, 0xA862, 0x9AF9, 0x8B70,
-    0x8408, 0x9581, 0xA71A, 0xB693, 0xC22C, 0xD3A5, 0xE13E, 0xF0B7,
-    0x0840, 0x19C9, 0x2B52, 0x3ADB, 0x4E64, 0x5FED, 0x6D76, 0x7CFF,
-    0x9489, 0x8500, 0xB79B, 0xA612, 0xD2AD, 0xC324, 0xF1BF, 0xE036,
-    0x18C1, 0x0948, 0x3BD3, 0x2A5A, 0x5EE5, 0x4F6C, 0x7DF7, 0x6C7E,
-    0xA50A, 0xB483, 0x8618, 0x9791, 0xE32E, 0xF2A7, 0xC03C, 0xD1B5,
-    0x2942, 0x38CB, 0x0A50, 0x1BD9, 0x6F66, 0x7EEF, 0x4C74, 0x5DFD,
-    0xB58B, 0xA402, 0x9699, 0x8710, 0xF3AF, 0xE226, 0xD0BD, 0xC134,
-    0x39C3, 0x284A, 0x1AD1, 0x0B58, 0x7FE7, 0x6E6E, 0x5CF5, 0x4D7C,
-    0xC60C, 0xD785, 0xE51E, 0xF497, 0x8028, 0x91A1, 0xA33A, 0xB2B3,
-    0x4A44, 0x5BCD, 0x6956, 0x78DF, 0x0C60, 0x1DE9, 0x2F72, 0x3EFB,
-    0xD68D, 0xC704, 0xF59F, 0xE416, 0x90A9, 0x8120, 0xB3BB, 0xA232,
-    0x5AC5, 0x4B4C, 0x79D7, 0x685E, 0x1CE1, 0x0D68, 0x3FF3, 0x2E7A,
-    0xE70E, 0xF687, 0xC41C, 0xD595, 0xA12A, 0xB0A3, 0x8238, 0x93B1,
-    0x6B46, 0x7ACF, 0x4854, 0x59DD, 0x2D62, 0x3CEB, 0x0E70, 0x1FF9,
-    0xF78F, 0xE606, 0xD49D, 0xC514, 0xB1AB, 0xA022, 0x92B9, 0x8330,
-    0x7BC7, 0x6A4E, 0x58D5, 0x495C, 0x3DE3, 0x2C6A, 0x1EF1, 0x0F78,
-};
 
 class MCUCommunicator
 {
@@ -98,15 +62,6 @@ public:
         pub_yaw_angle_ = nh_.advertise<std_msgs::Float32>("/mcu/yaw_angle", 1);
         pub_chassis_imu_ = nh_.advertise<std_msgs::Float32>("/mcu/chassis_imu", 1);
         // ===== 新增结束 =====
-        
-        sub_motion_ = nh_.subscribe<std_msgs::UInt8>("/motion", 1, 
-                                                     &MCUCommunicator::motionCallback, this);
-        sub_recover_ = nh_.subscribe<std_msgs::UInt8>("/recover", 1,
-                                                      &MCUCommunicator::recoverCallback, this);
-        sub_bullet_up_ = nh_.subscribe<std_msgs::UInt8>("/bullet_up", 1,
-                                                        &MCUCommunicator::bulletUpCallback, this);
-        sub_bullet_num_ = nh_.subscribe<std_msgs::UInt8>("/bullet_num", 1,
-                                                         &MCUCommunicator::bulletNumCallback, this);
         sub_navigation_ = nh_.subscribe<geometry_msgs::Vector3>("/navigation", 1,
                                                                &MCUCommunicator::navigationCallback, this);
         sub_nav_received_ = nh_.subscribe<std_msgs::UInt8>("/nav_received", 1,
@@ -208,10 +163,7 @@ private:
     // ===== 新增结束 =====
     
     // ROS 订阅者
-    ros::Subscriber sub_motion_;
-    ros::Subscriber sub_recover_;
-    ros::Subscriber sub_bullet_up_;
-    ros::Subscriber sub_bullet_num_;
+
     ros::Subscriber sub_navigation_;
     ros::Subscriber sub_nav_received_;
     ros::Subscriber sub_dstar_status_;
@@ -227,10 +179,7 @@ private:
     size_t frame_buffer_index_;
     std::thread recv_thread_;
     
-    uint8_t current_hp_up_ = 0;
-    uint8_t current_bullet_up_ = 0;
-    uint8_t current_bullet_num_ = 0;
-    uint8_t current_motion_mode_ = 0;
+
     
     // 导航数据变量
     float current_nav_vx_ = 0.0f;
@@ -260,34 +209,7 @@ private:
     uint16_t last_blue_dead_ = 0;   // 上一帧蓝方死亡状态
     uint8_t robot_color_ = 0;       // 0=red, 1=blue
     
-    // Motion回调函数 
-    void motionCallback(const std_msgs::UInt8::ConstPtr& msg)
-    {
-        // ROS_INFO("motionCallback triggered: motion_mode=%u", msg->data);
-        sendMotionCommand(msg->data);
-    }
 
-    // Recover
-    void recoverCallback(const std_msgs::UInt8::ConstPtr& msg)
-    {
-        current_hp_up_ = (msg->data != 0) ? 1 : 0;
-        sendMotionCommand(current_motion_mode_);
-    }
-    
-    // Bullet
-    void bulletUpCallback(const std_msgs::UInt8::ConstPtr& msg)
-    {
-        current_bullet_up_ = (msg->data != 0) ? 1 : 0;
-        sendMotionCommand(current_motion_mode_);
-    }
-    
-    // Bullet Num
-    void bulletNumCallback(const std_msgs::UInt8::ConstPtr& msg)
-    {
-        current_bullet_num_ = msg->data;
-        sendMotionCommand(current_motion_mode_);
-    }
-    
     // Navigation
     void navigationCallback(const geometry_msgs::Vector3::ConstPtr& msg)
     {
@@ -338,55 +260,7 @@ private:
         return new_value;
     }
     
-    // 发送命令到下位机
-    void sendMotionCommand(uint8_t motion_mode)
-    {
-        current_motion_mode_ = motion_mode;
-        
-        MotionCommandFrame frame;
-        frame.sof = 0x92;              // 0x92
-        frame.motion_mode_up = motion_mode;
-        frame.hp_up = current_hp_up_;
-        frame.bullet_up = current_bullet_up_;
-        frame.bullet_num = current_bullet_num_;
-        frame.eof = 0xFE;             // 0xFE
-        
-        // CRC8校验 (与 MCU 一致：计算 sof 到 bullet_num 的 CRC)
-        // MotionCommandFrame 大小为 7 字节，CRC 计算前 5 字节（从 sof 开始，不包括 crc8 和 eof）
-        frame.crc8 = calculateCRC8((uint8_t*)&frame.sof, sizeof(MotionCommandFrame) - 2, 0xFF);
-        
-        try
-        {
-            if (!serial_.isOpen())
-            {
-                ROS_ERROR("Serial port is CLOSED! Port: %s. Cannot send motion command.", 
-                         serial_port_.c_str());
-                return;
-            }
-            
-            int written = serial_.write((uint8_t*)&frame, sizeof(frame));
-            
-            // 验证写入是否成功
-            if (written == (int)sizeof(frame))
-            {
-                // ROS_INFO("Motion command sent: motion_mode=%u, hp_up=%u, bullet_up=%u, bullet_num=%u", 
-                //          motion_mode, current_hp_up_, current_bullet_up_, current_bullet_num_);
-            }
-            else if (written > 0)
-            {
-                ROS_WARN("Partial write: expected %zu bytes, but only wrote %d bytes", sizeof(frame), written);
-            }
-            else
-            {
-                ROS_ERROR("Write failed: write returned %d", written);
-            }
-        }
-        catch (const serial::SerialException& e)
-        {
-            ROS_ERROR("Serial exception during write: %s", e.what());
-        }
-    }
-    
+
     // 发送导航命令到下位机
     void sendNavigationCommand(float vx, float vy, float z_angle)
     {
@@ -394,18 +268,35 @@ private:
         current_nav_vy_ = vy;
         current_nav_z_angle_ = z_angle;
         
-        NavigationFrame frame;
-        frame.sof = 0x93;              // 0x93
-        frame.vx = vx;
-        frame.vy = vy;
-        frame.z_angle = z_angle;
-        frame.received = current_nav_received_;  
-        frame.arrived = current_nav_arrived_;   
-        frame.eof = 0xFE;             // 0xFE
+        NavigationCommandFrame frame;
         
-        // CRC8校验 (计算 sof 到 arrived 的 CRC)
-        // NavigationFrame 大小为 17 字节，CRC 计算前 15 字节（从 sof 开始，不包括 crc8 和 eof）
-        frame.crc8 = calculateCRC8((uint8_t*)&frame.sof, sizeof(NavigationFrame) - 2, 0xFF);
+        // 初始化帧头
+        frame.header.sof[0] = HK_FRAME_SOF_H;      // 'H' (0x48)
+        frame.header.sof[1] = HK_FRAME_SOF_K;      // 'K' (0x4B)
+        frame.header.length = sizeof(NavigationCommandFrame);  // 整包长度 (小端序)
+        frame.header.packet_type = 0x02;           // 运动指令帧 (Packet Type = 0x02)
+        frame.header.reserved = 0;
+        static uint8_t packet_seq = 0;
+        frame.header.packet_seq = packet_seq++;    // 包序号递增
+        frame.header.reserved2 = 0;
+        
+        // 计算Header CRC8 (对字节0-7)
+        frame.header.header_crc8 = calculateCRC8((uint8_t*)&frame.header, 8, 0xFF);
+        
+        // 初始化数据段
+        frame.data.reserved0 = 0;                  // 空变量
+        frame.data.reserved1 = 0;                  // 保留
+        frame.data.vx = (int16_t)vx;               // 直接赋值 (单位转换由上层处理)
+        frame.data.vy = (int16_t)vy;               // 直接赋值 (单位转换由上层处理)
+        frame.data.wz = (int16_t)z_angle;          // 直接赋值 (单位转换由上层处理)
+        
+        // 计算Packet CRC16 (对整个帧从字节0到数据段结尾, 21-4=17字节)
+        frame.packet_crc16 = calculateCRC16((uint8_t*)&frame, 
+                                           sizeof(NavigationCommandFrame) - 4, 0xFFFF);
+        
+        // 初始化帧尾
+        frame.trailer[0] = HK_FRAME_TRAILER_K;    // 'K' (0x4B)
+        frame.trailer[1] = HK_FRAME_TRAILER_H;    // 'H' (0x48)
         
         try
         {
@@ -419,11 +310,13 @@ private:
             
             if (written == (int)sizeof(frame))
             {
-                // ROS_INFO("Navigation command sent: vx=%.4f, vy=%.4f, z_angle=%.4f", vx, vy, z_angle);
+                ROS_DEBUG("Navigation command sent: vx=%.4f m/s, vy=%.4f m/s, wz=%.4f rad/s", 
+                         vx, vy, z_angle);
             }
             else if (written > 0)
             {
-                ROS_WARN("Partial write: expected %zu bytes, but only wrote %d bytes", sizeof(frame), written);
+                ROS_WARN("Partial write: expected %zu bytes, but only wrote %d bytes", 
+                        sizeof(frame), written);
             }
             else
             {

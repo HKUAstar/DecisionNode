@@ -77,7 +77,10 @@
             <SetAction action="PUSH"/>  
           </Sequence>
         </Fallback>
-    
+        <Sequence name="MaintainPush">
+          <IsAction value="PUSH" />
+          <SetAction action="PUSH" />
+        </Sequence>
         <Sequence name="ToRadicalWhenAggressiveAndBulletSufficient">
           <AggressiveAdvantage threshold="50" />
           <Inverter>
@@ -91,6 +94,7 @@
           <SetAction action="INITPUSH" />
         </Sequence>
 
+  
         <Sequence name="MaintainOccupy">
           <IsAction value="OCCUPY" />
           <SetAction action="OCCUPY" />

@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <arg name="serial_port" default="/dev/ttyUSB0" doc="Serial port device"/>
-    <arg name="baudrate" default="115200" doc="Serial port baudrate"/>
-    <arg name="nav_frequency" default="50" doc="NavigationFrame publishing frequency (Hz)"/>
+    <!-- 通讯接口配置 -->
+    <arg name="serial_port" default="/dev/ttyUSB0" doc="Serial port device (USART6)"/>
+    <arg name="baudrate" default="921600" doc="Serial port baudrate (921600 bps)"/>
+    <arg name="nav_frequency" default="50" doc="Navigation command frequency (Hz, 100ms period)"/>
     <arg name="output" default="screen" doc="Launch output target"/>
     
-    <!-- MCU通讯节点 - 接收下位机数据并发布ROS Topics -->
+    <!-- HK协议通讯节点 - 接收上位板数据并发送导航命令 -->
     <node name="mcu_communicator" pkg="decision_node" type="mcu_communicator" output="$(arg output)">
-        <!-- 串口配置 -->
+        <!-- 串口配置: USART6 921600 bps -->
         <param name="serial_port" value="$(arg serial_port)" />
         <param name="baudrate" value="$(arg baudrate)" />
-        <!-- 导航数据发布频率 (Hz) -->
+        <!-- 导航命令发送频率 (Hz) - 50Hz对应20ms周期 -->
         <param name="nav_frequency" value="$(arg nav_frequency)" />
     </node>
     

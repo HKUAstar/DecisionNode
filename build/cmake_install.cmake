@@ -1,8 +1,8 @@
-# Install script for directory: /home/sentry_train_test/AstarTraining/DecisionNode/src
+# Install script for directory: /home/sentry/AstarTraining/DecisionNode/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/sentry_train_test/AstarTraining/DecisionNode/install")
+  set(CMAKE_INSTALL_PREFIX "/home/sentry/AstarTraining/DecisionNode/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -37,7 +37,7 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
-# Set path to fallback-tool for dependency-resolution.
+# Set default install directory permissions.
 if(NOT DEFINED CMAKE_OBJDUMP)
   set(CMAKE_OBJDUMP "/usr/bin/objdump")
 endif()
@@ -54,126 +54,114 @@ endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/sentry_train_test/AstarTraining/DecisionNode/install/_setup_util.py")
+   "/home/sentry/AstarTraining/DecisionNode/install/_setup_util.py")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-  file(INSTALL DESTINATION "/home/sentry_train_test/AstarTraining/DecisionNode/install" TYPE PROGRAM FILES "/home/sentry_train_test/AstarTraining/DecisionNode/build/catkin_generated/installspace/_setup_util.py")
+  file(INSTALL DESTINATION "/home/sentry/AstarTraining/DecisionNode/install" TYPE PROGRAM FILES "/home/sentry/AstarTraining/DecisionNode/build/catkin_generated/installspace/_setup_util.py")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/sentry_train_test/AstarTraining/DecisionNode/install/env.sh")
+   "/home/sentry/AstarTraining/DecisionNode/install/env.sh")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-  file(INSTALL DESTINATION "/home/sentry_train_test/AstarTraining/DecisionNode/install" TYPE PROGRAM FILES "/home/sentry_train_test/AstarTraining/DecisionNode/build/catkin_generated/installspace/env.sh")
+  file(INSTALL DESTINATION "/home/sentry/AstarTraining/DecisionNode/install" TYPE PROGRAM FILES "/home/sentry/AstarTraining/DecisionNode/build/catkin_generated/installspace/env.sh")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/sentry_train_test/AstarTraining/DecisionNode/install/setup.bash;/home/sentry_train_test/AstarTraining/DecisionNode/install/local_setup.bash")
+   "/home/sentry/AstarTraining/DecisionNode/install/setup.bash;/home/sentry/AstarTraining/DecisionNode/install/local_setup.bash")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-  file(INSTALL DESTINATION "/home/sentry_train_test/AstarTraining/DecisionNode/install" TYPE FILE FILES
-    "/home/sentry_train_test/AstarTraining/DecisionNode/build/catkin_generated/installspace/setup.bash"
-    "/home/sentry_train_test/AstarTraining/DecisionNode/build/catkin_generated/installspace/local_setup.bash"
+  file(INSTALL DESTINATION "/home/sentry/AstarTraining/DecisionNode/install" TYPE FILE FILES
+    "/home/sentry/AstarTraining/DecisionNode/build/catkin_generated/installspace/setup.bash"
+    "/home/sentry/AstarTraining/DecisionNode/build/catkin_generated/installspace/local_setup.bash"
     )
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/sentry_train_test/AstarTraining/DecisionNode/install/setup.sh;/home/sentry_train_test/AstarTraining/DecisionNode/install/local_setup.sh")
+   "/home/sentry/AstarTraining/DecisionNode/install/setup.sh;/home/sentry/AstarTraining/DecisionNode/install/local_setup.sh")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-  file(INSTALL DESTINATION "/home/sentry_train_test/AstarTraining/DecisionNode/install" TYPE FILE FILES
-    "/home/sentry_train_test/AstarTraining/DecisionNode/build/catkin_generated/installspace/setup.sh"
-    "/home/sentry_train_test/AstarTraining/DecisionNode/build/catkin_generated/installspace/local_setup.sh"
+  file(INSTALL DESTINATION "/home/sentry/AstarTraining/DecisionNode/install" TYPE FILE FILES
+    "/home/sentry/AstarTraining/DecisionNode/build/catkin_generated/installspace/setup.sh"
+    "/home/sentry/AstarTraining/DecisionNode/build/catkin_generated/installspace/local_setup.sh"
     )
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/sentry_train_test/AstarTraining/DecisionNode/install/setup.zsh;/home/sentry_train_test/AstarTraining/DecisionNode/install/local_setup.zsh")
+   "/home/sentry/AstarTraining/DecisionNode/install/setup.zsh;/home/sentry/AstarTraining/DecisionNode/install/local_setup.zsh")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-  file(INSTALL DESTINATION "/home/sentry_train_test/AstarTraining/DecisionNode/install" TYPE FILE FILES
-    "/home/sentry_train_test/AstarTraining/DecisionNode/build/catkin_generated/installspace/setup.zsh"
-    "/home/sentry_train_test/AstarTraining/DecisionNode/build/catkin_generated/installspace/local_setup.zsh"
+  file(INSTALL DESTINATION "/home/sentry/AstarTraining/DecisionNode/install" TYPE FILE FILES
+    "/home/sentry/AstarTraining/DecisionNode/build/catkin_generated/installspace/setup.zsh"
+    "/home/sentry/AstarTraining/DecisionNode/build/catkin_generated/installspace/local_setup.zsh"
     )
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/sentry_train_test/AstarTraining/DecisionNode/install/setup.fish;/home/sentry_train_test/AstarTraining/DecisionNode/install/local_setup.fish")
+   "/home/sentry/AstarTraining/DecisionNode/install/setup.fish;/home/sentry/AstarTraining/DecisionNode/install/local_setup.fish")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-  file(INSTALL DESTINATION "/home/sentry_train_test/AstarTraining/DecisionNode/install" TYPE FILE FILES
-    "/home/sentry_train_test/AstarTraining/DecisionNode/build/catkin_generated/installspace/setup.fish"
-    "/home/sentry_train_test/AstarTraining/DecisionNode/build/catkin_generated/installspace/local_setup.fish"
+  file(INSTALL DESTINATION "/home/sentry/AstarTraining/DecisionNode/install" TYPE FILE FILES
+    "/home/sentry/AstarTraining/DecisionNode/build/catkin_generated/installspace/setup.fish"
+    "/home/sentry/AstarTraining/DecisionNode/build/catkin_generated/installspace/local_setup.fish"
     )
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/sentry_train_test/AstarTraining/DecisionNode/install/.rosinstall")
+   "/home/sentry/AstarTraining/DecisionNode/install/.rosinstall")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-  file(INSTALL DESTINATION "/home/sentry_train_test/AstarTraining/DecisionNode/install" TYPE FILE FILES "/home/sentry_train_test/AstarTraining/DecisionNode/build/catkin_generated/installspace/.rosinstall")
+  file(INSTALL DESTINATION "/home/sentry/AstarTraining/DecisionNode/install" TYPE FILE FILES "/home/sentry/AstarTraining/DecisionNode/build/catkin_generated/installspace/.rosinstall")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/sentry_train_test/AstarTraining/DecisionNode/build/gtest/cmake_install.cmake")
-  include("/home/sentry_train_test/AstarTraining/DecisionNode/build/decision_node/cmake_install.cmake")
+  include("/home/sentry/AstarTraining/DecisionNode/build/gtest/cmake_install.cmake")
+  include("/home/sentry/AstarTraining/DecisionNode/build/decision_node/cmake_install.cmake")
 
 endif()
 
-string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
-       "${CMAKE_INSTALL_MANIFEST_FILES}")
-if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/home/sentry_train_test/AstarTraining/DecisionNode/build/install_local_manifest.txt"
-     "${CMAKE_INSTALL_MANIFEST_CONTENT}")
-endif()
 if(CMAKE_INSTALL_COMPONENT)
-  if(CMAKE_INSTALL_COMPONENT MATCHES "^[a-zA-Z0-9_.+-]+$")
-    set(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INSTALL_COMPONENT}.txt")
-  else()
-    string(MD5 CMAKE_INST_COMP_HASH "${CMAKE_INSTALL_COMPONENT}")
-    set(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INST_COMP_HASH}.txt")
-    unset(CMAKE_INST_COMP_HASH)
-  endif()
+  set(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INSTALL_COMPONENT}.txt")
 else()
   set(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 endif()
 
-if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/home/sentry_train_test/AstarTraining/DecisionNode/build/${CMAKE_INSTALL_MANIFEST}"
+string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
+       "${CMAKE_INSTALL_MANIFEST_FILES}")
+file(WRITE "/home/sentry/AstarTraining/DecisionNode/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
-endif()

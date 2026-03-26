@@ -569,7 +569,7 @@ public:
       return BT::NodeStatus::FAILURE;
     }
     config().blackboard->set("action", toUpper(action));
-    // ROS_INFO("SetAction: action set to %s", toUpper(action).c_str());
+    ROS_INFO("[SetAction] action set to %s", toUpper(action).c_str());
     return BT::NodeStatus::SUCCESS;
   }
 };

@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
         if not args.local:
             # environment at generation time
-            CMAKE_PREFIX_PATH = r'/home/sentry_train_test/AstarTraining/HIT_code/sentry_planning_ws/devel;/home/sentry_train_test/AstarTraining/Navigation-filter-test/ws_cloud/devel;/home/sentry_train_test/AstarTraining/sim_nav/devel;/home/sentry_train_test/AstarTraining/ws_livox/devel;/opt/ros/noetic'.split(';')
+            CMAKE_PREFIX_PATH = r'/home/sentry/AstarTraining/DecisionNode/devel;/home/sentry/AstarTraining/Old_nav/Navigation-filter-test/devel;/home/sentry/AstarTraining/Old_nav/sim_nav/devel;/home/sentry/AstarTraining/Old_nav/livox_ws/devel;/opt/ros/noetic'.split(';')
         else:
             # don't consider any other prefix path than this one
             CMAKE_PREFIX_PATH = []

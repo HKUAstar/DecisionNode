@@ -7,7 +7,6 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/home/sentry_train_test/AstarTraining/DecisionNode/devel:$CMAKE_PREFIX_PATH"
-export PWD='/home/sentry_train_test/AstarTraining/DecisionNode/build'
-export ROSLISP_PACKAGE_DIRECTORIES="/home/sentry_train_test/AstarTraining/DecisionNode/devel/share/common-lisp:$ROSLISP_PACKAGE_DIRECTORIES"
-export ROS_PACKAGE_PATH='/home/sentry_train_test/AstarTraining/DecisionNode/src:/home/sentry_train_test/AstarTraining/HIT_code/sentry_planning_ws/src:/home/sentry_train_test/AstarTraining/Navigation-filter-test/ws_cloud/src:/home/sentry_train_test/AstarTraining/sim_nav/src:/home/sentry_train_test/AstarTraining/ws_livox/src:/opt/ros/noetic/share'
+export LD_LIBRARY_PATH='/home/sentry/AstarTraining/Old_nav/Navigation-filter-test/devel/lib:/home/sentry/AstarTraining/Old_nav/sim_nav/devel/lib:/home/sentry/AstarTraining/Old_nav/livox_ws/devel/lib:/opt/ros/noetic/lib'
+export PKG_CONFIG_PATH='/home/sentry/AstarTraining/Old_nav/Navigation-filter-test/devel/lib/pkgconfig:/home/sentry/AstarTraining/Old_nav/sim_nav/devel/lib/pkgconfig:/home/sentry/AstarTraining/Old_nav/livox_ws/devel/lib/pkgconfig:/opt/ros/noetic/lib/pkgconfig'
+export PWD='/home/sentry/AstarTraining/DecisionNode/build'
