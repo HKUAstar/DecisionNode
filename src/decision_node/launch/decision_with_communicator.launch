@@ -1,0 +1,10 @@
+<launch>
+  <!-- Combined launch: runs both MCU communicator and decision strategy node -->
+  
+  <!-- MCU Communicator (for serial communication with MCU) -->
+  <include file="$(find decision_node)/launch/mcu_communicator.launch" />
+  
+  <!-- Decision Strategy Node (decision tree execution) -->
+  <include file="$(find decision_node)/launch/strategy_decision_tmp.launch" />
+  
+</launch>

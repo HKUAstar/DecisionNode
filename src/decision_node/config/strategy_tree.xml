@@ -12,14 +12,14 @@
       <ReactiveFallback name="DecideAction">
         <Sequence name="ToInitWhenNotInGame">
           <IsGameStarted expect_started="false" />
-          <ResetCentralOccupiable />
+          <!-- <ResetCentralOccupiable /> -->
           <SetAction action="INIT" />
         </Sequence>
 
         <Sequence name="ToPushWhenGameStart">
           <IsGameStarted expect_started="true" />
           <IsAction value="INIT" />
-          <SetAction action="INITPUSH" />
+          <SetAction action="PUSH" />
         </Sequence>
 
         <Sequence name="ToRespawnWhenDead">
@@ -47,40 +47,16 @@
         </Sequence>
 
         <Sequence name="SwitchPushToOccupy">
-          <Fallback>
-            <IsAction value="PUSH" />
-            <IsAction value="INITPUSH" />
-          </Fallback>
+          <IsAction value="PUSH" />
           <CheckArrived />
           <SetAction action="OCCUPY" />
         </Sequence>
 
-        <Fallback name="ToPush">
-          <Sequence name="SafePush">
-            <Sequence>
-              <AccumulateCentralOccupiable 
-                occupy_status="{ref.occupy_status}"
-                threshold="{occupy_threshold}"
-                accumulated_count="{occupy_count}"
-                reached_threshold="{occupy_reached}" />
-              <TriggerOnThreshold 
-                reached_threshold="{occupy_reached}"
-                reset_condition="{is_enemy_occupied}" />
-            </Sequence>
-            <SetAction action="PUSH" />
-            <ResetAccumulator />
-          </Sequence>
-          
-          <Sequence name="AggressiveOccupy">
-            <NotBulletSufficient />
-            <AggressiveAdvantage threshold="{aggressive_threshold}" />
-            <SetAction action="PUSH"/>  
-          </Sequence>
-        </Fallback>
-        <Sequence name="MaintainPush">
-          <IsAction value="PUSH" />
-          <SetAction action="PUSH" />
+        <Sequence name="ToPush">
+              <IsOccupyStatusFavorable /> 
+              <SetAction action="PUSH"/>  
         </Sequence>
+        
         <Sequence name="ToRadicalWhenAggressiveAndBulletSufficient">
           <AggressiveAdvantage threshold="50" />
           <Inverter>
@@ -89,11 +65,6 @@
           <SetAction action="RADICAL" />
         </Sequence>
       
-        <Sequence name="MaintainPushwhenStart">
-          <IsAction value="INITPUSH" />
-          <SetAction action="INITPUSH" />
-        </Sequence>
-
   
         <Sequence name="MaintainOccupy">
           <IsAction value="OCCUPY" />
@@ -109,24 +80,17 @@
       <ReactiveFallback name="ExecuteAction">
         <Sequence>
           <IsAction value="INIT" />
-          <SetMotionFlag target_motion="0" />
-          <PublishMotion />
-          <SetBulletUp value="0" />
-          <PublishBulletUp />
-          <SetRecover value="0" />
-          <PublishRecover />
+          <!-- <SetMotionFlag target_motion="0" /> -->
+          <!-- <PublishMotion /> -->
           <ClearGoal />
         </Sequence>
 
         <Sequence>
-          <Fallback>
-            <IsAction value="PUSH" />
-            <IsAction value="INITPUSH" />
-          </Fallback>
+          <IsAction value="PUSH" />
           <!-- Navigate to first cycle point (moving state) -->
           <SetMotionFlag target_motion="3" />
           <PublishMotion />
-          <SetGoalFromParamsCyclic ns="occupy" point_count="4" />
+          <SetGoalFromParamsCyclic ns="occupy" point_count="2" />
           <PublishGoalPoint topic="clicked_point" />
           <Sequence>
               <CheckArrived />
@@ -140,29 +104,29 @@
           <Fallback>
             <Sequence>
               <CheckArrived />
-              <AdvanceCycleIndex point_count="4" /> 
+              <AdvanceCycleIndex point_count="2" /> 
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
-          <Fallback>
+          <!-- <Fallback>
             <Sequence>
               <CheckAttacked attack_threshold="{attack_threshold}" />
               <SetMotionFlag target_motion="2" />
-            </Sequence>
-            <SetMotionFlag target_motion="1" />
-          </Fallback>
-          <PublishMotion />
-          <SetGoalFromParamsCyclic ns="occupy" point_count="4" />
+            </Sequence> -->
+            <!-- <SetMotionFlag target_motion="1" /> -->
+          <!-- </Fallback>  -->
+          <!-- <PublishMotion /> -->
+          <SetGoalFromParamsCyclic ns="occupy" point_count="2" />
           <PublishGoalPoint topic="clicked_point" />
         </Sequence>
 
         <Sequence>
           <IsAction value="SUPPLY" />
-          <SetMotionFlag target_motion="3" />
+          <!-- <SetMotionFlag target_motion="3" /> -->
           <PublishMotion />
           <SetGoalFromParams ns="supply" />
           <PublishGoalPoint topic="clicked_point" />
-          <Fallback>
+          <!-- <Fallback>
             <Sequence>
               <CheckArrived />
               <SetRecover value="1" />
@@ -177,8 +141,8 @@
               <PublishRecover />
             </Sequence>
             <AlwaysSuccess />
-          </Fallback>
-          <Fallback>
+          </Fallback> -->
+          <!-- <Fallback>
             <Sequence>
               <CheckArrived />
               <SetBulletUp value="1" />
@@ -187,14 +151,14 @@
               <PublishBulletNum />
             </Sequence>
             <AlwaysSuccess />
-          </Fallback>
+          </Fallback> -->
           <Fallback>
             <Sequence>
-              <IsBulletFull max_bullet="{max_bullet}" />
-              <SetBulletUp value="0" />
+              <!-- <IsBulletFull max_bullet="{max_bullet}" /> -->
+              <!-- <SetBulletUp value="0" /> -->
               <SetBulletNum mode="FIXED" fixed_supply="0" />
-              <PublishBulletUp />
-              <PublishBulletNum />
+              <!-- <PublishBulletUp /> -->
+              <!-- <PublishBulletNum /> -->
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
@@ -206,14 +170,14 @@
           <!-- <InitChase /> -->
           <!-- <UpdateChaseTarget /> -->
           <!-- TODO: 接入视觉模块 -->
-          <Fallback>
+          <!-- <Fallback>
             <Sequence>
               <CheckAttacked attack_threshold="{attack_threshold}" />
               <SetMotionFlag target_motion="2" />
             </Sequence>
             <SetMotionFlag target_motion="1" />
-          </Fallback>
-          <PublishMotion />
+          </Fallback> -->
+          <!-- <PublishMotion /> -->
           <SetGoalFromParams ns="radical" />
           <PublishGoalPoint topic="clicked_point" />
           <!-- <PublishChaseGoal /> -->
@@ -228,12 +192,6 @@
 
         <Sequence>
           <IsAction value="WAITFOROP" />
-          <SetMotionFlag target_motion="3" />
-          <PublishMotion />
-          <SetBulletUp value="0" />
-          <PublishBulletUp />
-          <SetRecover value="0" />
-          <PublishRecover />
           
           <Fallback>
             <Sequence>
