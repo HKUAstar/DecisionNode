@@ -5,7 +5,7 @@ The decision part for sentry using behaviour tree
 
 **手动发布数据进行测试**：
 ```bash
-./run test.cpp:/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder
+./devel/lib/decision_node/continuous_forwarder
 ```
 
 **可视化行为树**：下载[Groot2](https://github.com/BehaviorTree/Groot2)，打开`config/strategy_tree.xml`文件即可自动识别和可视化

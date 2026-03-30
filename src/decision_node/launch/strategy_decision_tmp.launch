@@ -25,15 +25,17 @@
   <arg name="goal_topic" default="/clicked_point"/>
 
   <!-- Global goal parameters consumed by SetGoalFromParams/SetGoalFromParamsCyclic (nh, not pnh): goals/<ns>/{x,y} or goals/<ns>/point_<i>/{x,y} -->
-  <!-- Single point (for SUPPLY, WAITFOROP, RADICAL) -->
+  <!-- Single point (for SUPPLY, WAITFOROP, RADICAL, RADICAL1) -->
   <arg name="supply_x" default="6.0"/>
   <arg name="supply_y" default="6.0"/>
   <arg name="waitforop_x" default="0.5"/>
   <arg name="waitforop_y" default="0.5"/>
   <arg name="retreat_x" default="9.0"/>
   <arg name="retreat_y" default="9.0"/>
-  <arg name="radical_x" default="5.0"/>
-  <arg name="radical_y" default="5.0"/>
+  <arg name="radical_x" default="0.1"/>
+  <arg name="radical_y" default="0.1"/>
+  <arg name="radical1_x" default="0.2"/>
+  <arg name="radical1_y" default="0.2"/>
   
   <!-- Cyclic points for OCCUPY (4 points in loop) -->
   <arg name="occupy_point_0_x" default="1.0"/>
@@ -87,6 +89,10 @@
   <!-- RADICAL point - for SetGoalFromParams direct access -->
   <param name="/goals/radical/x" value="$(arg radical_x)"/>
   <param name="/goals/radical/y" value="$(arg radical_y)"/>
+
+  <!-- RADICAL1 point - for SetGoalFromParams direct access -->
+  <param name="/goals/radical1/x" value="$(arg radical1_x)"/>
+  <param name="/goals/radical1/y" value="$(arg radical1_y)"/>
 
   <node pkg="decision_node" type="strategy_node" name="strategy_node" output="screen" respawn="true">
     <!-- private params (pnh: ~) -->

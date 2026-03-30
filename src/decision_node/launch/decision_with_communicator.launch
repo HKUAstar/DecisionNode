@@ -1,10 +1,20 @@
 <launch>
   <!-- Combined launch: runs both MCU communicator and decision strategy node -->
+
+  <arg name="radical_x" default="5.0"/>
+  <arg name="radical_y" default="5.0"/>
+  <arg name="radical1_x" default="5.0"/>
+  <arg name="radical1_y" default="5.0"/>
   
   <!-- MCU Communicator (for serial communication with MCU) -->
   <include file="$(find decision_node)/launch/mcu_communicator.launch" />
   
   <!-- Decision Strategy Node (decision tree execution) -->
-  <include file="$(find decision_node)/launch/strategy_decision_tmp.launch" />
+  <include file="$(find decision_node)/launch/strategy_decision_tmp.launch" >
+    <arg name="radical_x" value="$(arg radical_x)"/>
+    <arg name="radical_y" value="$(arg radical_y)"/>
+    <arg name="radical1_x" value="$(arg radical1_x)"/>
+    <arg name="radical1_y" value="$(arg radical1_y)"/>
+  </include>
   
 </launch>

@@ -55,9 +55,9 @@ struct RefereeState
 {
   int game_progress = 0;  // 0，1，2，3: not start, 4: in progress, 5: end (convention)
   int remain_hp = 400;
-  int bullet_remain = 999;
-  int friendly_score = 0;
-  int enemy_score = 0;
+  int bullet_remain = 750;
+  int friendly_score = 200;
+  int enemy_score = 200;
   int occupy_status = 0;  // 0: unoccupied, 1: friendly occupied, 2: enemy occupied，3：both occupied
   int robot_id = 0;       // 机器人ID
   int robot_color = 0;    // 机器人颜色 (0=red, 1=blue)

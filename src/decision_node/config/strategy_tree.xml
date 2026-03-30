@@ -52,9 +52,48 @@
           <SetAction action="OCCUPY" />
         </Sequence>
 
+        <Sequence name="SwitchRadicalToRadical1">
+          <IsAction value="RADICAL" />
+          <AggressiveAdvantage threshold="50" />
+          <Inverter>
+            <NotBulletSufficient />
+          </Inverter>
+          <CheckArrived />
+          <SetAction action="RADICAL1" />
+        </Sequence>
+
+        <Sequence name="MaintainRadical">
+          <IsAction value="RADICAL" />
+          <AggressiveAdvantage threshold="50" />
+          <Inverter>
+            <NotBulletSufficient />
+          </Inverter>
+          <SetAction action="RADICAL" />
+        </Sequence>
+
+
+        <!-- <Sequence name="SwitchRadical1ToPush">
+          <IsAction value="RADICAL1" />
+          <CheckArrived />
+          <SetAction action="PUSH" />
+        </Sequence> -->
+
+
+        <Sequence name="MaintainRadical1">
+          <IsAction value="RADICAL1" />
+          <AggressiveAdvantage threshold="50" />
+          <Inverter>
+            <NotBulletSufficient />
+          </Inverter>
+          <SetAction action="RADICAL1" />
+        </Sequence>
+
         <Sequence name="ToPush">
-              <IsOccupyStatusFavorable /> 
-              <SetAction action="PUSH"/>  
+          <Inverter>
+            <IsAction value="OCCUPY" />
+          </Inverter>
+          <IsOccupyStatusFavorable /> 
+          <SetAction action="PUSH"/>  
         </Sequence>
         
         <Sequence name="ToRadicalWhenAggressiveAndBulletSufficient">
@@ -88,8 +127,8 @@
         <Sequence>
           <IsAction value="PUSH" />
           <!-- Navigate to first cycle point (moving state) -->
-          <SetMotionFlag target_motion="3" />
-          <PublishMotion />
+          <!-- <SetMotionFlag target_motion="3" /> -->
+          <!-- <PublishMotion /> -->
           <SetGoalFromParamsCyclic ns="occupy" point_count="2" />
           <PublishGoalPoint topic="clicked_point" />
           <Sequence>
@@ -122,46 +161,8 @@
 
         <Sequence>
           <IsAction value="SUPPLY" />
-          <!-- <SetMotionFlag target_motion="3" /> -->
-          <PublishMotion />
           <SetGoalFromParams ns="supply" />
           <PublishGoalPoint topic="clicked_point" />
-          <!-- <Fallback>
-            <Sequence>
-              <CheckArrived />
-              <SetRecover value="1" />
-              <PublishRecover />
-            </Sequence>
-            <AlwaysSuccess />
-          </Fallback>
-          <Fallback>
-            <Sequence>
-              <IsHealthFull />
-              <SetRecover value="0" />
-              <PublishRecover />
-            </Sequence>
-            <AlwaysSuccess />
-          </Fallback> -->
-          <!-- <Fallback>
-            <Sequence>
-              <CheckArrived />
-              <SetBulletUp value="1" />
-              <PublishBulletUp />
-              <SetBulletNum mode="DELTA" expected_bullet="{max_bullet}" fixed_supply="{fixed_supply}" />
-              <PublishBulletNum />
-            </Sequence>
-            <AlwaysSuccess />
-          </Fallback> -->
-          <Fallback>
-            <Sequence>
-              <!-- <IsBulletFull max_bullet="{max_bullet}" /> -->
-              <!-- <SetBulletUp value="0" /> -->
-              <SetBulletNum mode="FIXED" fixed_supply="0" />
-              <!-- <PublishBulletUp /> -->
-              <!-- <PublishBulletNum /> -->
-            </Sequence>
-            <AlwaysSuccess />
-          </Fallback>
         </Sequence>
 
         
@@ -182,12 +183,16 @@
           <PublishGoalPoint topic="clicked_point" />
           <!-- <PublishChaseGoal /> -->
         </Sequence>
+
+        <Sequence>
+          <IsAction value="RADICAL1" />
+          <SetGoalFromParams ns="radical1" />
+          <PublishGoalPoint topic="clicked_point" />
+        </Sequence>
       
 
         <Sequence>
           <IsAction value="RESPAWN" />
-          <SetMotionFlag target_motion="0" />
-          <PublishMotion />
         </Sequence>
 
         <Sequence>

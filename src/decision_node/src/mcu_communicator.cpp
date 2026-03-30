@@ -698,19 +698,7 @@ private:
         // 检测占领状态变化 - 每秒扣1分
         if (data.occupy_status != last_occupy_status_)
         {
-            // occupy_status 2 到 3 的情况 - 己方扣分
-            if (last_occupy_status_ == 2 && data.occupy_status == 3)
-            {
-                friendly_score_ = std::max(0, friendly_score_ - 1);
-                ROS_INFO("Occupy status changed from 2 to 3: friendly_score now %d", friendly_score_);
-            }
-            //  occupy_status  1 到 3  - 敌方扣分
-            else if (last_occupy_status_ == 1 && data.occupy_status == 3)
-            {
-                enemy_score_ = std::max(0, enemy_score_ - 1);
-                ROS_INFO("Occupy status changed from 1 to 3: enemy_score now %d", enemy_score_);
-            }
-            
+        
             last_occupy_status_ = data.occupy_status;
             last_score_update_time_ = current_time;
         }
