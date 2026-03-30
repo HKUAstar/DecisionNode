@@ -4,7 +4,7 @@
     <!-- 串口配置参数 -->
     <arg name="communicator_port" default="/dev/ttyUSB0" 
          doc="MCU通讯节点监听的串口设备"/>
-    <arg name="baudrate" default="115200" doc="串口波特率"/>
+    <arg name="baudrate" default="921600" doc="串口波特率"/>
     <arg name="nav_frequency" default="50" doc="NavigationFrame publishing frequency (Hz)"/>
     <arg name="output" default="screen" doc="节点输出目标"/>
     

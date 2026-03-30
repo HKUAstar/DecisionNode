@@ -11,16 +11,17 @@
 #include <decision_node/mcu_comm.hpp>
 #include <thread>
 #include <cstdio>
+#include <algorithm>
 
 class MCUCommunicator
 {
 public:
-    MCUCommunicator() : nh_("~"), serial_port_(""), serial_baudrate_(115200), 
+    MCUCommunicator() : nh_("~"), serial_port_(""), serial_baudrate_(921600), 
                        frame_buffer_index_(0)
     {
         // 读取参数
         nh_.param("serial_port", serial_port_, std::string("/dev/ttyUSB0"));
-        nh_.param("baudrate", serial_baudrate_, 115200);
+        nh_.param("baudrate", serial_baudrate_, 921600);
         
         // 读取导航发布频率 (默认50Hz)
         double nav_frequency = 50.0;
@@ -286,9 +287,16 @@ private:
         // 初始化数据段
         frame.data.reserved0 = 0;                  // 空变量
         frame.data.reserved1 = 0;                  // 保留
-        frame.data.vx = (int16_t)vx;               // 直接赋值 (单位转换由上层处理)
-        frame.data.vy = (int16_t)vy;               // 直接赋值 (单位转换由上层处理)
-        frame.data.wz = (int16_t)z_angle;          // 直接赋值 (单位转换由上层处理)
+        // 单位转换：m/s → mm/s, rad/s → 0.01 rad/s, clamp to int16 range
+        int32_t vx_mm = (int32_t)(vx * 1000.0f);
+        int32_t vy_mm = (int32_t)(vy * 1000.0f);
+        int32_t wz_centi = (int32_t)(z_angle * 100.0f);
+        vx_mm = std::max((int32_t)-32768, std::min((int32_t)32767, vx_mm));
+        vy_mm = std::max((int32_t)-32768, std::min((int32_t)32767, vy_mm));
+        wz_centi = std::max((int32_t)-32768, std::min((int32_t)32767, wz_centi));
+        frame.data.vx = (int16_t)vx_mm;            // mm/s
+        frame.data.vy = (int16_t)vy_mm;            // mm/s
+        frame.data.wz = (int16_t)wz_centi;         // 0.01 rad/s
         
         // 计算Packet CRC16 (对整个帧从字节0到数据段结尾, 21-4=17字节)
         frame.packet_crc16 = calculateCRC16((uint8_t*)&frame, 
@@ -346,7 +354,7 @@ private:
     {
         uint16_t received_crc = frame->packet_crc16;
         
-        // Packet CRC16: 对字节0到Data结束计算（0-73共74字节）
+        // Packet CRC16: 对字节0到Data结束计算（0-77共78字节）
         // 即从sof[0]开始到data末尾的所有数据，初始值0xFFFF
         uint16_t calculated_crc = calculateCRC16((uint8_t*)&frame->header, HK_FRAME_HEADER_SIZE + HK_FRAME_DATA_SIZE, 0xFFFF);
         
@@ -449,7 +457,7 @@ private:
             // 接收数据
             frame_buffer_[frame_buffer_index_++] = byte;
             
-            // 检查是否接收完整帧 (78字节)
+            // 检查是否接收完整帧 (82字节)
             if (frame_buffer_index_ == HK_FRAME_SIZE)
             {
                 // 验证帧尾 ('K', 'H')
@@ -556,6 +564,10 @@ private:
         std_msgs::Float32 msg_float;
         std_msgs::Int32 msg_int32;
         geometry_msgs::Point enemy_pos;
+
+        // 云台yaw角
+        msg_float.data = frame.data.yaw_angle;
+        pub_yaw_angle_.publish(msg_float);
         
         // 比赛状态
         msg_uint8.data = frame.data.game_progress;

@@ -12,7 +12,7 @@
  * 上板 → NUC (接收):
  *   接口：USART6 (上板)
  *   波特率：921600 bps
- *   协议格式：HK 协议 (78字节帧)
+ *   协议格式：HK 协议 (82字节帧)
  *   发送频率：10 Hz (100ms 周期)
  * 
  * NUC → 下位机 (发送):
@@ -69,10 +69,11 @@ struct HKFrameHeader
     uint8_t header_crc8;      // 8: 帧头CRC8校验
 } __attribute__((packed));
 
-// HK协议数据负载 - 比赛数据帧 (65字节)
+// HK协议数据负载 - 比赛数据帧 (69字节)
 struct HKGameData
 {
     // game_state (4B)
+    float yaw_angle;          // 云台yaw角 (rad)
     uint8_t game_progress;    // 比赛阶段
     uint8_t occupy_status;    // 占领状态
     uint8_t robot_id;         // 机器人ID
@@ -131,18 +132,18 @@ struct HKGameData
     uint8_t reserved_hurt;    // 保留字段
 } __attribute__((packed));
 
-// HK协议完整数据帧 (78字节)
+// HK协议完整数据帧 (82字节)
 struct MCUDataFrame
 {
     HKFrameHeader header;     // 0-8: 帧头 (9字节)
-    HKGameData data;          // 9-73: 数据 (65字节)
-    uint16_t packet_crc16;    // 74-75: 数据CRC16
-    uint8_t trailer[2];       // 76-77: 帧尾 'K', 'H'
+    HKGameData data;          // 9-77: 数据 (69字节)
+    uint16_t packet_crc16;    // 78-79: 数据CRC16
+    uint8_t trailer[2];       // 80-81: 帧尾 'K', 'H'
 } __attribute__((packed));
 
 static_assert(sizeof(HKFrameHeader) == 9, "HKFrameHeader must be exactly 9 bytes");
-static_assert(sizeof(HKGameData) == 65, "HKGameData must be exactly 65 bytes");
-static_assert(sizeof(MCUDataFrame) == 78, "MCUDataFrame must be exactly 78 bytes");
+static_assert(sizeof(HKGameData) == 69, "HKGameData must be exactly 69 bytes");
+static_assert(sizeof(MCUDataFrame) == 82, "MCUDataFrame must be exactly 82 bytes");
 
 
 // HK协议相关常量
@@ -152,9 +153,9 @@ static_assert(sizeof(MCUDataFrame) == 78, "MCUDataFrame must be exactly 78 bytes
 #define HK_FRAME_TRAILER_H 0x48     // 'H'
 #define HK_PACKET_TYPE_GAME 0x01    // 比赛数据帧
 #define HK_PACKET_TYPE_NAV 0x02     // 导航命令帧
-#define HK_FRAME_SIZE sizeof(MCUDataFrame)  // 78字节
+#define HK_FRAME_SIZE sizeof(MCUDataFrame)  // 82字节
 #define HK_FRAME_HEADER_SIZE 9      // 帧头大小
-#define HK_FRAME_DATA_SIZE 65       // 数据大小
+#define HK_FRAME_DATA_SIZE 69       // 数据大小
 
 // ===== 帧大小定义 =====
 #define MCU_FRAME_SIZE 256          // 接收缓冲大小
