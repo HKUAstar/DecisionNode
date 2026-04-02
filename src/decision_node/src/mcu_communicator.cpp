@@ -228,13 +228,14 @@ private:
     void dstarStatusCallback(const std_msgs::Bool::ConstPtr& msg)
     {
         current_nav_arrived_ = msg->data ? 1 : 0;
-        // ROS_DEBUG("D* status updated: arrived=%u", current_nav_arrived_);
+        ROS_INFO("D* status updated: raw=%s, arrived=%u",
+                 msg->data ? "true" : "false",
+                 static_cast<unsigned int>(current_nav_arrived_));
     }
     
     // Cmd Vel: 订阅速度命令，更新导航数据变量
     void cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg)
     {
-        // 提取线速度和角速度，只更新变量，由定时器固定频率发送
         current_nav_vx_ = msg->linear.x;
         current_nav_vy_ = msg->linear.y;
         current_nav_z_angle_ = msg->angular.z;
@@ -286,7 +287,7 @@ private:
         
         // 初始化数据段
         frame.data.reserved0 = 0;                  // 空变量
-        frame.data.reserved1 = 0;                  // 保留
+        frame.data.at_place = current_nav_arrived_;                 // 保留
         // 单位转换：m/s → mm/s, rad/s → 0.01 rad/s, clamp to int16 range
         int32_t vx_mm = (int32_t)(vx * 1000.0f);
         int32_t vy_mm = (int32_t)(vy * 1000.0f);
@@ -297,6 +298,13 @@ private:
         frame.data.vx = (int16_t)vx_mm;            // mm/s
         frame.data.vy = (int16_t)vy_mm;            // mm/s
         frame.data.wz = (int16_t)wz_centi;         // 0.01 rad/s
+//test
+        ROS_INFO_THROTTLE(0.01,
+                         "Send nav frame: at_place=%u, vx=%.4f m/s(%d mm/s), vy=%.4f m/s(%d mm/s), wz=%.4f rad/s(%d)",
+                         static_cast<unsigned int>(frame.data.at_place),
+                         vx, frame.data.vx,
+                         vy, frame.data.vy,
+                         z_angle, frame.data.wz);
         
         // 计算Packet CRC16 (对整个帧从字节0到数据段结尾, 21-4=17字节)
         frame.packet_crc16 = calculateCRC16((uint8_t*)&frame, 
@@ -377,7 +385,7 @@ private:
     
     void receiveThread()
     {
-        ros::Rate loop_rate(100);  // 100Hz
+        ros::Rate loop_rate(100);  // 100Hz **接受频率
         
         while (ros::ok())
         {
@@ -565,8 +573,9 @@ private:
         std_msgs::Int32 msg_int32;
         geometry_msgs::Point enemy_pos;
 
-        // 云台yaw角
-        msg_float.data = frame.data.yaw_angle;
+        // 云台yaw角固定为0
+        // msg_float.data = frame.data.yaw_angle;
+        msg_float.data = 0.0f;
         pub_yaw_angle_.publish(msg_float);
         
         // 比赛状态
@@ -720,44 +729,46 @@ private:
         // 检测红方死亡状态变化 (使用red_dead_bits而不是red_dead)
         if (data.red_dead_bits != last_red_dead_)
         {
-            uint16_t new_deaths = data.red_dead_bits - last_red_dead_;
-            for (uint16_t i = 0; i < new_deaths; i++)
-            {
-                if (robot_color_ == 0)  // 己方是红色
-                {
-                    // 己方被击杀，自己人扣20分
-                    friendly_score_ = std::max(0, friendly_score_ - 20);
-                    ROS_INFO("Red robot killed (friendly): friendly_score now %d", friendly_score_);
-                }
-                else  // 己方是蓝色
-                {
-                    // 击杀对方，敌方扣20分
-                    enemy_score_ = std::max(0, enemy_score_ - 20);
-                    ROS_INFO("Red robot killed (enemy): enemy_score now %d", enemy_score_);
-                }
-            }
+            // 暂时禁用：死亡事件导致分数变化
+            // uint16_t new_deaths = data.red_dead_bits - last_red_dead_;
+            // for (uint16_t i = 0; i < new_deaths; i++)
+            // {
+            //     if (robot_color_ == 0)  // 己方是红色
+            //     {
+            //         // 己方被击杀，自己人扣20分
+            //         friendly_score_ = std::max(0, friendly_score_ - 20);
+            //         ROS_INFO("Red robot killed (friendly): friendly_score now %d", friendly_score_);
+            //     }
+            //     else  // 己方是蓝色
+            //     {
+            //         // 击杀对方，敌方扣20分
+            //         enemy_score_ = std::max(0, enemy_score_ - 20);
+            //         ROS_INFO("Red robot killed (enemy): enemy_score now %d", enemy_score_);
+            //     }
+            // }
             last_red_dead_ = data.red_dead_bits;
         }
         
         // 检测蓝方死亡状态变化 (使用blue_dead_bits而不是blue_dead)
         if (data.blue_dead_bits != last_blue_dead_)
         {
-            uint16_t new_deaths = data.blue_dead_bits - last_blue_dead_;
-            for (uint16_t i = 0; i < new_deaths; i++)
-            {
-                if (robot_color_ == 1)  // 己方是蓝色
-                {
-                    // 己方被击杀，自己人扣20分
-                    friendly_score_ = std::max(0, friendly_score_ - 20);
-                    ROS_INFO("Blue robot killed (friendly): friendly_score now %d", friendly_score_);
-                }
-                else  // 己方是红色
-                {
-                    // 击杀对方，敌方扣20分
-                    enemy_score_ = std::max(0, enemy_score_ - 20);
-                    ROS_INFO("Blue robot killed (enemy): enemy_score now %d", enemy_score_);
-                }
-            }
+            // 暂时禁用：死亡事件导致分数变化
+            // uint16_t new_deaths = data.blue_dead_bits - last_blue_dead_;
+            // for (uint16_t i = 0; i < new_deaths; i++)
+            // {
+            //     if (robot_color_ == 1)  // 己方是蓝色
+            //     {
+            //         // 己方被击杀，自己人扣20分
+            //         friendly_score_ = std::max(0, friendly_score_ - 20);
+            //         ROS_INFO("Blue robot killed (friendly): friendly_score now %d", friendly_score_);
+            //     }
+            //     else  // 己方是红色
+            //     {
+            //         // 击杀对方，敌方扣20分
+            //         enemy_score_ = std::max(0, enemy_score_ - 20);
+            //         ROS_INFO("Blue robot killed (enemy): enemy_score now %d", enemy_score_);
+            //     }
+            // }
             last_blue_dead_ = data.blue_dead_bits;
         }
     }

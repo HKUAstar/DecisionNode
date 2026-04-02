@@ -193,7 +193,7 @@ static constexpr uint8_t CRC8_TABLE[256] = {
 struct NavigationCommandData
 {
     uint8_t  reserved0;           // 偏移0: 空变量
-    uint8_t  reserved1;           // 偏移1: 保留
+    bool  at_place;           // dstar_status
     int16_t  vx;                  // 偏移2-3: X方向速度 (mm/s)
     int16_t  vy;                  // 偏移4-5: Y方向速度 (mm/s)
     int16_t  wz;                  // 偏移6-7: 旋转角速度 (0.01 rad/s)

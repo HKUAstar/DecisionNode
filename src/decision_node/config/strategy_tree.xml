@@ -34,14 +34,14 @@
         </Sequence>
 
         <Sequence name="ToSupplyWhenInDanger">
-          <IsSentryInDanger />
+          <IsSentryInDanger danger_hp="{danger_hp}" hp_key="ref.remain_hp" />
           <SetAction action="SUPPLY" />
         </Sequence>
 
         <Sequence name="MaintainSupply">
           <IsAction value="SUPPLY" />
           <Inverter>
-            <IsHealthFull />
+            <IsHealthFull max_hp="{max_hp}" />
           </Inverter>
           <SetAction action="SUPPLY" />
         </Sequence>
@@ -83,7 +83,10 @@
           <IsAction value="RADICAL1" />
           <AggressiveAdvantage threshold="50" />
           <Inverter>
-            <NotBulletSufficient />
+            <Fallback>
+              <NotBulletSufficient />
+              <IsSentryInDanger danger_hp="150" hp_key="ref.remain_hp" />
+            </Fallback>
           </Inverter>
           <SetAction action="RADICAL1" />
         </Sequence>
@@ -99,7 +102,10 @@
         <Sequence name="ToRadicalWhenAggressiveAndBulletSufficient">
           <AggressiveAdvantage threshold="50" />
           <Inverter>
-            <NotBulletSufficient />
+            <Fallback>
+              <NotBulletSufficient />
+              <IsSentryInDanger danger_hp="150" hp_key="ref.remain_hp" />
+            </Fallback>
           </Inverter>
           <SetAction action="RADICAL" />
         </Sequence>

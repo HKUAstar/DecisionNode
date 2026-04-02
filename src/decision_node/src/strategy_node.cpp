@@ -447,11 +447,34 @@ public:
   {
   }
 
-  static BT::PortsList providedPorts() { return {}; }
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<int>("danger_hp", 100, "HP threshold: below which is considered in danger"),
+      BT::InputPort<std::string>("hp_key", "ref.remain_hp", "Blackboard key for current HP"),
+    };
+  }
 
   BT::NodeStatus tick() override
   {
-    const bool in_danger = config().blackboard->get<bool>("is_in_danger");
+    int danger_hp = 100;
+    (void)getInput("danger_hp", danger_hp);
+
+    std::string hp_key = "ref.remain_hp";
+    (void)getInput("hp_key", hp_key);
+
+    int remain_hp = 0;
+    try
+    {
+      remain_hp = config().blackboard->get<int>(hp_key);
+    }
+    catch (...)
+    {
+      ROS_WARN_THROTTLE(1.0, "IsSentryInDanger: failed to read hp from key '%s'", hp_key.c_str());
+      return BT::NodeStatus::FAILURE;
+    }
+
+    const bool in_danger = (remain_hp > 0 && remain_hp < danger_hp);
     return in_danger ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
@@ -1040,6 +1063,7 @@ int main(int argc, char** argv)
   // ---------------------------
   struct DecisionParams {
     int danger_hp = 100;
+    int max_hp = 400;
     int sufficient_bullet = 10;
     int max_bullet = 150;
     int fixed_supply = 50;
@@ -1052,6 +1076,7 @@ int main(int argc, char** argv)
 
 
   pnh.param("danger_hp", params.danger_hp, params.danger_hp);
+  pnh.param("max_hp", params.max_hp, params.max_hp);
   pnh.param("sufficient_bullet", params.sufficient_bullet, params.sufficient_bullet);
   pnh.param("max_bullet", params.max_bullet, params.max_bullet);
   pnh.param("fixed_supply", params.fixed_supply, params.fixed_supply);
@@ -1062,6 +1087,7 @@ int main(int argc, char** argv)
   pnh.param("harm_threshold_off", params.harm_threshold_off, params.harm_threshold_off);
 
   blackboard->set("danger_hp", params.danger_hp);
+  blackboard->set("max_hp", params.max_hp);
   blackboard->set("sufficient_bullet", params.sufficient_bullet);
   blackboard->set("max_bullet", params.max_bullet);
   blackboard->set("fixed_supply", params.fixed_supply);
@@ -1073,8 +1099,8 @@ int main(int argc, char** argv)
 
   // 日志输出参数值
   ROS_INFO("Decision Parameters loaded:");
-  ROS_INFO("  danger_hp=%d, sufficient_bullet=%d, max_bullet=%d",
-           params.danger_hp, params.sufficient_bullet, params.max_bullet);
+  ROS_INFO("  danger_hp=%d, max_hp=%d, sufficient_bullet=%d, max_bullet=%d",
+           params.danger_hp, params.max_hp, params.sufficient_bullet, params.max_bullet);
   ROS_INFO("  fixed_supply=%d, occupy_threshold=%d, aggressive_threshold=%d",
            params.fixed_supply, params.occupy_threshold, params.aggressive_threshold);
   ROS_INFO("  attack_threshold=%d, harm_on=%d, harm_off=%d", 
