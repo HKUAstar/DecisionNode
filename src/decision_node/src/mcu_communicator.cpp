@@ -17,7 +17,7 @@ class MCUCommunicator
 {
 public:
     MCUCommunicator() : nh_("~"), serial_port_(""), serial_baudrate_(921600), 
-                       frame_buffer_index_(0)
+                       tx_buffer_index_(0), frame_buffer_index_(0)
     {
         // 读取参数
         nh_.param("serial_port", serial_port_, std::string("/dev/ttyUSB0"));
@@ -75,34 +75,13 @@ public:
         // 创建导航命令定时器
         navigation_timer_ = nh_.createTimer(ros::Duration(nav_period),
                                             &MCUCommunicator::navigationTimerCallback, this);
-        
-        try
+
+        // 启动时先尝试打开一次串口；如果设备暂时不存在，不让节点退出
+        configureSerial();
+        if (!tryOpenSerial())
         {
-            serial_.setPort(serial_port_);
-            serial_.setBaudrate(serial_baudrate_);
-            serial_.setBytesize(serial::eightbits);      // 数据位：8
-            serial_.setParity(serial::parity_none);      // 校验位：None
-            serial_.setStopbits(serial::stopbits_one);   // 停止位：1
-            serial::Timeout timeout = serial::Timeout::simpleTimeout(1000);
-            serial_.setTimeout(timeout);
-            serial_.open();
-            
-            if (serial_.isOpen())
-            {
-                ROS_INFO("MCU Serial port opened successfully: %s @ %d baud", 
-                         serial_port_.c_str(), serial_baudrate_);
-            }
-            else
-            {
-                ROS_ERROR("Failed to open serial port: %s", serial_port_.c_str());
-                ROS_ERROR("Debugging steps:");
-                ROS_ERROR("   1. Check device exists: ls -la %s", serial_port_.c_str());
-                ROS_ERROR("   2. Check permissions: stat %s", serial_port_.c_str());
-            }
-        }
-        catch (const serial::SerialException& e)
-        {
-            ROS_ERROR("Serial exception during port setup: %s", e.what());
+            ROS_WARN("Serial port %s is unavailable at startup. Node will keep retrying in background.",
+                     serial_port_.c_str());
         }
         
         recv_thread_ = std::thread(&MCUCommunicator::receiveThread, this);
@@ -209,7 +188,54 @@ private:
     uint16_t last_red_dead_ = 0;    // 上一帧红方死亡状态
     uint16_t last_blue_dead_ = 0;   // 上一帧蓝方死亡状态
     uint8_t robot_color_ = 0;       // 0=red, 1=blue
-    
+
+    void configureSerial()
+    {
+        serial_.setPort(serial_port_);
+        serial_.setBaudrate(serial_baudrate_);
+        serial_.setBytesize(serial::eightbits);      // 数据位：8
+        serial_.setParity(serial::parity_none);      // 校验位：None
+        serial_.setStopbits(serial::stopbits_one);   // 停止位：1
+        serial_.setTimeout(serial::Timeout::simpleTimeout(1000));
+    }
+
+    bool tryOpenSerial()
+    {
+        if (serial_.isOpen())
+        {
+            return true;
+        }
+
+        try
+        {
+            configureSerial();
+            serial_.open();
+
+            if (serial_.isOpen())
+            {
+                ROS_INFO("MCU Serial port opened successfully: %s @ %d baud",
+                         serial_port_.c_str(), serial_baudrate_);
+                return true;
+            }
+        }
+        catch (const serial::IOException& e)
+        {
+            ROS_WARN_THROTTLE(2.0, "Serial IO exception while opening %s: %s",
+                              serial_port_.c_str(), e.what());
+        }
+        catch (const serial::SerialException& e)
+        {
+            ROS_WARN_THROTTLE(2.0, "Serial exception while opening %s: %s",
+                              serial_port_.c_str(), e.what());
+        }
+        catch (const std::exception& e)
+        {
+            ROS_WARN_THROTTLE(2.0, "Unexpected exception while opening %s: %s",
+                              serial_port_.c_str(), e.what());
+        }
+
+        return false;
+    }
 
     // Navigation
     void navigationCallback(const geometry_msgs::Vector3::ConstPtr& msg)
@@ -318,7 +344,8 @@ private:
         {
             if (!serial_.isOpen())
             {
-                ROS_ERROR("Serial port is CLOSED! Cannot send navigation command.");
+                ROS_WARN_THROTTLE(2.0, "Serial port %s is not open yet, skip sending navigation command.",
+                                  serial_port_.c_str());
                 return;
             }
             
@@ -336,12 +363,24 @@ private:
             }
             else
             {
-                ROS_ERROR("Write failed: write returned %d", written);
+                ROS_WARN("Write failed: write returned %d", written);
+            }
+        }
+        catch (const serial::IOException& e)
+        {
+            ROS_WARN("Serial IO exception during navigation write: %s", e.what());
+            if (serial_.isOpen())
+            {
+                serial_.close();
             }
         }
         catch (const serial::SerialException& e)
         {
-            ROS_ERROR("Serial exception during navigation write: %s", e.what());
+            ROS_WARN("Serial exception during navigation write: %s", e.what());
+            if (serial_.isOpen())
+            {
+                serial_.close();
+            }
         }
     }
     
@@ -385,21 +424,14 @@ private:
     
     void receiveThread()
     {
-        ros::Rate loop_rate(100);  // 100Hz **接受频率
+        ros::Rate loop_rate(20);  // 后台持续重连/接收
         
         while (ros::ok())
         {
             if (!serial_.isOpen())
             {
-                // 尝试重新连接
-                try
+                if (!tryOpenSerial())
                 {
-                    serial_.open();
-                    ROS_INFO("Reconnected to serial port");
-                }
-                catch (const serial::SerialException& e)
-                {
-                    ROS_WARN("Failed to reconnect: %s", e.what());
                     loop_rate.sleep();
                     continue;
                 }
@@ -415,9 +447,17 @@ private:
                     processReceivedData(buffer);
                 }
             }
+            catch (const serial::IOException& e)
+            {
+                ROS_WARN_THROTTLE(2.0, "Serial IO read exception: %s", e.what());
+                if (serial_.isOpen())
+                {
+                    serial_.close();
+                }
+            }
             catch (const serial::SerialException& e)
             {
-                ROS_ERROR("Serial read exception: %s", e.what());
+                ROS_WARN_THROTTLE(2.0, "Serial read exception: %s", e.what());
                 if (serial_.isOpen())
                 {
                     serial_.close();
