@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- zone_detector 节点启动文件
+     订阅哨兵世界坐标，根据 PGM 区域地图发布哨兵所在区域编号 -->
+<launch>
+    <!-- ===== 参数 ===== -->
+    <arg name="map_yaml" default="$(find decision_node)/config/zone_map/zone_map.yaml"/>
+
+    <arg name="position_topic" default="/sentinel_nav_pos"/>
+
+    <arg name="zone_topic" default="/sentinel_zone"/>
+
+    <arg name="output" default="screen"/>
+
+    <!-- ===== 节点 ===== -->
+    <node name="zone_detector" pkg="decision_node" type="zone_detector"
+          output="$(arg output)">
+
+        <param name="map_yaml"        value="$(arg map_yaml)"/>
+        <param name="position_topic"  value="$(arg position_topic)"/>
+        <param name="zone_topic"      value="$(arg zone_topic)"/>
+
+        <!-- 像素值 → 区域号映射（可选）
+             若不提供，节点将自动从 PGM 检测所有灰度值并按升序分配区域编号。
+             取消注释并按实际地图灰度值修改。 -->
+        <!--
+        <rosparam param="zone_map">
+          - {pixel: 255, zone:  0}   # 白色：自由区域 / 默认区
+          - {pixel: 200, zone:  1}   # 浅灰：区域 1
+          - {pixel: 150, zone:  2}   # 中灰：区域 2
+          - {pixel: 100, zone:  3}   # 深灰：区域 3
+          - {pixel:   0, zone: -1}   # 黑色：障碍物
+        </rosparam>
+        -->
+    </node>
+</launch>
