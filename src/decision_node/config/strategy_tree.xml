@@ -12,7 +12,6 @@
       <ReactiveFallback name="DecideAction">
         <Sequence name="ToInitWhenNotInGame">
           <IsGameStarted expect_started="false" />
-          <!-- <ResetCentralOccupiable /> -->
           <SetAction action="INIT" />
         </Sequence>
 
@@ -37,8 +36,11 @@
         <Sequence name="ToSupplyWhenBulletLow">
           <NotBulletSufficient />
           <CheckIntStatus key="ref.bullet_remain" expected="0" />
+          <SetSpinFlag target_spin="1" />
+          <PublishSpin />
           <SetAction action="SUPPLY" />
         </Sequence>
+
 
 
         <Sequence name="MaintainSupply">
@@ -51,7 +53,12 @@
         
         <Sequence name="DefendRampLaunch">
           <CheckIntStatus key="ref.launch_ramp_elevated_ground" expected="1" />
-          <SetAction action="UpStair" />
+          <SetAction action="DEFEND_RAMP_LAUNCH" />
+        </Sequence>
+
+        <Sequence name="Upstair">
+          
+          <SetAction action="DEFEND_RAMP_LAUNCH" />
         </Sequence>
 
         <!-- Default state -->
@@ -107,6 +114,12 @@
 
         <Sequence>
           <IsAction value="RESPAWN" />
+        </Sequence>
+
+        <Sequence>
+          <IsAction value="DEFEND_RAMP_LAUNCH" />
+          <SetGoalFromParams ns="defend_ramp_launch" />
+          <PublishGoalPoint topic="clicked_point" />
         </Sequence>
 
         <Sequence>

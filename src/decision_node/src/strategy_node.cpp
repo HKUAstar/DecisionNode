@@ -1056,8 +1056,6 @@ int main(int argc, char** argv)
       return std::make_unique<PublishGoalPoint>(name, config, &goal_pub, &publish_on_change_only);
     });
 
-  RegisterAccumulateCentralOccupiable(factory);
-  RegisterResetCentralOccupiable(factory);
   RegisterOccupationNodes(factory);
 
   RegisterRecoverChangeNodes(factory, &recover_pub, &bullet_up_pub);

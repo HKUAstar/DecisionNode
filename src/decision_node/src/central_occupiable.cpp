@@ -4,75 +4,6 @@
 
 #include <ros/ros.h>  
 
-class AccumulateCentralOccupiable : public BT::SyncActionNode
-{
-public:
-    AccumulateCentralOccupiable(const std::string& name, const BT::NodeConfiguration& config)
-        : BT::SyncActionNode(name, config)
-    {
-        ros::NodeHandle nh("~");  
-        
-        //set default threshold in case the server parameter has sth. wrong
-        int default_threshold = 20;
-        nh.param("central_threshold", default_threshold, default_threshold);
-        
-        threshold_ = default_threshold;
-    }
-
-    static BT::PortsList providedPorts()
-    {
-        return {
-            BT::InputPort<int>("occupy_status"),
-            BT::InputPort<int>("threshold"),
-            BT::OutputPort<int>("accumulated_count"),
-            BT::OutputPort<bool>("reached_threshold")
-        };
-    }
-
-    BT::NodeStatus tick() override
-    {
-        auto bb = config().blackboard;
-        
-        int occupy_status;
-        
-        if (!getInput("occupy_status", occupy_status))
-        {
-            return BT::NodeStatus::FAILURE;
-        }
-        
-        int current_count = 0;
-        try {
-            current_count = bb->get<int>("central_accumulate_count");
-        } catch (...) {
-            current_count = 0;
-        }
-        
-        bool reached = false;
-        bool is_enemy_occupied = (occupy_status == 2); // 假设2是敌方占领
-        
-        if (!is_enemy_occupied)
-        {
-            current_count++;
-            if (current_count >= threshold_)
-            {
-                reached = true;
-                current_count = 0;
-            }
-        }
-        // 受攻击时不清零，保留积累值
-        
-        
-        bb->set("central_accumulate_count", current_count);
-        setOutput("accumulated_count", current_count);
-        setOutput("reached_threshold", reached);
-        
-        return BT::NodeStatus::SUCCESS;
-    }
-
-private:
-    int threshold_;  
-};
-
 class TriggerOnThreshold : public BT::ConditionNode
 {
 public:
@@ -148,92 +79,10 @@ public:
     }
 };
 
-class ResetCentralOccupiable : public BT::SyncActionNode
-{
-public:
-    ResetCentralOccupiable(const std::string& name, const BT::NodeConfiguration& config)
-        : BT::SyncActionNode(name, config)
-    {
-    }
-
-    static BT::PortsList providedPorts()
-    {
-        return {};
-    }
-
-    BT::NodeStatus tick() override
-    {
-        auto bb = config().blackboard;
-
-        // Reset central occupiable-related values
-        bb->set("central_accumulate_count", 0);
-        bb->set("central_occupiable_triggered", false);
-
-        ROS_INFO_STREAM("[ResetCentralOccupiable] Reset central occupiable values.");
-
-        return BT::NodeStatus::SUCCESS;
-    }
-};
-
-// IsOccupyStatusFavorable: 判断增益区占领状态是否有利
-// 占领状态: 0=未占领, 1=己方占领, 2=敌方占领, 3=双方占领
-// 返回SUCCESS: 0, 1, 3 (己方有利或未被敌方独占的状态)
-// 返回FAILURE: 2 (被敌方独占)
-class IsOccupyStatusFavorable : public BT::ConditionNode
-{
-public:
-    IsOccupyStatusFavorable(const std::string& name, const BT::NodeConfiguration& config)
-        : BT::ConditionNode(name, config)
-    {
-    }
-
-    static BT::PortsList providedPorts()
-    {
-        return {};
-    }
-
-    BT::NodeStatus tick() override
-    {
-        auto bb = config().blackboard;
-        
-        try
-        {
-            int occupy_status = bb->get<int>("ref.occupy_status");
-            
-            // 0: 未被占领 → SUCCESS (可以尝试占领)
-            // 1: 被己方占领 → SUCCESS (保持占领)
-            // 2: 被敌方占领 → FAILURE (被对方独占，先不推进)
-            // 3: 被双方占领 → SUCCESS (双方均有状态，无劣势)
-            
-            if (occupy_status == 2)
-            {
-                ROS_DEBUG("[IsOccupyStatusFavorable] Occupy status = %d (Enemy only), returning FAILURE", occupy_status);
-                return BT::NodeStatus::FAILURE;
-            }
-            else
-            {
-                ROS_DEBUG("[IsOccupyStatusFavorable] Occupy status = %d (Favorable), returning SUCCESS", occupy_status);
-                return BT::NodeStatus::SUCCESS;
-            }
-        }
-        catch (const std::exception& e)
-        {
-            ROS_WARN("[IsOccupyStatusFavorable] Exception: %s", e.what());
-            return BT::NodeStatus::FAILURE;
-        }
-    }
-};
-
 void RegisterOccupationNodes(BT::BehaviorTreeFactory& factory)
 {
     factory.registerNodeType<TriggerOnThreshold>("TriggerOnThreshold");
     factory.registerNodeType<ResetAccumulator>("ResetAccumulator");
-    factory.registerNodeType<IsOccupyStatusFavorable>("IsOccupyStatusFavorable");
-}
-
-void RegisterAccumulateCentralOccupiable(BT::BehaviorTreeFactory& factory)
-{
-    factory.registerNodeType<AccumulateCentralOccupiable>("AccumulateCentralOccupiable");
 }
 
 void RegisterTriggerOnThreshold(BT::BehaviorTreeFactory& factory)
@@ -244,15 +93,5 @@ void RegisterTriggerOnThreshold(BT::BehaviorTreeFactory& factory)
 void RegisterResetAccumulator(BT::BehaviorTreeFactory& factory)
 {
     factory.registerNodeType<ResetAccumulator>("ResetAccumulator");
-}
-
-void RegisterResetCentralOccupiable(BT::BehaviorTreeFactory& factory)
-{
-    factory.registerNodeType<ResetCentralOccupiable>("ResetCentralOccupiable");
-}
-
-void RegisterIsOccupyStatusFavorable(BT::BehaviorTreeFactory& factory)
-{
-    factory.registerNodeType<IsOccupyStatusFavorable>("IsOccupyStatusFavorable");
 }
 
