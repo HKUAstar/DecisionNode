@@ -245,11 +245,89 @@ public:
   }
 };
 
-void RegisterMotionChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* motion_pub, bool* publish_on_change_only)
+// =====================================================
+// SetSpinFlag: 设置小陀螺自旋模式
+//
+// XML 端口:
+//   target_spin — 0=关闭自旋, 1=开启自旋（默认: 0）
+//
+// 使用示例:
+//   <SetSpinFlag target_spin="1" />   <!-- 开启小陀螺 -->
+//   <SetSpinFlag target_spin="0" />   <!-- 关闭小陀螺 -->
+// =====================================================
+class SetSpinFlag : public BT::SyncActionNode
+{
+public:
+  SetSpinFlag(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<int>("target_spin", 0, "0=关闭自旋, 1=开启自旋"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    int target_spin = 0;
+    (void)getInput("target_spin", target_spin);
+    config().blackboard->set("spin_flag", target_spin);
+    ROS_DEBUG("SetSpinFlag: spin_flag set to %d", target_spin);
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
+// =====================================================
+// PublishSpin: 将 spin_flag 从黑板发布到 ROS 话题
+//
+// 与 SetMotionFlag/PublishMotion 相同的分离设计：
+//   SetSpinFlag  → 只写黑板（不发网络）
+//   PublishSpin  → 读黑板 → 发 ROS 话题 "spin" → MCU 执行
+// 只在值变化时才真正发送，避免重复刷 MCU。
+// =====================================================
+class PublishSpin : public BT::SyncActionNode
+{
+public:
+  PublishSpin(const std::string& name, const BT::NodeConfiguration& config,
+              ros::Publisher* pub)
+    : BT::SyncActionNode(name, config), pub_(pub)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    int spin_flag = 0;
+    try { spin_flag = bb->get<int>("spin_flag"); } catch (...) {}
+
+    int last_flag = -1;
+    try { last_flag = bb->get<int>("spin.last_flag"); } catch (...) {}
+
+    if (spin_flag == last_flag)
+      return BT::NodeStatus::SUCCESS;
+
+    bb->set("spin.last_flag", spin_flag);
+    std_msgs::UInt8 msg;
+    msg.data = static_cast<uint8_t>(spin_flag);
+    pub_->publish(msg);
+    ROS_DEBUG("PublishSpin: published spin_flag = %d", spin_flag);
+    return BT::NodeStatus::SUCCESS;
+  }
+
+private:
+  ros::Publisher* pub_;
+};
+
+void RegisterMotionChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* motion_pub, ros::Publisher* spin_pub, bool* publish_on_change_only)
 {
   factory.registerNodeType<CheckArrived>("CheckArrived");
   factory.registerNodeType<CheckAttacked>("CheckAttacked");
-  
+
   factory.registerBuilder<SetMotionFlag>(
       "SetMotionFlag", [](const std::string& name, const BT::NodeConfiguration& config) {
         return std::make_unique<SetMotionFlag>(name, config);
@@ -259,10 +337,11 @@ void RegisterMotionChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher*
       "PublishMotion", [motion_pub, publish_on_change_only](const std::string& name, const BT::NodeConfiguration& config) {
         return std::make_unique<PublishMotion>(name, config, motion_pub, publish_on_change_only);
       });
-}
 
-void RegisterPublishMotionNode(BT::BehaviorTreeFactory& factory, ros::Publisher* publisher)
-{
-  // Note: PublishMotion requires publisher in constructor, needs custom registration
-  // This will be handled in strategy_node.cpp
+  factory.registerNodeType<SetSpinFlag>("SetSpinFlag");
+
+  factory.registerBuilder<PublishSpin>(
+      "PublishSpin", [spin_pub](const std::string& name, const BT::NodeConfiguration& config) {
+        return std::make_unique<PublishSpin>(name, config, spin_pub);
+      });
 }

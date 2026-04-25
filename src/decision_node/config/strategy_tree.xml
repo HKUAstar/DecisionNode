@@ -36,9 +36,10 @@
 
         <Sequence name="ToSupplyWhenBulletLow">
           <NotBulletSufficient />
-          
+          <CheckIntStatus key="ref.bullet_remain" expected="0" />
           <SetAction action="SUPPLY" />
         </Sequence>
+
 
         <Sequence name="MaintainSupply">
           <IsAction value="SUPPLY" />
@@ -46,6 +47,11 @@
             <IsHealthFull max_hp="{max_hp}" />
           </Inverter>
           <SetAction action="SUPPLY" />
+        </Sequence>
+        
+        <Sequence name="DefendRampLaunch">
+          <CheckIntStatus key="ref.launch_ramp_elevated_ground" expected="1" />
+          <SetAction action="UpStair" />
         </Sequence>
 
         <!-- Default state -->
@@ -72,6 +78,7 @@
           <PublishGoalPoint topic="clicked_point" />
         </Sequence>
 
+      
         
         <Sequence>
           <IsAction value="RADICAL" />

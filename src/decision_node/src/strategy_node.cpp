@@ -29,7 +29,7 @@
 #include <sstream>
 #include <string>
 
-#include "decision_node/battle_field.hpp"
+#include "decision_node/battle_field_status.hpp"
 #include "decision_node/central_occupiable.hpp"
 #include "decision_node/motion_change.hpp"
 #include "decision_node/recover_change.hpp"
@@ -996,6 +996,7 @@ int main(int argc, char** argv)
 
   ros::Publisher goal_pub = nh.advertise<geometry_msgs::PointStamped>("clicked_point", 1);
   ros::Publisher motion_pub = nh.advertise<std_msgs::UInt8>("motion", 1);
+  ros::Publisher spin_pub = nh.advertise<std_msgs::UInt8>("spin", 1);
   ros::Publisher recover_pub = nh.advertise<std_msgs::UInt8>("recover", 1);
   ros::Publisher bullet_up_pub = nh.advertise<std_msgs::UInt8>("bullet_up", 1);
   ros::Publisher bullet_num_pub = nh.advertise<std_msgs::UInt8>("bullet_num", 1);
@@ -1036,7 +1037,7 @@ int main(int argc, char** argv)
   factory.registerNodeType<ClearGoal>("ClearGoal");
   factory.registerNodeType<Wait>("Wait");
   
-  RegisterMotionChangeNodes(factory, &motion_pub, &publish_on_change_only);
+  RegisterMotionChangeNodes(factory, &motion_pub, &spin_pub, &publish_on_change_only);
 
   factory.registerBuilder<SetGoalFromParams>(
     "SetGoalFromParams", [&](const std::string& name, const BT::NodeConfiguration& config) {
@@ -1126,7 +1127,9 @@ int main(int argc, char** argv)
   blackboard->set("recover", 0);  // 回血标志，默认为0
   blackboard->set("bullet_up", 0);  // 补弹标志，默认为0
   blackboard->set("bullet_num", 0);  // 补弹数量，默认为0
-  
+  blackboard->set("spin_flag", 0);   // 自旋模式，0=关闭，1=开启
+  blackboard->set("spin.last_flag", -1);
+
   // Chase mode initialization
   blackboard->set("chase.target_id", uint8_t(0));
   blackboard->set("chase.target_x", 0.0f);
