@@ -245,16 +245,7 @@ public:
   }
 };
 
-// =====================================================
-// SetSpinFlag: 设置小陀螺自旋模式
-//
-// XML 端口:
-//   target_spin — 0=关闭自旋, 1=开启自旋（默认: 0）
-//
-// 使用示例:
-//   <SetSpinFlag target_spin="1" />   <!-- 开启小陀螺 -->
-//   <SetSpinFlag target_spin="0" />   <!-- 关闭小陀螺 -->
-// =====================================================
+
 class SetSpinFlag : public BT::SyncActionNode
 {
 public:

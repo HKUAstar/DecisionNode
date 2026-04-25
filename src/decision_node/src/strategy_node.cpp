@@ -84,6 +84,11 @@ struct NavigationState
   bool arrived = false;
 };
 
+struct VisionState
+{
+  bool detected = false;  // 视觉模块是否检测到目标
+};
+
 // ---------------------------
 // BT Nodes: Update blackboard
 // ---------------------------
@@ -182,8 +187,8 @@ private:
 class UpdateVisionBB : public BT::SyncActionNode
 {
 public:
-  UpdateVisionBB(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::SyncActionNode(name, config)
+  UpdateVisionBB(const std::string& name, const BT::NodeConfiguration& config, const VisionState* state)
+    : BT::SyncActionNode(name, config), state_(state)
   {
   }
 
@@ -191,9 +196,12 @@ public:
 
   BT::NodeStatus tick() override
   {
-    // V1: explicitly弃用视觉模块。这里保持节点存在，但不写入任何视觉字段。[TODO] 后续可接真实视觉数据
+    config().blackboard->set("vision.detected", state_->detected);
     return BT::NodeStatus::SUCCESS;
   }
+
+private:
+  const VisionState* state_;
 };
 
 class UpdateTimersBB : public BT::SyncActionNode
@@ -906,6 +914,7 @@ int main(int argc, char** argv)
 
   RefereeState ref;
   NavigationState nav;
+  VisionState vis;
 
   auto blackboard = BT::Blackboard::create();
   
@@ -994,6 +1003,11 @@ int main(int argc, char** argv)
     nav.arrived = msg->data;
   });
 
+  // Vision status
+  auto sub_vision = nh.subscribe<std_msgs::Bool>("/vision_status", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
+    vis.detected = msg->data;
+  });
+
   ros::Publisher goal_pub = nh.advertise<geometry_msgs::PointStamped>("clicked_point", 1);
   ros::Publisher motion_pub = nh.advertise<std_msgs::UInt8>("motion", 1);
   ros::Publisher spin_pub = nh.advertise<std_msgs::UInt8>("spin", 1);
@@ -1020,7 +1034,10 @@ int main(int argc, char** argv)
       return std::make_unique<UpdateNavigationBB>(name, config, &nav);
     });
 
-  factory.registerNodeType<UpdateVisionBB>("UpdateVisionBB");
+  factory.registerBuilder<UpdateVisionBB>(
+    "UpdateVisionBB", [&](const std::string& name, const BT::NodeConfiguration& config) {
+      return std::make_unique<UpdateVisionBB>(name, config, &vis);
+    });
   factory.registerNodeType<UpdateTimersBB>("UpdateTimersBB");
   factory.registerNodeType<UpdateDerivedFlags>("UpdateDerivedFlags");
 

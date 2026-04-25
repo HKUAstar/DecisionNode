@@ -32,13 +32,13 @@ public:
         pub_remain_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/remain_hp", 1);
         pub_bullet_remain_ = nh_.advertise<std_msgs::UInt16>("/referee/bullet_remain", 1);
         pub_occupy_status_ = nh_.advertise<std_msgs::UInt8>("/referee/occupy_status", 1);
-        
+        pub_launch_ramp_elevated_ground_ = nh_.advertise<std_msgs::UInt8>("/referee/launch_ramp_elevated_ground", 1);
+
         pub_robot_id_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_id", 1);
         pub_robot_color_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_color", 1);
         pub_self_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_hp", 1);
         pub_self_max_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_max_hp", 1);
         
-        pub_launch_ramp_elevated_ground_ = nh_.advertise<std_msgs::UInt16>("/robot/launch_ramp_elevated_ground", 1);
         
         pub_enemy_hero_ = nh_.advertise<geometry_msgs::Point>("/enemy/hero_position", 1);
         pub_enemy_engineer_ = nh_.advertise<geometry_msgs::Point>("/enemy/engineer_position", 1);
