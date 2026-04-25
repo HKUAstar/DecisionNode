@@ -1056,8 +1056,6 @@ int main(int argc, char** argv)
       return std::make_unique<PublishGoalPoint>(name, config, &goal_pub, &publish_on_change_only);
     });
 
-  RegisterOccupationNodes(factory);
-
   RegisterRecoverChangeNodes(factory, &recover_pub, &bullet_up_pub);
   RegisterBulletSupplyNodes(factory, &bullet_num_pub);
   RegisterBattleFieldNodes(factory);
