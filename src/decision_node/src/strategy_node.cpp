@@ -29,6 +29,7 @@
 #include <sstream>
 #include <string>
 
+#include "decision_node/battle_field.hpp"
 #include "decision_node/central_occupiable.hpp"
 #include "decision_node/motion_change.hpp"
 #include "decision_node/recover_change.hpp"
@@ -63,14 +64,7 @@ struct RefereeState
   int robot_color = 0;    // 机器人颜色 (0=red, 1=blue)
   int self_hp = 400;      // 自身血量
   int self_max_hp = 400;  // 自身最大血量
-  int red_1_hp = 400;     // 红英雄血量
-  int red_3_hp = 400;     // 红步兵3血量
-  int red_7_hp = 400;     // 红哨兵血量
-  int blue_1_hp = 400;    // 蓝英雄血量
-  int blue_3_hp = 400;    // 蓝步兵3血量
-  int blue_7_hp = 400;    // 蓝哨兵血量
-  int red_dead = 0;       // 红方死亡位
-  int blue_dead = 0;      // 蓝方死亡位
+  int launch_ramp_elevated_ground_status = 0;  
   // Enemy positions for chase mode
   float enemy_hero_x = 0.0f;
   float enemy_hero_y = 0.0f;
@@ -98,11 +92,11 @@ class UpdateRefereeBB : public BT::SyncActionNode
 public:
   UpdateRefereeBB(const std::string& name, const BT::NodeConfiguration& config, const RefereeState* state)
     : BT::SyncActionNode(name, config), state_(state),
-      cached_enemy_hero_x_(0.0f), cached_enemy_hero_y_(0.0f),
-      cached_enemy_engineer_x_(0.0f), cached_enemy_engineer_y_(0.0f),
-      cached_enemy_standard_3_x_(0.0f), cached_enemy_standard_3_y_(0.0f),
-      cached_enemy_standard_4_x_(0.0f), cached_enemy_standard_4_y_(0.0f),
-      cached_enemy_sentry_x_(0.0f), cached_enemy_sentry_y_(0.0f)
+      // cached_enemy_hero_x_(0.0f), cached_enemy_hero_y_(0.0f),
+      // cached_enemy_engineer_x_(0.0f), cached_enemy_engineer_y_(0.0f),
+      // cached_enemy_standard_3_x_(0.0f), cached_enemy_standard_3_y_(0.0f),
+      // cached_enemy_standard_4_x_(0.0f), cached_enemy_standard_4_y_(0.0f),
+      // cached_enemy_sentry_x_(0.0f), cached_enemy_sentry_y_(0.0f)
   {
   }
 
@@ -121,55 +115,48 @@ public:
     bb->set("ref.robot_color", state_->robot_color);
     bb->set("ref.self_hp", state_->self_hp);
     bb->set("ref.self_max_hp", state_->self_max_hp);
-    bb->set("ref.red_1_hp", state_->red_1_hp);
-    bb->set("ref.red_3_hp", state_->red_3_hp);
-    bb->set("ref.red_7_hp", state_->red_7_hp);
-    bb->set("ref.blue_1_hp", state_->blue_1_hp);
-    bb->set("ref.blue_3_hp", state_->blue_3_hp);
-    bb->set("ref.blue_7_hp", state_->blue_7_hp);
-    bb->set("ref.red_dead", state_->red_dead);
-    bb->set("ref.blue_dead", state_->blue_dead);
+    bb->set("ref.launch_ramp_elevated_ground", state_->launch_ramp_elevated_ground_status);
     
     // Enemy positions - 检测-8888无效值，只在有效时更新缓存
-    if (state_->enemy_hero_x != -8888.0f) cached_enemy_hero_x_ = state_->enemy_hero_x;
-    if (state_->enemy_hero_y != -8888.0f) cached_enemy_hero_y_ = state_->enemy_hero_y;
-    if (state_->enemy_engineer_x != -8888.0f) cached_enemy_engineer_x_ = state_->enemy_engineer_x;
-    if (state_->enemy_engineer_y != -8888.0f) cached_enemy_engineer_y_ = state_->enemy_engineer_y;
-    if (state_->enemy_standard_3_x != -8888.0f) cached_enemy_standard_3_x_ = state_->enemy_standard_3_x;
-    if (state_->enemy_standard_3_y != -8888.0f) cached_enemy_standard_3_y_ = state_->enemy_standard_3_y;
-    if (state_->enemy_standard_4_x != -8888.0f) cached_enemy_standard_4_x_ = state_->enemy_standard_4_x;
-    if (state_->enemy_standard_4_y != -8888.0f) cached_enemy_standard_4_y_ = state_->enemy_standard_4_y;
-    if (state_->enemy_sentry_x != -8888.0f) cached_enemy_sentry_x_ = state_->enemy_sentry_x;
-    if (state_->enemy_sentry_y != -8888.0f) cached_enemy_sentry_y_ = state_->enemy_sentry_y;
+    // if (state_->enemy_hero_x != -8888.0f) cached_enemy_hero_x_ = state_->enemy_hero_x;
+    // if (state_->enemy_hero_y != -8888.0f) cached_enemy_hero_y_ = state_->enemy_hero_y;
+    // if (state_->enemy_engineer_x != -8888.0f) cached_enemy_engineer_x_ = state_->enemy_engineer_x;
+    // if (state_->enemy_engineer_y != -8888.0f) cached_enemy_engineer_y_ = state_->enemy_engineer_y;
+    // if (state_->enemy_standard_3_x != -8888.0f) cached_enemy_standard_3_x_ = state_->enemy_standard_3_x;
+    // if (state_->enemy_standard_3_y != -8888.0f) cached_enemy_standard_3_y_ = state_->enemy_standard_3_y;
+    // if (state_->enemy_standard_4_x != -8888.0f) cached_enemy_standard_4_x_ = state_->enemy_standard_4_x;
+    // if (state_->enemy_standard_4_y != -8888.0f) cached_enemy_standard_4_y_ = state_->enemy_standard_4_y;
+    // if (state_->enemy_sentry_x != -8888.0f) cached_enemy_sentry_x_ = state_->enemy_sentry_x;
+    // if (state_->enemy_sentry_y != -8888.0f) cached_enemy_sentry_y_ = state_->enemy_sentry_y;
     
     // 发布缓存中的敌方位置到blackboard
-    bb->set("ref.enemy_hero_x", cached_enemy_hero_x_);
-    bb->set("ref.enemy_hero_y", cached_enemy_hero_y_);
-    bb->set("ref.enemy_engineer_x", cached_enemy_engineer_x_);
-    bb->set("ref.enemy_engineer_y", cached_enemy_engineer_y_);
-    bb->set("ref.enemy_standard_3_x", cached_enemy_standard_3_x_);
-    bb->set("ref.enemy_standard_3_y", cached_enemy_standard_3_y_);
-    bb->set("ref.enemy_standard_4_x", cached_enemy_standard_4_x_);
-    bb->set("ref.enemy_standard_4_y", cached_enemy_standard_4_y_);
-    bb->set("ref.enemy_sentry_x", cached_enemy_sentry_x_);
-    bb->set("ref.enemy_sentry_y", cached_enemy_sentry_y_);
-    bb->set("ref.suggested_target", state_->suggested_target);
+    // bb->set("ref.enemy_hero_x", cached_enemy_hero_x_);
+    // bb->set("ref.enemy_hero_y", cached_enemy_hero_y_);
+    // bb->set("ref.enemy_engineer_x", cached_enemy_engineer_x_);
+    // bb->set("ref.enemy_engineer_y", cached_enemy_engineer_y_);
+    // bb->set("ref.enemy_standard_3_x", cached_enemy_standard_3_x_);
+    // bb->set("ref.enemy_standard_3_y", cached_enemy_standard_3_y_);
+    // bb->set("ref.enemy_standard_4_x", cached_enemy_standard_4_x_);
+    // bb->set("ref.enemy_standard_4_y", cached_enemy_standard_4_y_);
+    // bb->set("ref.enemy_sentry_x", cached_enemy_sentry_x_);
+    // bb->set("ref.enemy_sentry_y", cached_enemy_sentry_y_);
+    // bb->set("ref.suggested_target", state_->suggested_target);
     return BT::NodeStatus::SUCCESS;
   }
 
 private:
   const RefereeState* state_;
   // 缓存敌方位置 - 用于处理-8888无效值
-  float cached_enemy_hero_x_;
-  float cached_enemy_hero_y_;
-  float cached_enemy_engineer_x_;
-  float cached_enemy_engineer_y_;
-  float cached_enemy_standard_3_x_;
-  float cached_enemy_standard_3_y_;
-  float cached_enemy_standard_4_x_;
-  float cached_enemy_standard_4_y_;
-  float cached_enemy_sentry_x_;
-  float cached_enemy_sentry_y_;
+  // float cached_enemy_hero_x_;
+  // float cached_enemy_hero_y_;
+  // float cached_enemy_engineer_x_;
+  // float cached_enemy_engineer_y_;
+  // float cached_enemy_standard_3_x_;
+  // float cached_enemy_standard_3_y_;
+  // float cached_enemy_standard_4_x_;
+  // float cached_enemy_standard_4_y_;
+  // float cached_enemy_sentry_x_;
+  // float cached_enemy_sentry_y_;
 };
 
 class UpdateNavigationBB : public BT::SyncActionNode
@@ -735,7 +722,6 @@ public:
 
   BT::NodeStatus tick() override
   {
-    // ROS_INFO("SetGoalFromParamsCyclic: ENTERED");
     std::string ns;
     int point_count = 4;
     if (!getInput("ns", ns))
@@ -743,18 +729,31 @@ public:
       ROS_WARN("SetGoalFromParamsCyclic: Failed to get 'ns' input");
       return BT::NodeStatus::FAILURE;
     }
-    // ROS_INFO("SetGoalFromParamsCyclic: ns=%s", ns.c_str());
     (void)getInput("point_count", point_count);
 
     auto bb = config().blackboard;
-    
-    // Get current cycle index
+
+    // per-ns 独立索引 key，避免多个 action 互相干扰
+    const std::string idx_key        = "cycle_idx_" + ns;
+    const std::string last_action_key = "cycle_last_action_" + ns;
+
+    // 检测 action 是否切换 → 切换则将该 ns 的索引重置为 0
+    std::string cur_action, last_action;
+    try { cur_action  = bb->get<std::string>("action"); }       catch (...) {}
+    try { last_action = bb->get<std::string>(last_action_key); } catch (...) {}
+    if (cur_action != last_action)
+    {
+      bb->set(idx_key, 0);
+      bb->set(last_action_key, cur_action);
+      ROS_DEBUG("SetGoalFromParamsCyclic[%s]: action changed (%s->%s), resetting index",
+                ns.c_str(), last_action.c_str(), cur_action.c_str());
+    }
+
     int cycle_index = 0;
     try {
-      cycle_index = bb->get<int>("goal.cycle_index");
+      cycle_index = bb->get<int>(idx_key);
     } catch (...) {
-      cycle_index = 0;
-      bb->set("goal.cycle_index", cycle_index);
+      bb->set(idx_key, 0);
     }
 
     // Read goal from parameters: goals/<ns>/point_<index>/{x,y}
@@ -772,10 +771,10 @@ public:
     goal.point.z = 0.0;
 
     bb->set("goal.point", goal);
-    bb->set("goal.valid", true);  
-    // ROS_INFO("SetGoalFromParamsCyclic: ns=%s, point_count=%d, cycle_index=%d, goal=(%f, %f), goal.valid set to TRUE", 
-    //          ns.c_str(), point_count, cycle_index, x, y);
-    
+    bb->set("goal.valid", true);
+    ROS_DEBUG("SetGoalFromParamsCyclic[%s]: index=%d, goal=(%.3f, %.3f)",
+              ns.c_str(), cycle_index, x, y);
+
     return BT::NodeStatus::SUCCESS;
   }
 
@@ -794,6 +793,7 @@ public:
   static BT::PortsList providedPorts()
   {
     return {
+      BT::InputPort<std::string>("ns", "", "parameter namespace, must match SetGoalFromParamsCyclic"),
       BT::InputPort<int>("point_count", 4, "number of points to cycle through"),
     };
   }
@@ -801,20 +801,25 @@ public:
   BT::NodeStatus tick() override
   {
     auto bb = config().blackboard;
+    std::string ns;
     int point_count = 4;
+    (void)getInput("ns", ns);
     (void)getInput("point_count", point_count);
+
+    // 与 SetGoalFromParamsCyclic 保持相同的 per-ns key
+    const std::string idx_key = "cycle_idx_" + ns;
 
     int cycle_index = 0;
     try {
-      cycle_index = bb->get<int>("goal.cycle_index");
+      cycle_index = bb->get<int>(idx_key);
     } catch (...) {
       cycle_index = 0;
     }
 
     // Advance to next point and wrap around
     cycle_index = (cycle_index + 1) % point_count;
-    bb->set("goal.cycle_index", cycle_index);
-    // ROS_INFO("AdvanceCycleIndex: Advanced to cycle_index=%d", cycle_index);
+    bb->set(idx_key, cycle_index);
+    ROS_DEBUG("AdvanceCycleIndex[%s]: advanced to index=%d", ns.c_str(), cycle_index);
 
     return BT::NodeStatus::SUCCESS;
   }
@@ -1056,6 +1061,7 @@ int main(int argc, char** argv)
 
   RegisterRecoverChangeNodes(factory, &recover_pub, &bullet_up_pub);
   RegisterBulletSupplyNodes(factory, &bullet_num_pub);
+  RegisterBattleFieldNodes(factory);
   RegisterChaseNodes(factory, &goal_pub, &publish_on_change_only);
 
   // ---------------------------

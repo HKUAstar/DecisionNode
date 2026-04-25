@@ -16,11 +16,6 @@
           <SetAction action="INIT" />
         </Sequence>
 
-        <Sequence name="ToPushWhenGameStart">
-          <IsGameStarted expect_started="true" />
-          <IsAction value="INIT" />
-          <SetAction action="PUSH" />
-        </Sequence>
 
         <Sequence name="ToRespawnWhenDead">
           <IsSentryDead />
@@ -35,6 +30,13 @@
 
         <Sequence name="ToSupplyWhenInDanger">
           <IsSentryInDanger danger_hp="{danger_hp}" hp_key="ref.remain_hp" />
+          <NotBulletSufficient />
+          <SetAction action="SUPPLY" />
+        </Sequence>
+
+        <Sequence name="ToSupplyWhenBulletLow">
+          <NotBulletSufficient />
+          
           <SetAction action="SUPPLY" />
         </Sequence>
 
@@ -44,76 +46,6 @@
             <IsHealthFull max_hp="{max_hp}" />
           </Inverter>
           <SetAction action="SUPPLY" />
-        </Sequence>
-
-        <Sequence name="SwitchPushToOccupy">
-          <IsAction value="PUSH" />
-          <CheckArrived />
-          <SetAction action="OCCUPY" />
-        </Sequence>
-
-        <Sequence name="SwitchRadicalToRadical1">
-          <IsAction value="RADICAL" />
-          <AggressiveAdvantage threshold="50" />
-          <Inverter>
-            <NotBulletSufficient />
-          </Inverter>
-          <CheckArrived />
-          <SetAction action="RADICAL1" />
-        </Sequence>
-
-        <Sequence name="MaintainRadical">
-          <IsAction value="RADICAL" />
-          <AggressiveAdvantage threshold="50" />
-          <Inverter>
-            <NotBulletSufficient />
-          </Inverter>
-          <SetAction action="RADICAL" />
-        </Sequence>
-
-
-        <!-- <Sequence name="SwitchRadical1ToPush">
-          <IsAction value="RADICAL1" />
-          <CheckArrived />
-          <SetAction action="PUSH" />
-        </Sequence> -->
-
-
-        <Sequence name="MaintainRadical1">
-          <IsAction value="RADICAL1" />
-          <AggressiveAdvantage threshold="50" />
-          <Inverter>
-            <Fallback>
-              <NotBulletSufficient />
-              <IsSentryInDanger danger_hp="150" hp_key="ref.remain_hp" />
-            </Fallback>
-          </Inverter>
-          <SetAction action="RADICAL1" />
-        </Sequence>
-
-        <Sequence name="ToPush">
-          <Inverter>
-            <IsAction value="OCCUPY" />
-          </Inverter>
-          <IsOccupyStatusFavorable /> 
-          <SetAction action="PUSH"/>  
-        </Sequence>
-        
-        <Sequence name="ToRadicalWhenAggressiveAndBulletSufficient">
-          <AggressiveAdvantage threshold="50" />
-          <Inverter>
-            <Fallback>
-              <NotBulletSufficient />
-              <IsSentryInDanger danger_hp="150" hp_key="ref.remain_hp" />
-            </Fallback>
-          </Inverter>
-          <SetAction action="RADICAL" />
-        </Sequence>
-      
-  
-        <Sequence name="MaintainOccupy">
-          <IsAction value="OCCUPY" />
-          <SetAction action="OCCUPY" />
         </Sequence>
 
         <!-- Default state -->
@@ -130,40 +62,9 @@
           <ClearGoal />
         </Sequence>
 
-        <Sequence>
-          <IsAction value="PUSH" />
-          <!-- Navigate to first cycle point (moving state) -->
-          <!-- <SetMotionFlag target_motion="3" /> -->
-          <!-- <PublishMotion /> -->
-          <SetGoalFromParamsCyclic ns="occupy" point_count="2" />
-          <PublishGoalPoint topic="clicked_point" />
-          <Sequence>
-              <CheckArrived />
-              <SetAction action="OCCUPY"/>
-              <AlwaysSuccess />
-          </Sequence>
-        </Sequence>
+       
 
-        <Sequence>
-          <IsAction value="OCCUPY" />
-          <Fallback>
-            <Sequence>
-              <CheckArrived />
-              <AdvanceCycleIndex point_count="2" /> 
-            </Sequence>
-            <AlwaysSuccess />
-          </Fallback>
-          <!-- <Fallback>
-            <Sequence>
-              <CheckAttacked attack_threshold="{attack_threshold}" />
-              <SetMotionFlag target_motion="2" />
-            </Sequence> -->
-            <!-- <SetMotionFlag target_motion="1" /> -->
-          <!-- </Fallback>  -->
-          <!-- <PublishMotion /> -->
-          <SetGoalFromParamsCyclic ns="occupy" point_count="2" />
-          <PublishGoalPoint topic="clicked_point" />
-        </Sequence>
+        
 
         <Sequence>
           <IsAction value="SUPPLY" />
@@ -202,16 +103,32 @@
         </Sequence>
 
         <Sequence>
-          <IsAction value="WAITFOROP" />
-          
-          <Fallback>
+          <IsAction value="PATROL" />
+          <SetMotionFlag target_motion="2" />
+           <Fallback>
+            <Sequence>
+              <CheckArrived />
+              <AdvanceCycleIndex ns="patrol" point_count="2" />
+            </Sequence>
+            <AlwaysSuccess />
+          </Fallback>
+          <!-- <Fallback>
+            <Sequence>
+              <CheckAttacked attack_threshold="{attack_threshold}" />
+            </Sequence> -->
+            <!-- <SetMotionFlag target_motion="1" /> -->
+          <!-- </Fallback>  -->
+          <!-- <PublishMotion /> -->
+          <SetGoalFromParamsCyclic ns="patrol" point_count="2" />
+          <PublishGoalPoint topic="clicked_point" />
+          <!-- <Fallback>
             <Sequence>
                 <IntenseHarm 
                    threshold_activate="{harm_threshold_on}" 
                    threshold_deactivate="{harm_threshold_off}" />
                 <SetGoalFromParams ns="retreat" />
             </Sequence>
-            <SetGoalFromParams ns="waitforop" />
+            <SetGoalFromParams ns="waitforop" /> -->
           </Fallback>
 
           <PublishGoalPoint topic="clicked_point" />

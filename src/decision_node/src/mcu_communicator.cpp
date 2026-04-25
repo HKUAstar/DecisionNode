@@ -38,18 +38,7 @@ public:
         pub_self_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_hp", 1);
         pub_self_max_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_max_hp", 1);
         
-        pub_red_1_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_1_hp", 1);
-        pub_red_3_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_3_hp", 1);
-        pub_red_7_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/red_7_hp", 1);
-        pub_blue_1_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_1_hp", 1);
-        pub_blue_3_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_3_hp", 1);
-        pub_blue_7_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_7_hp", 1);
-        
-        pub_red_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/red_dead", 1);
-        pub_blue_dead_ = nh_.advertise<std_msgs::UInt16>("/referee/blue_dead", 1);
-        
-        pub_friendly_score_ = nh_.advertise<std_msgs::Int32>("/referee/friendly_score", 1);
-        pub_enemy_score_ = nh_.advertise<std_msgs::Int32>("/referee/enemy_score", 1);
+        pub_launch_ramp_elevated_ground_ = nh_.advertise<std_msgs::UInt16>("/robot/launch_ramp_elevated_ground", 1);
         
         pub_enemy_hero_ = nh_.advertise<geometry_msgs::Point>("/enemy/hero_position", 1);
         pub_enemy_engineer_ = nh_.advertise<geometry_msgs::Point>("/enemy/engineer_position", 1);
