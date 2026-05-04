@@ -12,7 +12,7 @@
 //   expected — 期望值，相等则 SUCCESS，否则 FAILURE（默认: 1）
 //
 // 使用示例:
-//   <CheckIntStatus key="ref.launch_ramp_elevated_ground" expected="1" />
+//   <CheckIntStatus key="ref.trapezoidal_elevated_ground_status" expected="1" />
 //   <CheckIntStatus key="ref.game_progress" expected="4" />
 // =====================================================
 class CheckIntStatus : public BT::ConditionNode
@@ -26,7 +26,7 @@ public:
   static BT::PortsList providedPorts()
   {
     return {
-      BT::InputPort<std::string>("key", "ref.launch_ramp_elevated_ground",
+      BT::InputPort<std::string>("key", "ref.trapezoidal_elevated_ground_status",
                                  "Blackboard key (int) to read"),
       BT::InputPort<int>("expected", 1,
                          "Expected integer value; SUCCESS when equal"),
@@ -35,7 +35,7 @@ public:
 
   BT::NodeStatus tick() override
   {
-    std::string key = "ref.launch_ramp_elevated_ground";
+    std::string key = "ref.trapezoidal_elevated_ground_status";
     int expected = 1;
     (void)getInput("key", key);
     (void)getInput("expected", expected);
@@ -109,7 +109,7 @@ public:
   {
     return {
       BT::InputPort<int>("danger_hp", 100, "HP threshold: below which is considered in danger"),
-      BT::InputPort<std::string>("hp_key", "ref.remain_hp", "Blackboard key for current HP"),
+      BT::InputPort<std::string>("hp_key", "ref.current_HP", "Blackboard key for current HP"),
     };
   }
 
@@ -118,7 +118,7 @@ public:
     int danger_hp = 100;
     (void)getInput("danger_hp", danger_hp);
 
-    std::string hp_key = "ref.remain_hp";
+    std::string hp_key = "ref.current_HP";
     (void)getInput("hp_key", hp_key);
 
     int remain_hp = 0;

@@ -58,15 +58,50 @@ std::string toUpper(std::string s)
 // ---------------------------
 struct RefereeState
 {
-  int game_progress = 0;  // 0，1，2，3: not start, 4: in progress, 5: end (convention)
-  uint8_t robot_id;       // 机器人ID
-  uint8_t robot_color = 0;    // 机器人颜色 (0=red, 1=blue)
-  int self_hp = 400; 
-  int self_max_hp = 400;  // 自身最大血量
-  uint16_t projectile_allowance_17mm = 750;
-  uint16_t projectile_allowance_fortress=0;
-  int launch_ramp_elevated_ground_status = 0;  //这里它和那堆event是放到一块的，看下位机解包出来发啥
-  uint16_t stage_remain_time=420;
+  float yaw_angle;          // 云台yaw角 (rad)
+  
+  uint8_t game_progress;    // 比赛阶段
+  uint16_t stage_remain_time;
+
+  uint16_t ally_base_HP;    //基地血量
+
+  
+  uint8_t central_elevated_ground_status; // 中央高地状态（bit 7-8）
+  uint8_t trapezoidal_elevated_ground_status; // 梯形高地状态（bit 9-10）
+  uint8_t fortress_status; // 堡垒状态（bit 25-26）
+  uint8_t outpost_status; // 前哨战状态（bit 27-28）
+
+  uint8_t robot_id;         // 机器人ID
+  uint16_t current_HP;
+
+  uint16_t projectile_allowance_17mm;
+  uint16_t projectile_allowance_fortress;
+  uint16_t remaining_gold_coin;
+
+  uint16_t accumulated_bullet_conversion; // 累计哨兵远程兑换弹量（bit 0-10）
+  bool can_exchange_respawn;     // 哨兵是否可兑换复活（bit 20）
+  uint16_t respawn_money; // 哨兵复活所需金币（bit 21-31）
+
+  bool out_of_combat;       // 脱战状态（bit 0）
+  uint16_t projectile_allowance; //全队可兑换17mm弹量（bit 1-11）
+  bool power_rune_available; // 是否有可用的能量符（bit 14)
+
+  int16_t enemy_hero_x;     // 敌方英雄X (cm)
+  int16_t enemy_hero_y;     // 敌方英雄Y (cm)
+  int16_t enemy_engineer_x; // 敌方工程X (cm)
+  int16_t enemy_engineer_y; // 敌方工程Y (cm)
+
+  int16_t enemy_std3_x;     // 敌方步兵3 X 
+  int16_t enemy_std3_y;     // 敌方步兵3 Y 
+  int16_t enemy_std4_x;     // 敌方步兵4 X 
+  int16_t enemy_std4_y;     // 敌方步兵4 Y 
+
+  int16_t enemy_sentry_x;   // 敌方哨兵X 
+  int16_t enemy_sentry_y;   // 敌方哨兵Y 
+  uint8_t suggested_target; // 雷达建议目标
+  uint16_t radar_flags;     // 雷达标记信息
+
+  uint16_t enemy_base_HP;     //敌方基地血量
   
 
 
@@ -108,57 +143,42 @@ public:
   {
     auto bb = config().blackboard;
     bb->set("ref.game_progress", state_->game_progress);
-    bb->set("ref.remain_hp", state_->remain_hp);
-    bb->set("ref.bullet_remain", state_->bullet_remain);
-    bb->set("ref.friendly_score", state_->friendly_score);
-    bb->set("ref.enemy_score", state_->enemy_score);
-    bb->set("ref.occupy_status", state_->occupy_status);
+    bb->set("ref.stage_remain_time", state_->stage_remain_time);
+    bb->set("ref.ally_base_HP", state_->ally_base_HP);
+    bb->set("ref.central_elevated_ground_status", state_->central_elevated_ground_status);
+    bb->set("ref.trapezoidal_elevated_ground_status", state_->trapezoidal_elevated_ground_status);
+    bb->set("ref.fortress_status", state_->fortress_status);
+    bb->set("ref.outpost_status", state_->outpost_status);
     bb->set("ref.robot_id", state_->robot_id);
-    bb->set("ref.robot_color", state_->robot_color);
-    bb->set("ref.self_hp", state_->self_hp);
-    bb->set("ref.self_max_hp", state_->self_max_hp);
-    bb->set("ref.launch_ramp_elevated_ground", state_->launch_ramp_elevated_ground_status);
+    bb->set("ref.current_HP", state_->current_HP);
+    bb->set("ref.projectile_allowance_17mm", state_->projectile_allowance_17mm);
+    bb->set("ref.projectile_allowance_fortress", state_->projectile_allowance_fortress);
+    bb->set("ref.remaining_gold_coin", state_->remaining_gold_coin);
+    bb->set("ref.accumulated_bullet_conversion", state_->accumulated_bullet_conversion);
+    bb->set("ref.can_exchange_respawn", state_->can_exchange_respawn);
+    bb->set("ref.respawn_money", state_->respawn_money);
+    bb->set("ref.out_of_combat", state_->out_of_combat);
+    bb->set("ref.projectile_allowance", state_->projectile_allowance);
+    bb->set("ref.power_rune_available", state_->power_rune_available);
+    bb->set("ref.enemy_hero_x", state_->enemy_hero_x);
+    bb->set("ref.enemy_hero_y", state_->enemy_hero_y);
+    bb->set("ref.enemy_engineer_x", state_->enemy_engineer_x);
+    bb->set("ref.enemy_engineer_y", state_->enemy_engineer_y);
+    bb->set("ref.enemy_std3_x", state_->enemy_std3_x);
+    bb->set("ref.enemy_std3_y", state_->enemy_std3_y);
+    bb->set("ref.enemy_std4_x", state_->enemy_std4_x);
+    bb->set("ref.enemy_std4_y", state_->enemy_std4_y);
+    bb->set("ref.enemy_sentry_x", state_->enemy_sentry_x);
+    bb->set("ref.enemy_sentry_y", state_->enemy_sentry_y);
+    bb->set("ref.suggested_target", state_->suggested_target);
+    bb->set("ref.radar_flags", state_->radar_flags);
+    bb->set("ref.enemy_base_HP", state_->enemy_base_HP);
     
-    // Enemy positions - 检测-8888无效值，只在有效时更新缓存
-    // if (state_->enemy_hero_x != -8888.0f) cached_enemy_hero_x_ = state_->enemy_hero_x;
-    // if (state_->enemy_hero_y != -8888.0f) cached_enemy_hero_y_ = state_->enemy_hero_y;
-    // if (state_->enemy_engineer_x != -8888.0f) cached_enemy_engineer_x_ = state_->enemy_engineer_x;
-    // if (state_->enemy_engineer_y != -8888.0f) cached_enemy_engineer_y_ = state_->enemy_engineer_y;
-    // if (state_->enemy_standard_3_x != -8888.0f) cached_enemy_standard_3_x_ = state_->enemy_standard_3_x;
-    // if (state_->enemy_standard_3_y != -8888.0f) cached_enemy_standard_3_y_ = state_->enemy_standard_3_y;
-    // if (state_->enemy_standard_4_x != -8888.0f) cached_enemy_standard_4_x_ = state_->enemy_standard_4_x;
-    // if (state_->enemy_standard_4_y != -8888.0f) cached_enemy_standard_4_y_ = state_->enemy_standard_4_y;
-    // if (state_->enemy_sentry_x != -8888.0f) cached_enemy_sentry_x_ = state_->enemy_sentry_x;
-    // if (state_->enemy_sentry_y != -8888.0f) cached_enemy_sentry_y_ = state_->enemy_sentry_y;
-    
-    // 发布缓存中的敌方位置到blackboard
-    // bb->set("ref.enemy_hero_x", cached_enemy_hero_x_);
-    // bb->set("ref.enemy_hero_y", cached_enemy_hero_y_);
-    // bb->set("ref.enemy_engineer_x", cached_enemy_engineer_x_);
-    // bb->set("ref.enemy_engineer_y", cached_enemy_engineer_y_);
-    // bb->set("ref.enemy_standard_3_x", cached_enemy_standard_3_x_);
-    // bb->set("ref.enemy_standard_3_y", cached_enemy_standard_3_y_);
-    // bb->set("ref.enemy_standard_4_x", cached_enemy_standard_4_x_);
-    // bb->set("ref.enemy_standard_4_y", cached_enemy_standard_4_y_);
-    // bb->set("ref.enemy_sentry_x", cached_enemy_sentry_x_);
-    // bb->set("ref.enemy_sentry_y", cached_enemy_sentry_y_);
-    // bb->set("ref.suggested_target", state_->suggested_target);
     return BT::NodeStatus::SUCCESS;
   }
 
 private:
   const RefereeState* state_;
-  // 缓存敌方位置 - 用于处理-8888无效值
-  // float cached_enemy_hero_x_;
-  // float cached_enemy_hero_y_;
-  // float cached_enemy_engineer_x_;
-  // float cached_enemy_engineer_y_;
-  // float cached_enemy_standard_3_x_;
-  // float cached_enemy_standard_3_y_;
-  // float cached_enemy_standard_4_x_;
-  // float cached_enemy_standard_4_y_;
-  // float cached_enemy_sentry_x_;
-  // float cached_enemy_sentry_y_;
 };
 
 class UpdateNavigationBB : public BT::SyncActionNode
@@ -268,8 +288,8 @@ public:
   {
     auto bb = config().blackboard;
 
-    const int remain_hp = bb->get<int>("ref.remain_hp");
-    const int bullet_remain = bb->get<int>("ref.bullet_remain");
+    const int remain_hp = bb->get<int>("ref.current_HP");
+    const int bullet_remain = bb->get<int>("ref.projectile_allowance_17mm");
     
     // --- Damage Tracking Logic ---
     ros::Time now = ros::Time::now();
@@ -473,7 +493,7 @@ public:
   {
     return {
       BT::InputPort<int>("danger_hp", 100, "HP threshold: below which is considered in danger"),
-      BT::InputPort<std::string>("hp_key", "ref.remain_hp", "Blackboard key for current HP"),
+      BT::InputPort<std::string>("hp_key", "ref.current_HP", "Blackboard key for current HP"),
     };
   }
 
@@ -482,7 +502,7 @@ public:
     int danger_hp = 100;
     (void)getInput("danger_hp", danger_hp);
 
-    std::string hp_key = "ref.remain_hp";
+    std::string hp_key = "ref.current_HP";
     (void)getInput("hp_key", hp_key);
 
     int remain_hp = 0;
@@ -517,43 +537,6 @@ public:
     return (!bullet_sufficient) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
-
-class AggressiveAdvantage : public BT::ConditionNode
-{
-public:
-  AggressiveAdvantage(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::ConditionNode(name, config)
-  {
-  }
-
-  static BT::PortsList providedPorts()
-  {
-    return {
-      BT::InputPort<int>("threshold", 50, "Score advantage threshold to be aggressive"),
-    };
-  }
-
-  BT::NodeStatus tick() override
-  {
-    const int friendly_score = config().blackboard->get<int>("ref.friendly_score");
-    const int enemy_score = config().blackboard->get<int>("ref.enemy_score");
-
-    int threshold = 50;
-    (void)getInput("threshold", threshold);
-
-    const int score_advantage = friendly_score - enemy_score;
-
-    // Add logging for debugging
-    // ROS_INFO_STREAM("[AggressiveAdvantage] Friendly Score: " << friendly_score);
-    // ROS_INFO_STREAM("[AggressiveAdvantage] Enemy Score: " << enemy_score);
-    // ROS_INFO_STREAM("[AggressiveAdvantage] Score Advantage: " << score_advantage);
-    // ROS_INFO_STREAM("[AggressiveAdvantage] Threshold: " << threshold);
-
-    return (score_advantage >= threshold) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
-  }
-};
-
-
 
 class IsAction : public BT::ConditionNode
 {
@@ -965,67 +948,104 @@ int main(int argc, char** argv)
   auto sub_mcu_yaw = nh.subscribe<std_msgs::Float32>("/mcu/yaw_angle", 1, [&](const std_msgs::Float32::ConstPtr& msg) {
     odom.yaw_angle = static_cast<double>(msg->data);
   });
-  
+
+  // 裁判系统数据
   auto sub_game_progress = nh.subscribe<std_msgs::UInt8>("/referee/game_progress", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.game_progress = msg->data;
   });
-  auto sub_remain_hp = nh.subscribe<std_msgs::UInt16>("/referee/remain_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.remain_hp = msg->data;
+  auto sub_stage_remain_time = nh.subscribe<std_msgs::UInt16>("/referee/stage_remain_time", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.stage_remain_time = msg->data;
+  });
+  auto sub_ally_base_hp = nh.subscribe<std_msgs::UInt16>("/referee/ally_base_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.ally_base_HP = msg->data;
+  });
+  auto sub_central_ground = nh.subscribe<std_msgs::UInt8>("/referee/central_ground_status", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
+    ref.central_elevated_ground_status = msg->data;
+  });
+  auto sub_trap_ground = nh.subscribe<std_msgs::UInt8>("/referee/trap_ground_status", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
+    ref.trapezoidal_elevated_ground_status = msg->data;
+  });
+  auto sub_fortress = nh.subscribe<std_msgs::UInt8>("/referee/fortress_status", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
+    ref.fortress_status = msg->data;
+  });
+  auto sub_outpost = nh.subscribe<std_msgs::UInt8>("/referee/outpost_status", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
+    ref.outpost_status = msg->data;
   });
 
-  auto sub_remain_hp = nh.subscribe<std_msgs::UInt16>("/referee/self_base_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.self_base_hp = msg->data;
-  });
-  auto sub_bullet = nh.subscribe<std_msgs::UInt16>("/referee/bullet_remain", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.bullet_remain = msg->data;
-  });
-  auto sub_friendly_score = nh.subscribe<std_msgs::Int32>("/referee/friendly_score", 1, [&](const std_msgs::Int32::ConstPtr& msg) {
-    ref.friendly_score = msg->data;
-  });
-  auto sub_enemy_score = nh.subscribe<std_msgs::Int32>("/referee/enemy_score", 1, [&](const std_msgs::Int32::ConstPtr& msg) {
-    ref.enemy_score = msg->data;
-  });
-  auto sub_occupy_status = nh.subscribe<std_msgs::UInt8>("/referee/occupy_status", 1,[&](const std_msgs::UInt8::ConstPtr& msg) {
-    ref.occupy_status = msg->data;
-  });
+  // 自身状态
   auto sub_robot_id = nh.subscribe<std_msgs::UInt8>("/robot/robot_id", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.robot_id = msg->data;
   });
-  auto sub_robot_color = nh.subscribe<std_msgs::UInt8>("/robot/robot_color", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
-    ref.robot_color = msg->data;
-  });
   auto sub_self_hp = nh.subscribe<std_msgs::UInt16>("/robot/self_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.self_hp = msg->data;
+    ref.current_HP = msg->data;
   });
-  auto sub_self_max_hp = nh.subscribe<std_msgs::UInt16>("/robot/self_max_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.self_max_hp = msg->data;
+
+  // 弹药物资
+  auto sub_proj_17mm = nh.subscribe<std_msgs::UInt16>("/referee/projectile_17mm", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.projectile_allowance_17mm = msg->data;
   });
-  auto sub_red_1_hp = nh.subscribe<std_msgs::UInt16>("/referee/red_1_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.red_1_hp = msg->data;
+  auto sub_proj_fort = nh.subscribe<std_msgs::UInt16>("/referee/projectile_fortress", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.projectile_allowance_fortress = msg->data;
   });
-  auto sub_red_3_hp = nh.subscribe<std_msgs::UInt16>("/referee/red_3_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.red_3_hp = msg->data;
+  auto sub_gold = nh.subscribe<std_msgs::UInt16>("/referee/remaining_gold", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.remaining_gold_coin = msg->data;
   });
-  auto sub_red_7_hp = nh.subscribe<std_msgs::UInt16>("/referee/red_7_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.red_7_hp = msg->data;
+
+  // 哨兵特殊
+  auto sub_acc_bullet = nh.subscribe<std_msgs::UInt16>("/referee/accumulated_bullet", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.accumulated_bullet_conversion = msg->data;
   });
-  auto sub_blue_1_hp = nh.subscribe<std_msgs::UInt16>("/referee/blue_1_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.blue_1_hp = msg->data;
+  auto sub_can_respawn = nh.subscribe<std_msgs::Bool>("/referee/can_exchange_respawn", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
+    ref.can_exchange_respawn = msg->data;
   });
-  auto sub_blue_3_hp = nh.subscribe<std_msgs::UInt16>("/referee/blue_3_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.blue_3_hp = msg->data;
+  auto sub_respawn_money = nh.subscribe<std_msgs::UInt16>("/referee/respawn_money", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.respawn_money = msg->data;
   });
-  auto sub_blue_7_hp = nh.subscribe<std_msgs::UInt16>("/referee/blue_7_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.blue_7_hp = msg->data;
+  auto sub_combat = nh.subscribe<std_msgs::Bool>("/referee/out_of_combat", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
+    ref.out_of_combat = msg->data;
   });
-  auto sub_red_dead = nh.subscribe<std_msgs::UInt16>("/referee/red_dead", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.red_dead = msg->data;
+  auto sub_proj_allow = nh.subscribe<std_msgs::UInt16>("/referee/projectile_allowance", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.projectile_allowance = msg->data;
   });
-  auto sub_blue_dead = nh.subscribe<std_msgs::UInt16>("/referee/blue_dead", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.blue_dead = msg->data;
+  auto sub_power_rune = nh.subscribe<std_msgs::Bool>("/referee/power_rune_available", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
+    ref.power_rune_available = msg->data;
   });
-  
-  
+
+  // 敌方位置（geometry_msgs::Point → int16_t cm，注意单位转换 m → cm）
+  auto sub_enemy_hero = nh.subscribe<geometry_msgs::Point>("/enemy/hero_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
+    ref.enemy_hero_x = static_cast<int16_t>(msg->x * 100.0f);
+    ref.enemy_hero_y = static_cast<int16_t>(msg->y * 100.0f);
+  });
+  auto sub_enemy_eng = nh.subscribe<geometry_msgs::Point>("/enemy/engineer_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
+    ref.enemy_engineer_x = static_cast<int16_t>(msg->x * 100.0f);
+    ref.enemy_engineer_y = static_cast<int16_t>(msg->y * 100.0f);
+  });
+  auto sub_enemy_std3 = nh.subscribe<geometry_msgs::Point>("/enemy/standard_3_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
+    ref.enemy_std3_x = static_cast<int16_t>(msg->x * 100.0f);
+    ref.enemy_std3_y = static_cast<int16_t>(msg->y * 100.0f);
+  });
+  auto sub_enemy_std4 = nh.subscribe<geometry_msgs::Point>("/enemy/standard_4_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
+    ref.enemy_std4_x = static_cast<int16_t>(msg->x * 100.0f);
+    ref.enemy_std4_y = static_cast<int16_t>(msg->y * 100.0f);
+  });
+  auto sub_enemy_sentry = nh.subscribe<geometry_msgs::Point>("/enemy/sentry_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
+    ref.enemy_sentry_x = static_cast<int16_t>(msg->x * 100.0f);
+    ref.enemy_sentry_y = static_cast<int16_t>(msg->y * 100.0f);
+  });
+
+  // 雷达
+  auto sub_suggested = nh.subscribe<std_msgs::UInt8>("/radar/suggested_target", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
+    ref.suggested_target = msg->data;
+  });
+  auto sub_radar_flags = nh.subscribe<std_msgs::UInt16>("/radar/radar_flags", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.radar_flags = msg->data;
+  });
+
+  // 敌方基地血量
+  auto sub_enemy_base_hp = nh.subscribe<std_msgs::UInt16>("/referee/enemy_base_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.enemy_base_HP = msg->data;
+  });
+
   // Navigation arrived (复用现有语义)
   auto sub_arrived = nh.subscribe<std_msgs::Bool>("/dstar_status", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
     nav.arrived = msg->data;
@@ -1073,7 +1093,6 @@ int main(int argc, char** argv)
   factory.registerNodeType<IsSentryInDanger>("IsSentryInDanger");
   factory.registerNodeType<IntenseHarm>("IntenseHarm");
   factory.registerNodeType<NotBulletSufficient>("NotBulletSufficient");
-  factory.registerNodeType<AggressiveAdvantage>("AggressiveAdvantage");
   factory.registerNodeType<IsAction>("IsAction");
 
   factory.registerNodeType<SetAction>("SetAction");

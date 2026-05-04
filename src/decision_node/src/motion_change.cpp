@@ -50,7 +50,7 @@ public:
     // Get current HP from blackboard
     try
     {
-      int current_hp = bb->get<int>("ref.remain_hp");
+      int current_hp = bb->get<int>("ref.current_HP");
       
       // Initialize last_hp on first call
       if (last_hp_ == -1) {

@@ -25,7 +25,7 @@ public:
   BT::NodeStatus tick() override
   {
     auto bb = config().blackboard;
-    int remain_hp = bb->get<int>("ref.remain_hp");
+    int remain_hp = bb->get<int>("ref.current_HP");
     
     int max_hp = 400;
     (void)getInput("max_hp", max_hp);
@@ -81,7 +81,7 @@ public:
   BT::NodeStatus tick() override
   {
     auto bb = config().blackboard;
-    int bullet_remain = bb->get<int>("ref.bullet_remain");
+    int bullet_remain = bb->get<int>("ref.projectile_allowance_17mm");
     
     int max_bullet = 999;
     (void)getInput("max_bullet", max_bullet);
@@ -268,7 +268,7 @@ public:
     int current_bullet = 0;
     try
     {
-      current_bullet = bb->get<int>("ref.bullet_remain");
+      current_bullet = bb->get<int>("ref.projectile_allowance_17mm");
     }
     catch (...)
     {
