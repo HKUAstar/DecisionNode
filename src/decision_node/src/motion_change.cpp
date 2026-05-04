@@ -18,8 +18,14 @@ public:
   BT::NodeStatus tick() override
   {
     auto bb = config().blackboard;
-    bool arrived = bb->get<bool>("nav.arrived");
-    // ROS_INFO("CheckArrived: arrived=%d", arrived);
+    bool arrived = false;
+    try {
+      arrived = bb->get<bool>("nav.arrived");
+    } catch (const std::exception& e) {
+      ROS_ERROR("CheckArrived: Failed to get nav.arrived from blackboard: %s", e.what());
+      return BT::NodeStatus::FAILURE;
+    }
+    ROS_INFO("CheckArrived: arrived=%d", arrived);
     return arrived ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };

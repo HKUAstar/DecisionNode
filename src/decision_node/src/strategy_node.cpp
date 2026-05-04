@@ -33,7 +33,6 @@
 #include <string>
 
 #include "decision_node/battle_field_status.hpp"
-#include "decision_node/central_occupiable.hpp"
 #include "decision_node/motion_change.hpp"
 #include "decision_node/recover_change.hpp"
 #include "decision_node/chase.hpp"
@@ -128,12 +127,7 @@ class UpdateRefereeBB : public BT::SyncActionNode
 {
 public:
   UpdateRefereeBB(const std::string& name, const BT::NodeConfiguration& config, const RefereeState* state)
-    : BT::SyncActionNode(name, config), state_(state),
-      // cached_enemy_hero_x_(0.0f), cached_enemy_hero_y_(0.0f),
-      // cached_enemy_engineer_x_(0.0f), cached_enemy_engineer_y_(0.0f),
-      // cached_enemy_standard_3_x_(0.0f), cached_enemy_standard_3_y_(0.0f),
-      // cached_enemy_standard_4_x_(0.0f), cached_enemy_standard_4_y_(0.0f),
-      // cached_enemy_sentry_x_(0.0f), cached_enemy_sentry_y_(0.0f)
+    : BT::SyncActionNode(name, config), state_(state)
   {
   }
 
@@ -184,7 +178,7 @@ private:
 class UpdateNavigationBB : public BT::SyncActionNode
 {
 public:
-  UpdateNavigationBB(const std::string& name, const BT::NodeConfiguration& config, const NavigationState* state)
+  UpdateNavigationBB(const std::string& name, const BT::NodeConfiguration& config, NavigationState* state)
     : BT::SyncActionNode(name, config), state_(state)
   {
   }
@@ -193,12 +187,15 @@ public:
 
   BT::NodeStatus tick() override
   {
-    config().blackboard->set("nav.arrived", state_->arrived);
+    bool arrived = state_->arrived;
+    config().blackboard->set("nav.arrived", arrived);
+    // 重要: 每次读取后重置 nav.arrived，实现"边沿触发"效果
+    state_->arrived = false;
     return BT::NodeStatus::SUCCESS;
   }
 
 private:
-  const NavigationState* state_;
+  NavigationState* state_;
 };
 
 class UpdateOdomBB : public BT::SyncActionNode
@@ -1049,6 +1046,7 @@ int main(int argc, char** argv)
   // Navigation arrived (复用现有语义)
   auto sub_arrived = nh.subscribe<std_msgs::Bool>("/dstar_status", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
     nav.arrived = msg->data;
+    ROS_INFO("dstar_status callback: nav.arrived set to %s", msg->data ? "true" : "false");
   });
 
   ros::Publisher goal_pub = nh.advertise<geometry_msgs::PointStamped>("clicked_point", 1);

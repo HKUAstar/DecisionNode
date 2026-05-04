@@ -39,8 +39,7 @@ include_directories(
 
 add_executable(strategy_node
     src/strategy_node.cpp
-    src/battle_field.cpp
-    src/central_occupiable.cpp
+    src/battle_field_status.cpp
     src/motion_change.cpp
     src/recover_change.cpp
     src/chase.cpp

@@ -142,8 +142,8 @@ struct MCUDataFrame
 } __attribute__((packed));
 
 static_assert(sizeof(HKFrameHeader) == 9, "HKFrameHeader must be exactly 9 bytes");
-static_assert(sizeof(HKGameData) == 69, "HKGameData must be exactly 69 bytes");
-static_assert(sizeof(MCUDataFrame) == 82, "MCUDataFrame must be exactly 82 bytes");
+static_assert(sizeof(HKGameData) == 63, "HKGameData must be exactly 63 bytes");
+static_assert(sizeof(MCUDataFrame) == 76, "MCUDataFrame must be exactly 76 bytes");
 
 
 // HK协议相关常量

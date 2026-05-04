@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/sentry/AstarTraining/DecisionNode/devel/lib/decision_node/mcu_communicator"
-  "/home/sentry/AstarTraining/DecisionNode/devel/lib/decision_node/mcu_communicator.pdb"
+  "/mnt/d/decision_ws/devel/lib/decision_node/mcu_communicator"
+  "/mnt/d/decision_ws/devel/lib/decision_node/mcu_communicator.pdb"
   "CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o"
   "CMakeFiles/mcu_communicator.dir/src/mcu_communicator.cpp.o.d"
 )

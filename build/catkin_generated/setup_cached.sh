@@ -7,4 +7,5 @@
 # new environment variables
 
 # modified environment variables
-export PWD='/home/sentry/AstarTraining/DecisionNode/build'
+export PWD='/mnt/d/decision_ws/build'
+export ROS_PACKAGE_PATH='/mnt/d/decision_ws/src:/opt/ros/noetic/share'

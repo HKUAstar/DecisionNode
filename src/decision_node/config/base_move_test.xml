@@ -1,27 +1,29 @@
 <root BTCPP_format="4">
   <BehaviorTree ID="Main">
     <ReactiveSequence name="MainLoop">
-        <Sequence name="UpdateBlackboard">
-            <UpdateRefereeBB />
-            <UpdateNavigationBB />
-            <UpdateVisionBB />
-            <UpdateTimersBB />
-            <UpdateDerivedFlags danger_hp="{danger_hp}" sufficient_bullet="{sufficient_bullet}" />
-            <UpdateOdomBB />
-        </Sequence>
-        <ReactiveFallback name="DecideAction">
-          <Sequence name="BeginUpstair">
+      <Sequence name="UpdateBlackboard">
+        <UpdateRefereeBB />
+        <UpdateNavigationBB />
+        <UpdateVisionBB />
+        <UpdateTimersBB />
+        <UpdateDerivedFlags danger_hp="{danger_hp}" sufficient_bullet="{sufficient_bullet}" />
+        <UpdateOdomBB />
+      </Sequence>
+
+      <ReactiveFallback name="DecideAction">
+        <Sequence name="BeginUpstair">
           <IsAction value="INIT" />
           <SetAction action="GOTOSTAIR" />
         </Sequence>
+
         <Sequence name="AlignAtStair">
           <IsAction value="GOTOSTAIR" />
           <CheckArrived />
           <SetAction action="BASE_ALIGN" />
-        </ReactiveFallback>
+        </Sequence>
 
         <Sequence name="GoUp">
-          <IsAction value="BASE_ALIGN"/>
+          <IsAction value="BASE_ALIGN" />
           <CompareYaw />
           <SetAction action="UPSTAIR" />
         </Sequence>
@@ -32,73 +34,69 @@
           <SetAction action="RETURN_TO_NORMAL" />
         </Sequence>
 
-      
-
-        <Sequence name="MaintainBaseAlign">
+        <Sequence name="MaintainGoToStair">
           <IsAction value="GOTOSTAIR" />
           <SetAction action="GOTOSTAIR" />
-        </ReactiveFallback>
-
+        </Sequence>
 
         <Sequence name="MaintainBaseAlign">
           <IsAction value="BASE_ALIGN" />
           <SetAction action="BASE_ALIGN" />
         </Sequence>
 
-         <Sequence name="Maintain">
+        <Sequence name="MaintainUpstair">
           <IsAction value="UPSTAIR" />
           <SetAction action="UPSTAIR" />
         </Sequence>
 
-        <Sequence name="Maintain">
+        <Sequence name="MaintainReturnToNormal">
           <IsAction value="RETURN_TO_NORMAL" />
           <SetAction action="RETURN_TO_NORMAL" />
         </Sequence>
 
-        <Sequence name="ToInitToHaveAIP">
+        <Sequence name="FallbackToInit">
           <SetAction action="INIT" />
         </Sequence>
       </ReactiveFallback>
 
-        </ReactiveFallback>
-        <ReactiveFallback name="ExecuteAction">
-        <Sequence>
+      <ReactiveFallback name="ExecuteAction">
+        <Sequence name="ExecInit">
           <IsAction value="INIT" />
           <SetAction action="GOTOSTAIR" />
         </Sequence>
 
-        <Sequence>
-          <IsAction value="GO_TO_STAIR" />
+        <Sequence name="ExecGoToStair">
+          <IsAction value="GOTOSTAIR" />
           <SetGoalFromParams ns="go_to_stair" />
           <SetSpinFlag target_spin="0" />
           <PublishGoalPoint topic="clicked_point" />
           <PublishSpin />
         </Sequence>
 
-        <Sequence name="BaseAlignProcess">
+        <Sequence name="ExecBaseAlign">
           <IsAction value="BASE_ALIGN" />
           <SetSpinFlag target_spin="0" />
-          <CalculateAngle/>
+          <CalculateAngle />
           <PublishSpin />
-          <PublishTargetYaw/>
+          <PublishTargetYaw />
         </Sequence>
 
-        <Sequence name="GpUpStair">
+        <Sequence name="ExecUpstair">
           <IsAction value="UPSTAIR" />
           <SetGoalFromParams ns="upstair" />
           <SetSpinFlag target_spin="2" />
           <PublishGoalPoint topic="clicked_point" />
           <PublishSpin />
-        </ReactiveFallback>
+        </Sequence>
 
-        <Sequence name="ReTurnToNormal">
+        <Sequence name="ExecReturnToNormal">
           <IsAction value="RETURN_TO_NORMAL" />
           <SetGoalFromParams ns="return_to_normal" />
           <SetSpinFlag target_spin="0" />
           <PublishGoalPoint topic="clicked_point" />
           <PublishSpin />
-
-    
+        </Sequence>
+      </ReactiveFallback>
     </ReactiveSequence>
   </BehaviorTree>
 </root>

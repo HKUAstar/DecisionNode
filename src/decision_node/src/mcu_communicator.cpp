@@ -204,7 +204,8 @@ private:
         serial_.setBytesize(serial::eightbits);      // 数据位：8
         serial_.setParity(serial::parity_none);      // 校验位：None
         serial_.setStopbits(serial::stopbits_one);   // 停止位：1
-        serial_.setTimeout(serial::Timeout::simpleTimeout(1000));
+        auto timeout = serial::Timeout::simpleTimeout(1000);
+        serial_.setTimeout(timeout);
     }
 
     bool tryOpenSerial()
