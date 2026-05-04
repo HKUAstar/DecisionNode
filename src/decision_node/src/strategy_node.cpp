@@ -1235,9 +1235,6 @@ int main(int argc, char** argv)
   }
 
   ros::Rate rate(std::max(1, tick_hz));
-  
-  // 使用 AsyncSpinner 确保所有订阅回调在独立线程中被及时处理
-  ros::Rate rate(std::max(1, tick_hz));
   while (ros::ok())
   {
     ros::spinOnce();
