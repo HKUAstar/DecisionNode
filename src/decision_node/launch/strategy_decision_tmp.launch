@@ -95,6 +95,12 @@
   <param name="/goals/radical1/x" value="$(arg radical1_x)"/>
   <param name="/goals/radical1/y" value="$(arg radical1_y)"/>
 
+  <!-- 目标位姿四元数 - CalculateAngle节点使用 -->
+  <param name="pose.pose.orientation.x" value="0.0"/>
+  <param name="pose.pose.orientation.y" value="0.0"/>
+  <param name="pose.pose.orientation.z" value="0.0"/>
+  <param name="pose.pose.orientation.w" value="1.0"/>
+
   <node pkg="decision_node" type="strategy_node" name="strategy_node" output="screen" respawn="true">
     <!-- private params (pnh: ~) -->
     <param name="tick_hz" value="$(arg tick_hz)"/>

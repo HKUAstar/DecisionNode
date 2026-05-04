@@ -36,6 +36,7 @@
 #include "decision_node/motion_change.hpp"
 #include "decision_node/recover_change.hpp"
 #include "decision_node/chase.hpp"
+#include "decision_node/base_move.hpp"
 namespace
 {
 constexpr int kDefaultTickHz = 20;
@@ -1093,6 +1094,7 @@ int main(int argc, char** argv)
   RegisterBulletSupplyNodes(factory, &bullet_num_pub);
   RegisterBattleFieldNodes(factory);
   RegisterChaseNodes(factory, &goal_pub, &publish_on_change_only);
+  RegisterBaseMoveNodes(factory, &nh);
 
   // ---------------------------
   // Decision Parameters (集中定义)

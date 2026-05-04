@@ -44,6 +44,7 @@ add_executable(strategy_node
     src/motion_change.cpp
     src/recover_change.cpp
     src/chase.cpp
+    src/base_move.cpp
 )
 
 add_executable(continuous_forwarder src/test.cpp)
