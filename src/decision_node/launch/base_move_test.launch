@@ -1,0 +1,81 @@
+<launch>
+  <!-- base_move_test.launch: 测试上坡对齐等base_move相关节点
+       运行决策节点 strategy_node，使用 base_move_test.xml 行为树
+  -->
+
+  <param name="use_sim_time" value="false"/>
+
+  <!-- Tuning args -->
+  <arg name="tick_hz" default="20"/>
+  <arg name="danger_hp" default="200"/>
+  <arg name="max_hp" default="380"/>
+  <arg name="sufficient_bullet" default="150"/>
+  <arg name="max_bullet" default="750"/>
+  <arg name="fixed_supply" default="50"/>
+  <arg name="publish_on_change_only" default="false"/>
+  <arg name="occupy_threshold" default="50"/>
+  <arg name="aggressive_threshold" default="50"/>
+  <arg name="attack_threshold" default="30"/>
+  <arg name="harm_threshold_on" default="50"/>
+  <arg name="harm_threshold_off" default="10"/>
+
+  <!-- BehaviorTree XML -->
+  <arg name="bt_xml" default="$(find decision_node)/config/base_move_test.xml"/>
+
+  <!-- Goal output topic -->
+  <arg name="goal_topic" default="/clicked_point"/>
+
+
+  <!-- CalculateAngle 节点需要的目标位姿四元数参数    -->
+  <!-- 在2D中 x=0, y=0; z=sin(yaw/2), w=cos(yaw/2)  -->
+  
+  <arg name="target_qx" default="0.0"/>
+  <arg name="target_qy" default="0.0"/>
+  <arg name="target_qz" default="0.0"/>
+  <arg name="target_qw" default="1.0"/>
+
+
+  <arg name="go_to_stair_x" default="0.0"/>
+  <arg name="go_to_stair_y" default="0.0"/>
+
+  <arg name="upstair_x" default="0.5"/>
+  <arg name="upstair_y" default="0.0"/>
+
+  <arg name="return_to_normal_x" default="0.0"/>
+  <arg name="return_to_normal_y" default="0.0"/>
+
+  <!-- 目标位姿四元数 -->
+  <param name="pose.pose.orientation.x" value="$(arg target_qx)"/>
+  <param name="pose.pose.orientation.y" value="$(arg target_qy)"/>
+  <param name="pose.pose.orientation.z" value="$(arg target_qz)"/>
+  <param name="pose.pose.orientation.w" value="$(arg target_qw)"/>
+
+  <param name="/goals/go_to_stair/x" value="$(arg go_to_stair_x)"/>
+  <param name="/goals/go_to_stair/y" value="$(arg go_to_stair_y)"/>
+
+  <param name="/goals/upstair/x" value="$(arg upstair_x)"/>
+  <param name="/goals/upstair/y" value="$(arg upstair_y)"/>
+
+  <param name="/goals/return_to_normal/x" value="$(arg return_to_normal_x)"/>
+  <param name="/goals/return_to_normal/y" value="$(arg return_to_normal_y)"/>
+
+  <node pkg="decision_node" type="strategy_node" name="strategy_node" output="screen" respawn="true">
+    <!-- private params (pnh: ~) -->
+    <param name="tick_hz" value="$(arg tick_hz)"/>
+    <param name="danger_hp" value="$(arg danger_hp)"/>
+    <param name="max_hp" value="$(arg max_hp)"/>
+    <param name="sufficient_bullet" value="$(arg sufficient_bullet)"/>
+    <param name="max_bullet" value="$(arg max_bullet)"/>
+    <param name="fixed_supply" value="$(arg fixed_supply)"/>
+    <param name="publish_on_change_only" value="$(arg publish_on_change_only)"/>
+    <param name="occupy_threshold" value="$(arg occupy_threshold)"/>
+    <param name="aggressive_threshold" value="$(arg aggressive_threshold)"/>
+    <param name="attack_threshold" value="$(arg attack_threshold)"/>
+    <param name="harm_threshold_on" value="$(arg harm_threshold_on)"/>
+    <param name="harm_threshold_off" value="$(arg harm_threshold_off)"/>
+    <param name="bt_xml" value="$(arg bt_xml)"/>
+
+    <!-- Remap node-relative clicked_point -> desired global goal topic -->
+    <remap from="clicked_point" to="$(arg goal_topic)"/>
+  </node>
+</launch>

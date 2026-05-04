@@ -1,5 +1,4 @@
 #include <ros/ros.h>
-#include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/UInt16.h>
 #include <std_msgs/UInt8.h>
@@ -36,7 +35,6 @@ public:
         pub_self_base_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/self_base_hp", 1);
 
         pub_robot_id_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_id", 1);
-        pub_robot_color_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_color", 1);
         pub_self_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_hp", 1);
         pub_self_max_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_max_hp", 1);
         
@@ -128,7 +126,6 @@ private:
     ros::Publisher pub_occupy_status_;
     
     ros::Publisher pub_robot_id_;
-    ros::Publisher pub_robot_color_;
     ros::Publisher pub_self_hp_;
     ros::Publisher pub_self_max_hp_;
     
@@ -210,8 +207,6 @@ private:
     float cached_enemy_standard_4_y_ = 0.0f;
     float cached_enemy_sentry_x_ = 0.0f;
     float cached_enemy_sentry_y_ = 0.0f;
-    
-    uint8_t robot_color_ = 0;       // 0=red, 1=blue
 
     void configureSerial()
     {
@@ -335,18 +330,6 @@ private:
     void navigationTimerCallback(const ros::TimerEvent& event)
     {
         sendNavigationCommand(current_nav_vx_, current_nav_vy_, current_nav_z_angle_);
-    }
-    
-    // 验证敌方坐标有效性（-8888为无效值）
-    float validateEnemyCoordinate(float new_value, float cached_value)
-    {
-        // 如果新值为-8888（无效值），返回缓存的旧值
-        if (new_value == -8888.0f)
-        {
-            return cached_value;
-        }
-        // 否则返回新值并更新缓存
-        return new_value;
     }
     
 
@@ -668,9 +651,6 @@ private:
         cached_enemy_sentry_x_ = frame.data.enemy_sentry_x / 100.0f;
         cached_enemy_sentry_y_ = frame.data.enemy_sentry_y / 100.0f;
         
-        // 更新机器人颜色（0=red, 1=blue）
-        robot_color_ = frame.data.robot_color;
-        
         // 发布数据到各个Topic
         std_msgs::UInt8 msg_uint8;
         std_msgs::UInt16 msg_uint16;
@@ -706,9 +686,6 @@ private:
         // 机器人ID
         msg_uint8.data = frame.data.robot_id;
         pub_robot_id_.publish(msg_uint8);
-        
-        msg_uint8.data = frame.data.robot_color;
-        pub_robot_color_.publish(msg_uint8);
         
         // 自身血量信息
         msg_uint16.data = frame.data.current_HP;
