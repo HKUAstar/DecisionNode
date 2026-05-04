@@ -1,0 +1,19 @@
+<root BTCPP_format="4">
+  <BehaviorTree ID="Main">
+    <ReactiveSequence name="MainLoop">
+        <Sequence name="UpdateBlackboard">
+            <UpdateRefereeBB />
+            <UpdateNavigationBB />
+            <UpdateVisionBB />
+            <UpdateTimersBB />
+            <UpdateDerivedFlags danger_hp="{danger_hp}" sufficient_bullet="{sufficient_bullet}" />
+        </Sequence>
+        <ReactiveFallback name="DecideAction">
+        </ReactiveFallback>
+        <ReactiveFallback name="ExecuteAction">
+        
+        </ReactiveFallback>
+    
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>

@@ -948,7 +948,7 @@ int main(int argc, char** argv)
     odom.qz = msg->pose.pose.orientation.z;
     odom.qw = msg->pose.pose.orientation.w;
     
-    // 计算yaw角（关于世界系的夹角）
+
     // yaw = atan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy^2 + qz^2))
     // 返回范围: [-π, π] 弧度制
     odom.gimbal_angle = std::atan2(

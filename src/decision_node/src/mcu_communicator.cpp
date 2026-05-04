@@ -679,7 +679,7 @@ private:
         std_msgs::Int32 msg_int32;
         geometry_msgs::Point enemy_pos;
 
-        // ===== 原有Topic发布 =====
+        
         // 云台yaw角
         msg_float.data = frame.data.yaw_angle;
         pub_yaw_angle_.publish(msg_float);
