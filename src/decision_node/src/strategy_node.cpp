@@ -19,11 +19,13 @@
 
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Point.h>
+#include <nav_msgs/Odometry.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/UInt8.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cctype>
 #include <fstream>
 #include <sstream>
@@ -73,6 +75,12 @@ struct RefereeState
 struct NavigationState
 {
   bool arrived = false;
+};
+
+struct OdomState
+{
+  double gimbal_angle = 0.0;  // 世界系中的yaw角（弧度）
+  double qx = 0.0, qy = 0.0, qz = 0.0, qw = 1.0;  // 四元数
 };
 
 // ---------------------------
@@ -168,6 +176,38 @@ public:
 
 private:
   const NavigationState* state_;
+};
+
+class UpdateOdomBB : public BT::SyncActionNode
+{
+public:
+  UpdateOdomBB(const std::string& name, const BT::NodeConfiguration& config, const OdomState* state)
+    : BT::SyncActionNode(name, config), state_(state)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    
+    // 计算yaw角（关于世界系的夹角）
+    // 从四元数 (qx, qy, qz, qw) 计算yaw角
+    // 返回范围: [-π, π] 弧度制
+    // yaw = atan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy^2 + qz^2))
+    double yaw = std::atan2(
+      2.0 * (state_->qw * state_->qz + state_->qx * state_->qy),
+      1.0 - 2.0 * (state_->qy * state_->qy + state_->qz * state_->qz)
+    );
+    
+    bb->set("odom.gimbal_angle", yaw);
+    
+    return BT::NodeStatus::SUCCESS;
+  }
+
+private:
+  const OdomState* state_;
 };
 
 class UpdateVisionBB : public BT::SyncActionNode
@@ -897,8 +937,25 @@ int main(int argc, char** argv)
 
   RefereeState ref;
   NavigationState nav;
+  OdomState odom;
 
   auto blackboard = BT::Blackboard::create();
+  
+  // Odom 订阅：获取世界系中的四元数，计算yaw角
+  auto sub_odom = nh.subscribe<nav_msgs::Odometry>("/odom", 1, [&](const nav_msgs::Odometry::ConstPtr& msg) {
+    odom.qx = msg->pose.pose.orientation.x;
+    odom.qy = msg->pose.pose.orientation.y;
+    odom.qz = msg->pose.pose.orientation.z;
+    odom.qw = msg->pose.pose.orientation.w;
+    
+    // 计算yaw角（关于世界系的夹角）
+    // yaw = atan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy^2 + qz^2))
+    // 返回范围: [-π, π] 弧度制
+    odom.gimbal_angle = std::atan2(
+      2.0 * (odom.qw * odom.qz + odom.qx * odom.qy),
+      1.0 - 2.0 * (odom.qy * odom.qy + odom.qz * odom.qz)
+    );
+  });
   
   auto sub_game_progress = nh.subscribe<std_msgs::UInt8>("/referee/game_progress", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.game_progress = msg->data;
@@ -989,6 +1046,11 @@ int main(int argc, char** argv)
   factory.registerBuilder<UpdateNavigationBB>(
     "UpdateNavigationBB", [&](const std::string& name, const BT::NodeConfiguration& config) {
       return std::make_unique<UpdateNavigationBB>(name, config, &nav);
+    });
+
+  factory.registerBuilder<UpdateOdomBB>(
+    "UpdateOdomBB", [&](const std::string& name, const BT::NodeConfiguration& config) {
+      return std::make_unique<UpdateOdomBB>(name, config, &odom);
     });
 
   factory.registerNodeType<UpdateVisionBB>("UpdateVisionBB");
