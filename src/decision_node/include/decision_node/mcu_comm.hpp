@@ -72,24 +72,39 @@ struct HKFrameHeader
 // HK协议数据负载 - 比赛数据帧 (69字节)
 struct HKGameData
 {
-    // game_state (4B)
     float yaw_angle;          // 云台yaw角 (rad)
+    float chassis_imu;
+
     uint8_t game_progress;    // 比赛阶段
-    uint8_t occupy_status;    // 占领状态
+    uint16_t stage_remain_time;
+
+    uint16_t ally_base_HP;    //前哨战血量
+
+    //下面的要从uint32_t event_data;解包出来
+    uint8_t central_elevated_ground_status; // 中央高地状态（bit 7-8）
+    uint8_t trapezoidal_elevated_ground_status; // 梯形高地状态（bit 9-10）
+    uint8_t fortress_status; // 堡垒状态（bit 25-26）
+    uint8_t outpost_status; // 前哨战状态（bit 27-28）
+
     uint8_t robot_id;         // 机器人ID
-    uint8_t robot_color;      // 0=红方, 1=蓝方
+    uint16_t current_HP;
+
+    uint16_t projectile_allowance_17mm;
+    uint16_t projectile_allowance_fortress;
+    uint16_t remaining_gold_coin;
+
+    //下面的要从uint32_t sentry_info;解包出来
+    uint16_t accumulated_bullet_conversion; // 累计哨兵远程兑换弹量（bit 0-10）
+    bool can_exchange_respawn;     // 哨兵是否可兑换复活（bit 20）
+    uint16_t respawn_money; // 哨兵复活所需金币（bit 21-31）
+
+    //下面的要从uint16_t sentry_info_2解包出来
+    bool out_of_combat;       // 脱战状态（bit 0）
+    uint16_t projectile_allowance; //全队可兑换17mm弹量（bit 1-11）
+    bool power_rune_available; // 是否有可用的能量符（bit 14)
+
     
-    // hp_red (8B)
-    uint16_t red_1_hp;        // 红方英雄血量
-    uint16_t red_3_hp;        // 红方步兵3血量
-    uint16_t red_7_hp;        // 红方哨兵血量
-    uint16_t red_dead_bits;   // 红方死亡位标记
-    
-    // hp_blue (8B)
-    uint16_t blue_1_hp;       // 蓝方英雄血量
-    uint16_t blue_3_hp;       // 蓝方步兵3血量
-    uint16_t blue_7_hp;       // 蓝方哨兵血量
-    uint16_t blue_dead_bits;  // 蓝方死亡位标记
+    //0x0301多机通讯链路
     
     // enemy_pos_1 (8B)
     int16_t enemy_hero_x;     // 敌方英雄X (cm)
@@ -108,28 +123,13 @@ struct HKGameData
     int16_t enemy_sentry_y;   // 敌方哨兵Y (cm)
     uint8_t suggested_target; // 雷达建议目标
     uint16_t radar_flags;     // 雷达标记信息
-    uint8_t reserved_ep3;     // 保留字段
+
+    uint16_t enemy_base_HP;     //敌方基地血量
+    uint8_t reserved0;     // 保留字段
     
-    // sentry_info (2B)
-    uint8_t can_free_revive;  // 可免费复活
-    uint8_t can_instant_revive; // 可立即复活
     
-    // robot_state (8B)
-    uint16_t self_hp;         // 本机血量
-    uint16_t self_max_hp;     // 本机最大血量
-    uint16_t bullet_remain;   // 剩余弹量
-    uint16_t reserved_rs;     // 保留字段
+    uint16_t reserved1;     // 保留字段
     
-    // operator_input (8B)
-    float operator_x;         // 操作手X输入 (m/s)
-    float operator_y;         // 操作手Y输入 (m/s)
-    
-    // game_result (1B)
-    uint8_t winner;           // 比赛结果
-    
-    // hurt (2B)
-    uint8_t hurt_info;        // 低4位=armor_id, 高4位=hurt_reason
-    uint8_t reserved_hurt;    // 保留字段
 } __attribute__((packed));
 
 // HK协议完整数据帧 (82字节)
@@ -180,23 +180,19 @@ static constexpr uint8_t CRC8_TABLE[256] = {
     0x74, 0x2a, 0xc8, 0x96, 0x15, 0x4b, 0xa9, 0xf7, 0xb6, 0xe8, 0x0a, 0x54, 0xd7, 0x89, 0x6b, 0x35,
 };
 
-// ===== 导航命令数据 (8 字节) =====
-/**
- * NUC → 下位机 运动指令数据
- * 字段顺序必须严格按照协议：
- * 偏移0: 空变量
- * 偏移1: 保留
- * 偏移2-3: vx (int16 mm/s)
- * 偏移4-5: vy (int16 mm/s)
- * 偏移6-7: wz (int16 0.01rad/s)
- */
-struct NavigationCommandData
+
+struct NavigationCommandData        //上位机发下位机
 {
-    uint8_t  reserved0;           // 偏移0: 空变量
-    bool  at_place;           // dstar_status
+    uint8_t  reserved0;           // 空预留位
+    bool  at_place;               // 目标点到达状态
     int16_t  vx;                  // 偏移2-3: X方向速度 (mm/s)
     int16_t  vy;                  // 偏移4-5: Y方向速度 (mm/s)
-    int16_t  wz;                  // 偏移6-7: 旋转角速度 (0.01 rad/s)
+    int16_t  target_yaw;          // 对齐角度时使用的目标角度
+    uint8_t  motion;           //0比赛未开始；1进攻；2防御；3移动
+    uint8_t  spin;            //移动状态：0正常；1对齐角度；2上坡；3下坡
+    uint8_t activate_power_rune;   //激活能量机关
+    uint8_t exchange_respwan;     //兑换复活
+
 } __attribute__((packed));
 
 static_assert(sizeof(NavigationCommandData) == 8, "NavigationCommandData must be exactly 8 bytes");

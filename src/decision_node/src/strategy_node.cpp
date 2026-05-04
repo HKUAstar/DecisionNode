@@ -55,38 +55,24 @@ std::string toUpper(std::string s)
 struct RefereeState
 {
   int game_progress = 0;  // 0，1，2，3: not start, 4: in progress, 5: end (convention)
-  int remain_hp = 400;
-  int bullet_remain = 750;
-  int friendly_score = 200;
-  int enemy_score = 200;
-  int occupy_status = 0;  // 0: unoccupied, 1: friendly occupied, 2: enemy occupied，3：both occupied
-  int robot_id = 0;       // 机器人ID
-  int robot_color = 0;    // 机器人颜色 (0=red, 1=blue)
-  int self_hp = 400;      // 自身血量
+  uint8_t robot_id;       // 机器人ID
+  uint8_t robot_color = 0;    // 机器人颜色 (0=red, 1=blue)
+  int self_hp = 400; 
   int self_max_hp = 400;  // 自身最大血量
-  int launch_ramp_elevated_ground_status = 0;  
-  // Enemy positions for chase mode
-  float enemy_hero_x = 0.0f;
-  float enemy_hero_y = 0.0f;
-  float enemy_engineer_x = 0.0f;
-  float enemy_engineer_y = 0.0f;
-  float enemy_standard_3_x = 0.0f;
-  float enemy_standard_3_y = 0.0f;
-  float enemy_standard_4_x = 0.0f;
-  float enemy_standard_4_y = 0.0f;
-  float enemy_sentry_x = 0.0f;
-  float enemy_sentry_y = 0.0f;
-  uint8_t suggested_target = 0;  // Target suggestion from radar
+  uint16_t projectile_allowance_17mm = 750;
+  uint16_t projectile_allowance_fortress=0;
+  int launch_ramp_elevated_ground_status = 0;  //这里它和那堆event是放到一块的，看下位机解包出来发啥
+  uint16_t stage_remain_time=420;
+  
+
+
+
+
 };
 
 struct NavigationState
 {
   bool arrived = false;
-};
-
-struct VisionState
-{
-  bool detected = false;  // 视觉模块是否检测到目标
 };
 
 // ---------------------------
@@ -187,8 +173,8 @@ private:
 class UpdateVisionBB : public BT::SyncActionNode
 {
 public:
-  UpdateVisionBB(const std::string& name, const BT::NodeConfiguration& config, const VisionState* state)
-    : BT::SyncActionNode(name, config), state_(state)
+  UpdateVisionBB(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
   {
   }
 
@@ -196,12 +182,9 @@ public:
 
   BT::NodeStatus tick() override
   {
-    config().blackboard->set("vision.detected", state_->detected);
+    // V1: explicitly弃用视觉模块。这里保持节点存在，但不写入任何视觉字段。[TODO] 后续可接真实视觉数据
     return BT::NodeStatus::SUCCESS;
   }
-
-private:
-  const VisionState* state_;
 };
 
 class UpdateTimersBB : public BT::SyncActionNode
@@ -914,7 +897,6 @@ int main(int argc, char** argv)
 
   RefereeState ref;
   NavigationState nav;
-  VisionState vis;
 
   auto blackboard = BT::Blackboard::create();
   
@@ -923,6 +905,10 @@ int main(int argc, char** argv)
   });
   auto sub_remain_hp = nh.subscribe<std_msgs::UInt16>("/referee/remain_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
     ref.remain_hp = msg->data;
+  });
+
+  auto sub_remain_hp = nh.subscribe<std_msgs::UInt16>("/referee/self_base_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.self_base_hp = msg->data;
   });
   auto sub_bullet = nh.subscribe<std_msgs::UInt16>("/referee/bullet_remain", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
     ref.bullet_remain = msg->data;
@@ -973,39 +959,10 @@ int main(int argc, char** argv)
     ref.blue_dead = msg->data;
   });
   
-  // Enemy positions (for chase mode)
-  auto sub_enemy_hero = nh.subscribe<geometry_msgs::Point>("/enemy/hero_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
-    ref.enemy_hero_x = msg->x;
-    ref.enemy_hero_y = msg->y;
-  });
-  auto sub_enemy_engineer = nh.subscribe<geometry_msgs::Point>("/enemy/engineer_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
-    ref.enemy_engineer_x = msg->x;
-    ref.enemy_engineer_y = msg->y;
-  });
-  auto sub_enemy_standard_3 = nh.subscribe<geometry_msgs::Point>("/enemy/standard_3_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
-    ref.enemy_standard_3_x = msg->x;
-    ref.enemy_standard_3_y = msg->y;
-  });
-  auto sub_enemy_standard_4 = nh.subscribe<geometry_msgs::Point>("/enemy/standard_4_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
-    ref.enemy_standard_4_x = msg->x;
-    ref.enemy_standard_4_y = msg->y;
-  });
-  auto sub_enemy_sentry = nh.subscribe<geometry_msgs::Point>("/enemy/sentry_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
-    ref.enemy_sentry_x = msg->x;
-    ref.enemy_sentry_y = msg->y;
-  });
-  auto sub_suggested_target = nh.subscribe<std_msgs::UInt8>("/radar/suggested_target", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
-    ref.suggested_target = msg->data;
-  });
   
   // Navigation arrived (复用现有语义)
   auto sub_arrived = nh.subscribe<std_msgs::Bool>("/dstar_status", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
     nav.arrived = msg->data;
-  });
-
-  // Vision status
-  auto sub_vision = nh.subscribe<std_msgs::Bool>("/vision_status", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
-    vis.detected = msg->data;
   });
 
   ros::Publisher goal_pub = nh.advertise<geometry_msgs::PointStamped>("clicked_point", 1);
@@ -1034,10 +991,7 @@ int main(int argc, char** argv)
       return std::make_unique<UpdateNavigationBB>(name, config, &nav);
     });
 
-  factory.registerBuilder<UpdateVisionBB>(
-    "UpdateVisionBB", [&](const std::string& name, const BT::NodeConfiguration& config) {
-      return std::make_unique<UpdateVisionBB>(name, config, &vis);
-    });
+  factory.registerNodeType<UpdateVisionBB>("UpdateVisionBB");
   factory.registerNodeType<UpdateTimersBB>("UpdateTimersBB");
   factory.registerNodeType<UpdateDerivedFlags>("UpdateDerivedFlags");
 

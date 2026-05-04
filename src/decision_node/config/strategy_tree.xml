@@ -125,7 +125,7 @@
         <Sequence>
           <IsAction value="UPSTAIR" />
           <SetGoalFromParams ns="upstair" />
-          <SetSpinFlag target_spin="0" />
+          <SetSpinFlag target_spin="3" />
           <PublishGoalPoint topic="clicked_point" />
           <PublishSpin />
         </Sequence>
