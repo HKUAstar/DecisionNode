@@ -21,6 +21,7 @@
 #include <geometry_msgs/Point.h>
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/UInt8.h>
 
@@ -1029,6 +1030,7 @@ int main(int argc, char** argv)
   ros::Publisher recover_pub = nh.advertise<std_msgs::UInt8>("recover", 1);
   ros::Publisher bullet_up_pub = nh.advertise<std_msgs::UInt8>("bullet_up", 1);
   ros::Publisher bullet_num_pub = nh.advertise<std_msgs::UInt8>("bullet_num", 1);
+  ros::Publisher target_yaw_pub = nh.advertise<std_msgs::Float32>("/target_yaw", 1);
 
   int tick_hz = kDefaultTickHz;
   pnh.param("tick_hz", tick_hz, tick_hz);
@@ -1094,7 +1096,7 @@ int main(int argc, char** argv)
   RegisterBulletSupplyNodes(factory, &bullet_num_pub);
   RegisterBattleFieldNodes(factory);
   RegisterChaseNodes(factory, &goal_pub, &publish_on_change_only);
-  RegisterBaseMoveNodes(factory, &nh);
+  RegisterBaseMoveNodes(factory, &nh, &target_yaw_pub);
 
   // ---------------------------
   // Decision Parameters (集中定义)
