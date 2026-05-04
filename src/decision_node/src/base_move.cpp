@@ -28,10 +28,10 @@ public:
 
     // 从参数服务器读取目标四元数
     double qx = 0.0, qy = 0.0, qz = 0.0, qw = 1.0;
-    nh_->param("pose.pose.orientation.x", qx, qx);
-    nh_->param("pose.pose.orientation.y", qy, qy);
-    nh_->param("pose.pose.orientation.z", qz, qz);
-    nh_->param("pose.pose.orientation.w", qw, qw);
+    nh_->param("pose_pose_orientation_x", qx, qx);
+    nh_->param("pose_pose_orientation_y", qy, qy);
+    nh_->param("pose_pose_orientation_z", qz, qz);
+    nh_->param("pose_pose_orientation_w", qw, qw);
 
     // 从四元数计算yaw角（关于世界系的夹角）
     // yaw = atan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy^2 + qz^2))

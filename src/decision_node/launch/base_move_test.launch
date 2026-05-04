@@ -44,11 +44,11 @@
   <arg name="return_to_normal_x" default="0.0"/>
   <arg name="return_to_normal_y" default="0.0"/>
 
-  <!-- 目标位姿四元数 -->
-  <param name="pose.pose.orientation.x" value="$(arg target_qx)"/>
-  <param name="pose.pose.orientation.y" value="$(arg target_qy)"/>
-  <param name="pose.pose.orientation.z" value="$(arg target_qz)"/>
-  <param name="pose.pose.orientation.w" value="$(arg target_qw)"/>
+  <!-- 目标位姿四元数 (使用下划线代替点号，ROS参数名不允许点号) -->
+  <param name="pose_pose_orientation_x" value="$(arg target_qx)"/>
+  <param name="pose_pose_orientation_y" value="$(arg target_qy)"/>
+  <param name="pose_pose_orientation_z" value="$(arg target_qz)"/>
+  <param name="pose_pose_orientation_w" value="$(arg target_qw)"/>
 
   <param name="/goals/go_to_stair/x" value="$(arg go_to_stair_x)"/>
   <param name="/goals/go_to_stair/y" value="$(arg go_to_stair_y)"/>

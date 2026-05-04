@@ -25,7 +25,7 @@ public:
       ROS_ERROR("CheckArrived: Failed to get nav.arrived from blackboard: %s", e.what());
       return BT::NodeStatus::FAILURE;
     }
-    ROS_INFO("CheckArrived: arrived=%d", arrived);
+    // ROS_INFO("CheckArrived: arrived=%d", arrived);
     return arrived ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };

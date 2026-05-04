@@ -178,7 +178,7 @@ private:
 class UpdateNavigationBB : public BT::SyncActionNode
 {
 public:
-  UpdateNavigationBB(const std::string& name, const BT::NodeConfiguration& config, NavigationState* state)
+  UpdateNavigationBB(const std::string& name, const BT::NodeConfiguration& config, const NavigationState* state)
     : BT::SyncActionNode(name, config), state_(state)
   {
   }
@@ -189,13 +189,13 @@ public:
   {
     bool arrived = state_->arrived;
     config().blackboard->set("nav.arrived", arrived);
-    // 重要: 每次读取后重置 nav.arrived，实现"边沿触发"效果
-    state_->arrived = false;
+    // 保持 nav.arrived 的值不变，直到下一次收到新的 /dstar_status 消息
+    // 这样才能保证 CheckArrived 能正确读取到 arrived=true
     return BT::NodeStatus::SUCCESS;
   }
 
 private:
-  NavigationState* state_;
+  const NavigationState* state_;
 };
 
 class UpdateOdomBB : public BT::SyncActionNode
@@ -594,7 +594,7 @@ public:
       return BT::NodeStatus::FAILURE;
     }
     config().blackboard->set("action", toUpper(action));
-    ROS_INFO("[SetAction] action set to %s", toUpper(action).c_str());
+    // ROS_INFO("[SetAction] action set to %s", toUpper(action).c_str());
     return BT::NodeStatus::SUCCESS;
   }
 };
@@ -1044,10 +1044,10 @@ int main(int argc, char** argv)
   });
 
   // Navigation arrived (复用现有语义)
-  auto sub_arrived = nh.subscribe<std_msgs::Bool>("/dstar_status", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
-    nav.arrived = msg->data;
-    ROS_INFO("dstar_status callback: nav.arrived set to %s", msg->data ? "true" : "false");
-  });
+  auto sub_arrived = nh.subscribe<std_msgs::Bool>("/dstar_status", 10, 
+    [&](const std_msgs::Bool::ConstPtr& msg) {
+      nav.arrived = msg->data;
+    });
 
   ros::Publisher goal_pub = nh.advertise<geometry_msgs::PointStamped>("clicked_point", 1);
   ros::Publisher motion_pub = nh.advertise<std_msgs::UInt8>("motion", 1);
@@ -1234,6 +1234,9 @@ int main(int argc, char** argv)
     ROS_INFO("Initialization: Sent default values - motion=0, recover=0, bullet_up=0, bullet_num=0");
   }
 
+  ros::Rate rate(std::max(1, tick_hz));
+  
+  // 使用 AsyncSpinner 确保所有订阅回调在独立线程中被及时处理
   ros::Rate rate(std::max(1, tick_hz));
   while (ros::ok())
   {

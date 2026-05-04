@@ -289,8 +289,15 @@ private:
             std::cin.ignore();
             std_msgs::Bool msg;
             msg.data = (val != 0);
-            pub_dstar_status_.publish(msg);
-            ROS_INFO("Published /dstar_status = %s", msg.data ? "true (arrived)" : "false (not arrived)");
+            // 持续发送2秒(50Hz)，确保订阅方不会错过消息
+            ros::Time start = ros::Time::now();
+            while (ros::Time::now() - start < ros::Duration(2.0))
+            {
+                pub_dstar_status_.publish(msg);
+                ros::Duration(0.02).sleep();
+            }
+            ROS_INFO("Published /dstar_status = %s", 
+                     msg.data ? "true (arrived)" : "false (not arrived)");
         }
         else { std::cin.clear(); std::cin.ignore(10000, '\n'); }
     }
