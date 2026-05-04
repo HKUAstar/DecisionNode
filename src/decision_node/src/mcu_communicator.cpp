@@ -176,7 +176,6 @@ private:
     // 导航数据变量 - 原有
     float current_nav_vx_ = 0.0f;
     float current_nav_vy_ = 0.0f;
-    float current_nav_z_angle_ = 0.0f;
     uint8_t current_nav_arrived_ = 0;
     
     // ===== 导航数据变量 - 新增 =====
@@ -260,10 +259,9 @@ private:
     {
         current_nav_vx_ = msg->linear.x;
         current_nav_vy_ = msg->linear.y;
-        current_nav_z_angle_ = msg->angular.z;
         
-        ROS_DEBUG("CmdVel received: vx=%.4f, vy=%.4f, z_angle=%.4f", 
-                  current_nav_vx_, current_nav_vy_, current_nav_z_angle_);
+        ROS_DEBUG("CmdVel received: vx=%.4f, vy=%.4f", 
+                  current_nav_vx_, current_nav_vy_);
     }
     
     // ===== 新增 Callback 函数 =====
@@ -306,16 +304,15 @@ private:
     // 导航命令定时器回调 - 固定频率发送NavigationFrame到下位机
     void navigationTimerCallback(const ros::TimerEvent& event)
     {
-        sendNavigationCommand(current_nav_vx_, current_nav_vy_, current_nav_z_angle_);
+        sendNavigationCommand(current_nav_vx_, current_nav_vy_);
     }
     
 
     // 发送导航命令到下位机
-    void sendNavigationCommand(float vx, float vy, float z_angle)
+    void sendNavigationCommand(float vx, float vy)
     {
         current_nav_vx_ = vx;
         current_nav_vy_ = vy;
-        current_nav_z_angle_ = z_angle;
         
         NavigationCommandFrame frame;
         
@@ -335,13 +332,11 @@ private:
         // 初始化数据段
         frame.data.reserved0 = 0;                  // 空变量
         frame.data.at_place = current_nav_arrived_;                 // 保留
-        // 单位转换：m/s → mm/s, rad/s → 0.01 rad/s, clamp to int16 range
+        // 单位转换：m/s → mm/s, clamp to int16 range
         int32_t vx_mm = (int32_t)(vx * 1000.0f);
         int32_t vy_mm = (int32_t)(vy * 1000.0f);
-        int32_t wz_centi = (int32_t)(z_angle * 100.0f);
         vx_mm = std::max((int32_t)-32768, std::min((int32_t)32767, vx_mm));
         vy_mm = std::max((int32_t)-32768, std::min((int32_t)32767, vy_mm));
-        wz_centi = std::max((int32_t)-32768, std::min((int32_t)32767, wz_centi));
         frame.data.vx = (int16_t)vx_mm;            // mm/s
         frame.data.vy = (int16_t)vy_mm;            // mm/s
         frame.data.target_yaw = (int16_t)((current_target_yaw_ * 100.0f));  // 转换为 0.01 rad/s
@@ -378,8 +373,8 @@ private:
             
             if (written == (int)sizeof(frame))
             {
-                ROS_DEBUG("Navigation command sent: vx=%.4f m/s, vy=%.4f m/s, wz=%.4f rad/s", 
-                         vx, vy, z_angle);
+                ROS_DEBUG("Navigation command sent: vx=%.4f m/s, vy=%.4f m/s", 
+                         vx, vy);
             }
             else if (written > 0)
             {
