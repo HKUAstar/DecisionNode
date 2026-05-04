@@ -1,9 +1,9 @@
 #include <ros/ros.h>
+#include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/UInt16.h>
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Bool.h>
-#include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Twist.h>
 #include <serial/serial.h>
@@ -27,17 +27,34 @@ public:
         nh_.param("nav_frequency", nav_frequency, 50.0);
         double nav_period = 1.0 / nav_frequency;  // 转换为周期(秒)
         
-        // ===== 原有topic =====
+        pub_yaw_angle_ = nh_.advertise<std_msgs::Float32>("/mcu/yaw_angle", 1);
+        pub_chassis_imu_ = nh_.advertise<std_msgs::Float32>("/mcu/chassis_imu", 1);
+
         pub_game_progress_ = nh_.advertise<std_msgs::UInt8>("/referee/game_progress", 1);
-        pub_remain_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/remain_hp", 1);
-        pub_bullet_remain_ = nh_.advertise<std_msgs::UInt16>("/referee/bullet_remain", 1);
-        pub_occupy_status_ = nh_.advertise<std_msgs::UInt8>("/referee/occupy_status", 1);
-        pub_self_base_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/self_base_hp", 1);
+        pub_stage_remain_time_ = nh_.advertise<std_msgs::UInt16>("/referee/stage_remain_time", 1);
+        
+        pub_ally_base_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/ally_base_hp", 1);
+        
+        pub_central_ground_status_ = nh_.advertise<std_msgs::UInt8>("/referee/central_ground_status", 1);
+        pub_trap_ground_status_ = nh_.advertise<std_msgs::UInt8>("/referee/trap_ground_status", 1);
+        pub_fortress_status_ = nh_.advertise<std_msgs::UInt8>("/referee/fortress_status", 1);
+        pub_outpost_status_ = nh_.advertise<std_msgs::UInt8>("/referee/outpost_status", 1);
 
         pub_robot_id_ = nh_.advertise<std_msgs::UInt8>("/robot/robot_id", 1);
         pub_self_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_hp", 1);
-        pub_self_max_hp_ = nh_.advertise<std_msgs::UInt16>("/robot/self_max_hp", 1);
         
+        pub_projectile_17mm_ = nh_.advertise<std_msgs::UInt16>("/referee/projectile_17mm", 1);
+        pub_projectile_fortress_ = nh_.advertise<std_msgs::UInt16>("/referee/projectile_fortress", 1);
+        pub_remaining_gold_ = nh_.advertise<std_msgs::UInt16>("/referee/remaining_gold", 1);
+
+        pub_accumulated_bullet_ = nh_.advertise<std_msgs::UInt16>("/referee/accumulated_bullet", 1);
+        pub_can_exchange_respawn_ = nh_.advertise<std_msgs::Bool>("/referee/can_exchange_respawn", 1);
+        pub_respawn_money_ = nh_.advertise<std_msgs::UInt16>("/referee/respawn_money", 1);
+        
+        pub_out_of_combat_ = nh_.advertise<std_msgs::Bool>("/referee/out_of_combat", 1);
+        pub_projectile_allowance_ = nh_.advertise<std_msgs::UInt16>("/referee/projectile_allowance", 1);
+        pub_power_rune_available_ = nh_.advertise<std_msgs::Bool>("/referee/power_rune_available", 1);
+
         pub_enemy_hero_ = nh_.advertise<geometry_msgs::Point>("/enemy/hero_position", 1);
         pub_enemy_engineer_ = nh_.advertise<geometry_msgs::Point>("/enemy/engineer_position", 1);
         pub_enemy_standard_3_ = nh_.advertise<geometry_msgs::Point>("/enemy/standard_3_position", 1);
@@ -46,35 +63,13 @@ public:
         pub_suggested_target_ = nh_.advertise<std_msgs::UInt8>("/radar/suggested_target", 1);
         pub_radar_flags_ = nh_.advertise<std_msgs::UInt16>("/radar/radar_flags", 1);
         
-        pub_yaw_angle_ = nh_.advertise<std_msgs::Float32>("/mcu/yaw_angle", 1);
-        pub_chassis_imu_ = nh_.advertise<std_msgs::Float32>("/mcu/chassis_imu", 1);
-        // ===== 新增topic - HKGameData新字段 =====
-        pub_stage_remain_time_ = nh_.advertise<std_msgs::UInt16>("/referee/stage_remain_time", 1);
-        pub_ally_base_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/ally_base_hp", 1);
         pub_enemy_base_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/enemy_base_hp", 1);
-        pub_central_ground_status_ = nh_.advertise<std_msgs::UInt8>("/referee/central_ground_status", 1);
-        pub_trap_ground_status_ = nh_.advertise<std_msgs::UInt8>("/referee/trap_ground_status", 1);
-        pub_fortress_status_ = nh_.advertise<std_msgs::UInt8>("/referee/fortress_status", 1);
-        pub_outpost_status_ = nh_.advertise<std_msgs::UInt8>("/referee/outpost_status", 1);
-        pub_projectile_17mm_ = nh_.advertise<std_msgs::UInt16>("/referee/projectile_17mm", 1);
-        pub_projectile_fortress_ = nh_.advertise<std_msgs::UInt16>("/referee/projectile_fortress", 1);
-        pub_remaining_gold_ = nh_.advertise<std_msgs::UInt16>("/referee/remaining_gold", 1);
-        pub_accumulated_bullet_ = nh_.advertise<std_msgs::UInt16>("/referee/accumulated_bullet", 1);
-        pub_can_exchange_respawn_ = nh_.advertise<std_msgs::Bool>("/referee/can_exchange_respawn", 1);
-        pub_respawn_money_ = nh_.advertise<std_msgs::UInt16>("/referee/respawn_money", 1);
-        pub_out_of_combat_ = nh_.advertise<std_msgs::Bool>("/referee/out_of_combat", 1);
-        pub_projectile_allowance_ = nh_.advertise<std_msgs::UInt16>("/referee/projectile_allowance", 1);
-        pub_power_rune_available_ = nh_.advertise<std_msgs::Bool>("/referee/power_rune_available", 1);
-        // ===== 原有订阅 =====
-        sub_navigation_ = nh_.subscribe<geometry_msgs::Vector3>("/navigation", 1,
-                                                               &MCUCommunicator::navigationCallback, this);
-        sub_nav_received_ = nh_.subscribe<std_msgs::UInt8>("/nav_received", 1,
-                                                          &MCUCommunicator::navReceivedCallback, this);
+        
+    
         sub_dstar_status_ = nh_.subscribe<std_msgs::Bool>("/dstar_status", 1,
                                                          &MCUCommunicator::dstarStatusCallback, this);
         sub_cmd_vel_ = nh_.subscribe<geometry_msgs::Twist>("/cmd_vel", 1,
                                                           &MCUCommunicator::cmdVelCallback, this);
-        // ===== 新增订阅 - NavigationCommandData新字段 =====
         sub_motion_ = nh_.subscribe<std_msgs::UInt8>("/motion", 1,
                                                     &MCUCommunicator::motionCallback, this);
         sub_spin_ = nh_.subscribe<std_msgs::UInt8>("/spin", 1,
@@ -119,16 +114,34 @@ private:
     std::string serial_port_;
     int serial_baudrate_;
     
-    // ===== ROS 发布者 - 原有 =====
+    ros::Publisher pub_yaw_angle_;      
+    ros::Publisher pub_chassis_imu_; 
+
     ros::Publisher pub_game_progress_;
-    ros::Publisher pub_remain_hp_;
-    ros::Publisher pub_bullet_remain_;
-    ros::Publisher pub_occupy_status_;
+    ros::Publisher pub_stage_remain_time_;
     
+    ros::Publisher pub_ally_base_hp_;
+
+    ros::Publisher pub_central_ground_status_;
+    ros::Publisher pub_trap_ground_status_;
+    ros::Publisher pub_fortress_status_;
+    ros::Publisher pub_outpost_status_;
+
     ros::Publisher pub_robot_id_;
     ros::Publisher pub_self_hp_;
-    ros::Publisher pub_self_max_hp_;
-    
+
+    ros::Publisher pub_projectile_17mm_;
+    ros::Publisher pub_projectile_fortress_;
+    ros::Publisher pub_remaining_gold_;
+
+    ros::Publisher pub_accumulated_bullet_;
+    ros::Publisher pub_can_exchange_respawn_;
+    ros::Publisher pub_respawn_money_;
+
+    ros::Publisher pub_out_of_combat_;
+    ros::Publisher pub_projectile_allowance_;
+    ros::Publisher pub_power_rune_available_;
+
     ros::Publisher pub_enemy_hero_;
     ros::Publisher pub_enemy_engineer_;
     ros::Publisher pub_enemy_standard_3_;
@@ -137,34 +150,12 @@ private:
     ros::Publisher pub_suggested_target_;
     ros::Publisher pub_radar_flags_;
     
-    ros::Publisher pub_yaw_angle_;      
-    ros::Publisher pub_chassis_imu_;    
-    
-    // ===== ROS 发布者 - 新增（HKGameData新字段）=====
-    ros::Publisher pub_stage_remain_time_;
-    ros::Publisher pub_ally_base_hp_;
     ros::Publisher pub_enemy_base_hp_;
-    ros::Publisher pub_central_ground_status_;
-    ros::Publisher pub_trap_ground_status_;
-    ros::Publisher pub_fortress_status_;
-    ros::Publisher pub_outpost_status_;
-    ros::Publisher pub_projectile_17mm_;
-    ros::Publisher pub_projectile_fortress_;
-    ros::Publisher pub_remaining_gold_;
-    ros::Publisher pub_accumulated_bullet_;
-    ros::Publisher pub_can_exchange_respawn_;
-    ros::Publisher pub_respawn_money_;
-    ros::Publisher pub_out_of_combat_;
-    ros::Publisher pub_projectile_allowance_;
-    ros::Publisher pub_power_rune_available_;
     
-    // ===== ROS 订阅者 - 原有 =====
-    ros::Subscriber sub_navigation_;
-    ros::Subscriber sub_nav_received_;
+    
     ros::Subscriber sub_dstar_status_;
     ros::Subscriber sub_cmd_vel_;
     
-    // ===== ROS 订阅者 - 新增（NavigationCommandData新字段）=====
     ros::Subscriber sub_motion_;
     ros::Subscriber sub_spin_;
     ros::Subscriber sub_target_yaw_;
@@ -186,7 +177,6 @@ private:
     float current_nav_vx_ = 0.0f;
     float current_nav_vy_ = 0.0f;
     float current_nav_z_angle_ = 0.0f;
-    uint8_t current_nav_received_ = 0;
     uint8_t current_nav_arrived_ = 0;
     
     // ===== 导航数据变量 - 新增 =====
@@ -254,19 +244,6 @@ private:
         }
 
         return false;
-    }
-
-    // Navigation
-    void navigationCallback(const geometry_msgs::Vector3::ConstPtr& msg)
-    {
-        sendNavigationCommand(msg->x, msg->y, msg->z);
-    }
-    
-    // Nav Received
-    void navReceivedCallback(const std_msgs::UInt8::ConstPtr& msg)
-    {
-        current_nav_received_ = msg->data;
-        // ROS_DEBUG("Nav received updated: received=%u", current_nav_received_);
     }
     
     // D* Status
@@ -671,17 +648,6 @@ private:
         // 比赛状态
         msg_uint8.data = frame.data.game_progress;
         pub_game_progress_.publish(msg_uint8);
-        
-        // 自身血量（从robot_state中获取）
-        msg_uint16.data = frame.data.current_HP;
-        pub_remain_hp_.publish(msg_uint16);
-        
-        msg_uint16.data = frame.data.projectile_allowance_17mm;
-        pub_bullet_remain_.publish(msg_uint16);
-        
-        // 占领状态
-        msg_uint8.data = frame.data.outpost_status;  // 使用前哨战状态
-        pub_occupy_status_.publish(msg_uint8);
         
         // 机器人ID
         msg_uint8.data = frame.data.robot_id;

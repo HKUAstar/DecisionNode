@@ -78,7 +78,7 @@ struct HKGameData
     uint8_t game_progress;    // 比赛阶段
     uint16_t stage_remain_time;
 
-    uint16_t ally_base_HP;    //前哨战血量
+    uint16_t ally_base_HP;    //基地血量
 
     //下面的要从uint32_t event_data;解包出来
     uint8_t central_elevated_ground_status; // 中央高地状态（bit 7-8）
