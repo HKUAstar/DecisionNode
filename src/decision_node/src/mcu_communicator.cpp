@@ -312,6 +312,13 @@ private:
     // 发送导航命令到下位机
     void sendNavigationCommand(float vx, float vy)
     {
+        // 强制 vx/vy 置零
+        if (current_spin_ == 1)
+        {
+            vx = 0.0f;
+            vy = 0.0f;
+        }
+
         current_nav_vx_ = vx;
         current_nav_vy_ = vy;
         

@@ -1,7 +1,4 @@
 <launch>
-  <!-- base_move_test.launch: 测试上坡对齐等base_move相关节点
-       运行决策节点 strategy_node，使用 base_move_test.xml 行为树
-  -->
 
   <param name="use_sim_time" value="false"/>
 
@@ -31,7 +28,7 @@
   
   <arg name="target_qx" default="0.0"/>
   <arg name="target_qy" default="0.0"/>
-  <arg name="target_qz" default="0.0"/>
+  <arg name="target_qz" default="3.0"/>
   <arg name="target_qw" default="1.0"/>
 
 
@@ -44,7 +41,7 @@
   <arg name="return_to_normal_x" default="0.0"/>
   <arg name="return_to_normal_y" default="0.0"/>
 
-  <!-- 目标位姿四元数 (使用下划线代替点号，ROS参数名不允许点号) -->
+  <!-- 目标位姿四元数  -->
   <param name="pose_pose_orientation_x" value="$(arg target_qx)"/>
   <param name="pose_pose_orientation_y" value="$(arg target_qy)"/>
   <param name="pose_pose_orientation_z" value="$(arg target_qz)"/>

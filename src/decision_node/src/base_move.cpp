@@ -70,12 +70,6 @@ private:
   ros::NodeHandle* nh_;
 };
 
-// =====================================================
-// CompareYaw: 判断当前MCU云台yaw与目标yaw是否在阈值内
-// =====================================================
-// 比较 -(odom.yaw_angle) 与 odom.target_yaw 的差值，
-// 当差值在 ±threshold 弧度范围内时返回 SUCCESS。
-// 默认 threshold = 0.0167 * π（约3度）
 class CompareYaw : public BT::ConditionNode
 {
 public:
@@ -171,9 +165,26 @@ private:
   ros::Publisher* pub_;
 };
 
-// =====================================================
-// 注册所有 base_move 节点
-// =====================================================
+
+class ResetNavArrived : public BT::SyncActionNode
+{
+public:
+  ResetNavArrived(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    bb->set("nav.arrived", false);
+    ROS_DEBUG("ResetNavArrived: nav.arrived set to false");
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
 void RegisterBaseMoveNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle* nh, ros::Publisher* target_yaw_pub)
 {
   factory.registerBuilder<CalculateAngle>(
@@ -187,4 +198,6 @@ void RegisterBaseMoveNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle* nh
     "PublishTargetYaw", [target_yaw_pub](const std::string& name, const BT::NodeConfiguration& config) {
       return std::make_unique<PublishTargetYaw>(name, config, target_yaw_pub);
     });
+
+  factory.registerNodeType<ResetNavArrived>("ResetNavArrived");
 }

@@ -1188,6 +1188,39 @@ int main(int argc, char** argv)
   blackboard->set("spin_flag", 0);   // 自旋模式，0=关闭，1=开启
   blackboard->set("spin.last_flag", -1);
 
+  // Referee 状态默认值——在 ROS 话题数据到来前使用
+  blackboard->set("ref.game_progress", uint8_t(0));
+  blackboard->set("ref.stage_remain_time", uint16_t(420));
+  blackboard->set("ref.ally_base_HP", uint16_t(5000));
+  blackboard->set("ref.central_elevated_ground_status", uint8_t(0));
+  blackboard->set("ref.trapezoidal_elevated_ground_status", uint8_t(0));
+  blackboard->set("ref.fortress_status", uint8_t(0));
+  blackboard->set("ref.outpost_status", uint8_t(0));
+  blackboard->set("ref.robot_id", uint8_t(7));
+  blackboard->set("ref.current_HP", uint16_t(400));
+  blackboard->set("ref.projectile_allowance_17mm", uint16_t(300));
+  blackboard->set("ref.projectile_allowance_fortress", uint16_t(100));
+  blackboard->set("ref.remaining_gold_coin", uint16_t(400));
+  blackboard->set("ref.accumulated_bullet_conversion", uint16_t(0));
+  blackboard->set("ref.can_exchange_respawn", false);
+  blackboard->set("ref.respawn_money", uint16_t(760));
+  blackboard->set("ref.out_of_combat", true);
+  blackboard->set("ref.projectile_allowance", uint16_t(400));
+  blackboard->set("ref.power_rune_available", false);
+  blackboard->set("ref.enemy_hero_x", int16_t(-8888));
+  blackboard->set("ref.enemy_hero_y", int16_t(-8888));
+  blackboard->set("ref.enemy_engineer_x", int16_t(-8888));
+  blackboard->set("ref.enemy_engineer_y", int16_t(-8888));
+  blackboard->set("ref.enemy_std3_x", int16_t(-8888));
+  blackboard->set("ref.enemy_std3_y", int16_t(-8888));
+  blackboard->set("ref.enemy_std4_x", int16_t(-8888));
+  blackboard->set("ref.enemy_std4_y", int16_t(-8888));
+  blackboard->set("ref.enemy_sentry_x", int16_t(-8888));
+  blackboard->set("ref.enemy_sentry_y", int16_t(-8888));
+  blackboard->set("ref.suggested_target", uint8_t(0));
+  blackboard->set("ref.radar_flags", uint16_t(0));
+  blackboard->set("ref.enemy_base_HP", uint16_t(5000));
+
   // Chase mode initialization
   blackboard->set("chase.target_id", uint8_t(0));
   blackboard->set("chase.target_x", 0.0f);

@@ -75,7 +75,8 @@
 
         <Sequence name="ExecBaseAlign">
           <IsAction value="BASE_ALIGN" />
-          <SetSpinFlag target_spin="0" />
+          <ResetNavArrived />
+          <SetSpinFlag target_spin="1" />
           <CalculateAngle />
           <PublishSpin />
           <PublishTargetYaw />
