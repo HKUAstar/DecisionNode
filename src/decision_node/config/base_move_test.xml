@@ -15,7 +15,7 @@
           <SetAction action="GOTOSTAIR" />
         </Sequence>
         <Sequence name="AlignAtStair">
-          <IsAction value="GO_TO_STAIR" />
+          <IsAction value="GOTOSTAIR" />
           <CheckArrived />
           <SetAction action="BASE_ALIGN" />
         </ReactiveFallback>
@@ -35,8 +35,8 @@
       
 
         <Sequence name="MaintainBaseAlign">
-          <IsAction value="GO_TO_STAIR" />
-          <SetAction action="GO_TO_STAIR" />
+          <IsAction value="GOTOSTAIR" />
+          <SetAction action="GOTOSTAIR" />
         </ReactiveFallback>
 
 
