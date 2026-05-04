@@ -7,12 +7,97 @@
             <UpdateVisionBB />
             <UpdateTimersBB />
             <UpdateDerivedFlags danger_hp="{danger_hp}" sufficient_bullet="{sufficient_bullet}" />
+            <UpdateOdomBB />
         </Sequence>
         <ReactiveFallback name="DecideAction">
+          <Sequence name="BeginUpstair">
+          <IsAction value="INIT" />
+          <SetAction action="GOTOSTAIR" />
+        </Sequence>
+        <Sequence name="AlignAtStair">
+          <IsAction value="GO_TO_STAIR" />
+          <CheckArrived />
+          <SetAction action="BASE_ALIGN" />
+        </ReactiveFallback>
+
+        <Sequence name="GoUp">
+          <IsAction value="BASE_ALIGN"/>
+          <CompareYaw />
+          <SetAction action="UPSTAIR" />
+        </Sequence>
+
+        <Sequence name="ReTurnToNormal">
+          <IsAction value="UPSTAIR" />
+          <CheckArrived />
+          <SetAction action="RETURN_TO_NORMAL" />
+        </Sequence>
+
+      
+
+        <Sequence name="MaintainBaseAlign">
+          <IsAction value="GO_TO_STAIR" />
+          <SetAction action="GO_TO_STAIR" />
+        </ReactiveFallback>
+
+
+        <Sequence name="MaintainBaseAlign">
+          <IsAction value="BASE_ALIGN" />
+          <SetAction action="BASE_ALIGN" />
+        </Sequence>
+
+         <Sequence name="Maintain">
+          <IsAction value="UPSTAIR" />
+          <SetAction action="UPSTAIR" />
+        </Sequence>
+
+        <Sequence name="Maintain">
+          <IsAction value="RETURN_TO_NORMAL" />
+          <SetAction action="RETURN_TO_NORMAL" />
+        </Sequence>
+
+        <Sequence name="ToInitToHaveAIP">
+          <SetAction action="INIT" />
+        </Sequence>
+      </ReactiveFallback>
+
         </ReactiveFallback>
         <ReactiveFallback name="ExecuteAction">
-        
+        <Sequence>
+          <IsAction value="INIT" />
+          <SetAction action="GOTOSTAIR" />
+        </Sequence>
+
+        <Sequence>
+          <IsAction value="GO_TO_STAIR" />
+          <SetGoalFromParams ns="go_to_stair" />
+          <SetSpinFlag target_spin="0" />
+          <PublishGoalPoint topic="clicked_point" />
+          <PublishSpin />
+        </Sequence>
+
+        <Sequence name="BaseAlignProcess">
+          <IsAction value="BASE_ALIGN" />
+          <SetSpinFlag target_spin="0" />
+          <CalculateAngle/>
+          <PublishSpin />
+          <PublishTargetYaw/>
+        </Sequence>
+
+        <Sequence name="GpUpStair">
+          <IsAction value="UPSTAIR" />
+          <SetGoalFromParams ns="upstair" />
+          <SetSpinFlag target_spin="2" />
+          <PublishGoalPoint topic="clicked_point" />
+          <PublishSpin />
         </ReactiveFallback>
+
+        <Sequence name="ReTurnToNormal">
+          <IsAction value="RETURN_TO_NORMAL" />
+          <SetGoalFromParams ns="return_to_normal" />
+          <SetSpinFlag target_spin="0" />
+          <PublishGoalPoint topic="clicked_point" />
+          <PublishSpin />
+
     
     </ReactiveSequence>
   </BehaviorTree>
