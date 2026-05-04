@@ -70,6 +70,67 @@ private:
   ros::NodeHandle* nh_;
 };
 
+// =====================================================
+// CompareYaw: 判断当前MCU云台yaw与目标yaw是否在阈值内
+// =====================================================
+// 比较 -(odom.yaw_angle) 与 odom.target_yaw 的差值，
+// 当差值在 ±threshold 弧度范围内时返回 SUCCESS。
+// 默认 threshold = 0.0167 * π（约3度）
+class CompareYaw : public BT::ConditionNode
+{
+public:
+  CompareYaw(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::ConditionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<double>("threshold", 0.0167 * M_PI, "允许的角度误差阈值（弧度），默认0.0167π≈3°"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+
+    // 读取阈值
+    double threshold = 0.0167 * M_PI;
+    (void)getInput("threshold", threshold);
+
+    // 读取MCU云台当前的yaw角（取负）
+    double yaw_angle = 0.0;
+    try { yaw_angle = bb->get<double>("odom.yaw_angle"); }
+    catch (...)
+    {
+      ROS_WARN_THROTTLE(1.0, "CompareYaw: odom.yaw_angle not found in blackboard");
+      return BT::NodeStatus::FAILURE;
+    }
+    double current_yaw = -yaw_angle;
+
+    // 读取目标yaw角
+    double target_yaw = 0.0;
+    try { target_yaw = bb->get<double>("odom.target_yaw"); }
+    catch (...)
+    {
+      ROS_WARN_THROTTLE(1.0, "CompareYaw: odom.target_yaw not found in blackboard");
+      return BT::NodeStatus::FAILURE;
+    }
+
+    // 计算角度差并归一化到 [-π, π]
+    double diff = target_yaw - current_yaw;
+    diff = std::atan2(std::sin(diff), std::cos(diff));
+
+    bool within_threshold = (std::abs(diff) <= threshold);
+
+    ROS_DEBUG("CompareYaw: yaw_angle=%.4f, neg_yaw=%.4f, target=%.4f, diff=%.4f, threshold=%.4f, result=%s",
+              yaw_angle, current_yaw, target_yaw, diff, threshold, within_threshold ? "SUCCESS" : "FAILURE");
+
+    return within_threshold ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+  }
+};
+
 class PublishTargetYaw : public BT::SyncActionNode
 {
 public:
@@ -119,6 +180,8 @@ void RegisterBaseMoveNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle* nh
     "CalculateAngle", [nh](const std::string& name, const BT::NodeConfiguration& config) {
       return std::make_unique<CalculateAngle>(name, config, nh);
     });
+
+  factory.registerNodeType<CompareYaw>("CompareYaw");
 
   factory.registerBuilder<PublishTargetYaw>(
     "PublishTargetYaw", [target_yaw_pub](const std::string& name, const BT::NodeConfiguration& config) {

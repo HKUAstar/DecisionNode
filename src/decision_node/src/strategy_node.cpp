@@ -83,6 +83,7 @@ struct OdomState
 {
   double gimbal_angle = 0.0;  // 世界系中的yaw角（弧度）
   double qx = 0.0, qy = 0.0, qz = 0.0, qw = 1.0;  // 四元数
+  double yaw_angle = 0.0;  // MCU上报的云台yaw角（弧度）
 };
 
 // ---------------------------
@@ -204,6 +205,7 @@ public:
     );
     
     bb->set("odom.gimbal_angle", yaw);
+    bb->set("odom.yaw_angle", state_->yaw_angle);
     
     return BT::NodeStatus::SUCCESS;
   }
@@ -957,6 +959,11 @@ int main(int argc, char** argv)
       2.0 * (odom.qw * odom.qz + odom.qx * odom.qy),
       1.0 - 2.0 * (odom.qy * odom.qy + odom.qz * odom.qz)
     );
+  });
+
+  // MCU云台yaw角订阅
+  auto sub_mcu_yaw = nh.subscribe<std_msgs::Float32>("/mcu/yaw_angle", 1, [&](const std_msgs::Float32::ConstPtr& msg) {
+    odom.yaw_angle = static_cast<double>(msg->data);
   });
   
   auto sub_game_progress = nh.subscribe<std_msgs::UInt8>("/referee/game_progress", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
