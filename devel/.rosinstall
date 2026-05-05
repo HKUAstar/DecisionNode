@@ -1,2 +1,2 @@
 - setup-file:
-    local-name: /mnt/d/decision_ws/devel/setup.sh
+    local-name: /home/sentry/AstarTraining/DecisionNode/devel/setup.sh

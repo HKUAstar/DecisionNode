@@ -353,12 +353,12 @@ private:
         frame.data.activate_power_rune = current_activate_power_rune_;  // 激活能量机关
         frame.data.exchange_respwan = current_exchange_respwan_;        // 兑换复活
 //test
-        ROS_INFO_THROTTLE(0.01,
-                         "Send nav frame: at_place=%u, vx=%.4f m/s(%d mm/s), vy=%.4f m/s(%d mm/s), target_yaw=%.4f, motion=%u, spin=%u",
-                         static_cast<unsigned int>(frame.data.at_place),
-                         vx, frame.data.vx,
-                         vy, frame.data.vy,
-                         current_target_yaw_, current_motion_, current_spin_);
+        // ROS_INFO_THROTTLE(0.01,
+        //                  "Send nav frame: at_place=%u, vx=%.4f m/s(%d mm/s), vy=%.4f m/s(%d mm/s), target_yaw=%.4f, motion=%u, spin=%u",
+        //                  static_cast<unsigned int>(frame.data.at_place),
+        //                  vx, frame.data.vx,
+        //                  vy, frame.data.vy,
+        //                  current_target_yaw_, current_motion_, current_spin_);
         
         // 计算Packet CRC16 (对整个帧从字节0到数据段结尾, 21-4=17字节)
         frame.packet_crc16 = calculateCRC16((uint8_t*)&frame, 
@@ -436,6 +436,22 @@ private:
         if (received_crc != calculated_crc)
         {
             ROS_WARN("CRC16 mismatch: received=0x%04X, calculated=0x%04X", received_crc, calculated_crc);
+            
+            // 添加详细调试信息以诊断结构体是否一致
+            ROS_WARN("=== CRC16 Debug Info ===");
+            ROS_WARN("Frame size: %zu bytes (HKFrameHeader=%zu, HKGameData=%zu, MCUDataFrame=%zu)",
+                     sizeof(MCUDataFrame), sizeof(HKFrameHeader), sizeof(HKGameData), sizeof(MCUDataFrame));
+            ROS_WARN("CRC计算范围: 头部(%d) + 数据(%d) = %d 字节",
+                     HK_FRAME_HEADER_SIZE, HK_FRAME_DATA_SIZE, HK_FRAME_HEADER_SIZE + HK_FRAME_DATA_SIZE);
+            ROS_WARN("帧头信息: SOF=[0x%02X,0x%02X], type=0x%02X, len=%u, seq=%u",
+                     frame->header.sof[0], frame->header.sof[1], frame->header.packet_type, 
+                     frame->header.length, frame->header.packet_seq);
+            ROS_WARN("数据片段 (前16字节): %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
+                     ((uint8_t*)frame)[0], ((uint8_t*)frame)[1], ((uint8_t*)frame)[2], ((uint8_t*)frame)[3],
+                     ((uint8_t*)frame)[4], ((uint8_t*)frame)[5], ((uint8_t*)frame)[6], ((uint8_t*)frame)[7],
+                     ((uint8_t*)frame)[8], ((uint8_t*)frame)[9], ((uint8_t*)frame)[10], ((uint8_t*)frame)[11],
+                     ((uint8_t*)frame)[12], ((uint8_t*)frame)[13], ((uint8_t*)frame)[14], ((uint8_t*)frame)[15]);
+            
             return false;
         }
         return true;
@@ -585,6 +601,19 @@ private:
         MCUDataFrame frame;
         memcpy(&frame, frame_buffer_, HK_FRAME_SIZE);
         
+        // 添加调试信息：打印接收到的完整帧数据
+        ROS_INFO("Received frame hex dump (first 40 bytes):");
+        for (size_t i = 0; i < 40 && i < HK_FRAME_SIZE; i += 16)
+        {
+            char hex_str[100];
+            int len = 0;
+            for (size_t j = 0; j < 16 && i + j < 40; j++)
+            {
+                len += sprintf(hex_str + len, "%02X ", frame_buffer_[i + j]);
+            }
+            ROS_INFO("  [%02d-%02d]: %s", (int)i, (int)i + 15, hex_str);
+        }
+        
         // 验证帧头
         if (frame.header.sof[0] != HK_FRAME_SOF_H || frame.header.sof[1] != HK_FRAME_SOF_K)
         {
@@ -610,13 +639,19 @@ private:
         }
         
         // 验证CRC16校验
+        ROS_INFO("CRC16 verification: received=0x%04X, will verify with header(%d) + data(%d) bytes",
+                 frame.packet_crc16, HK_FRAME_HEADER_SIZE, HK_FRAME_DATA_SIZE);
+        ROS_INFO("Frame tail bytes (last 6 bytes): %02X %02X %02X %02X %02X %02X",
+                 frame_buffer_[HK_FRAME_SIZE-6], frame_buffer_[HK_FRAME_SIZE-5], frame_buffer_[HK_FRAME_SIZE-4],
+                 frame_buffer_[HK_FRAME_SIZE-3], frame_buffer_[HK_FRAME_SIZE-2], frame_buffer_[HK_FRAME_SIZE-1]);
+        
         if (!verifyCRC16(&frame))
         {
             ROS_WARN("CRC16 verification failed");
             return;
         }
         
-        ROS_DEBUG("Valid HK frame received: game_progress=%u, self_hp=%u, crc16=0x%04X",
+        ROS_INFO("Valid HK frame received: game_progress=%u, self_hp=%u, crc16=0x%04X",
                  frame.data.game_progress, frame.data.current_HP, frame.packet_crc16);
         
         // 更新敌方位置数据（处理坐标有效性，单位转换cm -> m）

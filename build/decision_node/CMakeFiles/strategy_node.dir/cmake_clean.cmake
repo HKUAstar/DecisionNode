@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/mnt/d/decision_ws/devel/lib/decision_node/strategy_node"
-  "/mnt/d/decision_ws/devel/lib/decision_node/strategy_node.pdb"
+  "/home/sentry/AstarTraining/DecisionNode/devel/lib/decision_node/strategy_node"
+  "/home/sentry/AstarTraining/DecisionNode/devel/lib/decision_node/strategy_node.pdb"
   "CMakeFiles/strategy_node.dir/src/base_move.cpp.o"
   "CMakeFiles/strategy_node.dir/src/base_move.cpp.o.d"
   "CMakeFiles/strategy_node.dir/src/battle_field_status.cpp.o"
