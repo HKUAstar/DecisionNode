@@ -261,7 +261,7 @@ private:
         current_nav_vx_ = msg->linear.x;
         current_nav_vy_ = msg->linear.y;
         
-        ROS_DEBUG("CmdVel received: vx=%.4f, vy=%.4f", 
+        ROS_INFO("CmdVel received: vx=%.4f, vy=%.4f", 
                   current_nav_vx_, current_nav_vy_);
     }
     
@@ -270,35 +270,35 @@ private:
     void motionCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_motion_ = msg->data;
-        ROS_DEBUG("Motion received: %u", current_motion_);
+        ROS_INFO("Motion received: %u", current_motion_);
     }
     
     // Spin 状态
     void spinCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_spin_ = msg->data;
-        ROS_DEBUG("Spin received: %u", current_spin_);
+        ROS_INFO("Spin received: %u", current_spin_);
     }
     
     // Target Yaw 角度
     void targetYawCallback(const std_msgs::Float32::ConstPtr& msg)
     {
         current_target_yaw_ = msg->data;
-        ROS_DEBUG("Target yaw received: %.4f rad", current_target_yaw_);
+        ROS_INFO("Target yaw received: %.4f rad", current_target_yaw_);
     }
     
     // 激活能量机关
     void activatePowerRuneCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_activate_power_rune_ = msg->data;
-        ROS_DEBUG("Activate power rune received: %u", current_activate_power_rune_);
+        ROS_INFO("Activate power rune received: %u", current_activate_power_rune_);
     }
     
     // 兑换复活
     void exchangeRespwanCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_exchange_respwan_ = msg->data;
-        ROS_DEBUG("Exchange respwan received: %u", current_exchange_respwan_);
+        ROS_INFO("Exchange respwan received: %u", current_exchange_respwan_);
     }
     // ===== 新增 Callback 函数结束 =====
     
@@ -352,13 +352,14 @@ private:
         frame.data.spin = current_spin_;            // 0=正常；1=对齐角度；2=上坡；3=下坡
         frame.data.activate_power_rune = current_activate_power_rune_;  // 激活能量机关
         frame.data.exchange_respwan = current_exchange_respwan_;        // 兑换复活
-//test
-        // ROS_INFO_THROTTLE(0.01,
-        //                  "Send nav frame: at_place=%u, vx=%.4f m/s(%d mm/s), vy=%.4f m/s(%d mm/s), target_yaw=%.4f, motion=%u, spin=%u",
+
+        // ROS_INFO_THROTTLE(0.5,
+        //                  "Send nav frame: at_place=%u, vx=%.4f m/s(%d mm/s), vy=%.4f m/s(%d mm/s), target_yaw=%.4f, motion=%u, spin=%u, power_rune=%u, respwan=%u",
         //                  static_cast<unsigned int>(frame.data.at_place),
         //                  vx, frame.data.vx,
         //                  vy, frame.data.vy,
-        //                  current_target_yaw_, current_motion_, current_spin_);
+        //                  current_target_yaw_, current_motion_, current_spin_,
+        //                  current_activate_power_rune_, current_exchange_respwan_);
         
         // 计算Packet CRC16 (对整个帧从字节0到数据段结尾, 21-4=17字节)
         frame.packet_crc16 = calculateCRC16((uint8_t*)&frame, 
@@ -381,7 +382,7 @@ private:
             
             if (written == (int)sizeof(frame))
             {
-                ROS_DEBUG("Navigation command sent: vx=%.4f m/s, vy=%.4f m/s", 
+                ROS_INFO("Navigation command sent: vx=%.4f m/s, vy=%.4f m/s", 
                          vx, vy);
             }
             else if (written > 0)
@@ -561,7 +562,7 @@ private:
                 }
                 else
                 {
-                    ROS_DEBUG("Invalid frame trailer: received 0x%02X 0x%02X (expected 0x%02X 0x%02X)",
+                    ROS_INFO("Invalid frame trailer: received 0x%02X 0x%02X (expected 0x%02X 0x%02X)",
                              frame_buffer_[HK_FRAME_SIZE - 2], frame_buffer_[HK_FRAME_SIZE - 1],
                              HK_FRAME_TRAILER_K, HK_FRAME_TRAILER_H);
                     
@@ -777,7 +778,7 @@ private:
         msg_bool.data = frame.data.power_rune_available;
         pub_power_rune_available_.publish(msg_bool);
         
-        ROS_DEBUG("MCU frame parsed: game_progress=%u, current_HP=%u",
+        ROS_INFO("MCU frame parsed: game_progress=%u, current_HP=%u",
                  frame.data.game_progress, frame.data.current_HP);
     }
 };
