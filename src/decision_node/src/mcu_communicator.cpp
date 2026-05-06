@@ -250,9 +250,9 @@ private:
     void dstarStatusCallback(const std_msgs::Bool::ConstPtr& msg)
     {
         current_nav_arrived_ = msg->data ? 1 : 0;
-        ROS_INFO("D* status updated: raw=%s, arrived=%u",
-                 msg->data ? "true" : "false",
-                 static_cast<unsigned int>(current_nav_arrived_));
+        // ROS_INFO("D* status updated: raw=%s, arrived=%u",
+        //          msg->data ? "true" : "false",
+        //          static_cast<unsigned int>(current_nav_arrived_));
     }
     
     // Cmd Vel: 订阅速度命令，更新导航数据变量
@@ -261,8 +261,8 @@ private:
         current_nav_vx_ = msg->linear.x;
         current_nav_vy_ = msg->linear.y;
         
-        ROS_INFO("CmdVel received: vx=%.4f, vy=%.4f", 
-                  current_nav_vx_, current_nav_vy_);
+        // ROS_INFO("CmdVel received: vx=%.4f, vy=%.4f", 
+        //           current_nav_vx_, current_nav_vy_);
     }
     
     // ===== 新增 Callback 函数 =====
@@ -270,35 +270,35 @@ private:
     void motionCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_motion_ = msg->data;
-        ROS_INFO("Motion received: %u", current_motion_);
+        // ROS_INFO("Motion received: %u", current_motion_);
     }
     
     // Spin 状态
     void spinCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_spin_ = msg->data;
-        ROS_INFO("Spin received: %u", current_spin_);
+        // ROS_INFO("Spin received: %u", current_spin_);
     }
     
     // Target Yaw 角度
     void targetYawCallback(const std_msgs::Float32::ConstPtr& msg)
     {
         current_target_yaw_ = msg->data;
-        ROS_INFO("Target yaw received: %.4f rad", current_target_yaw_);
+        // ROS_INFO("Target yaw received: %.4f rad", current_target_yaw_);
     }
     
     // 激活能量机关
     void activatePowerRuneCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_activate_power_rune_ = msg->data;
-        ROS_INFO("Activate power rune received: %u", current_activate_power_rune_);
+        // ROS_INFO("Activate power rune received: %u", current_activate_power_rune_);
     }
     
     // 兑换复活
     void exchangeRespwanCallback(const std_msgs::UInt8::ConstPtr& msg)
     {
         current_exchange_respwan_ = msg->data;
-        ROS_INFO("Exchange respwan received: %u", current_exchange_respwan_);
+        // ROS_INFO("Exchange respwan received: %u", current_exchange_respwan_);
     }
     // ===== 新增 Callback 函数结束 =====
     
@@ -382,22 +382,22 @@ private:
             
             if (written == (int)sizeof(frame))
             {
-                ROS_INFO("Navigation command sent: vx=%.4f m/s, vy=%.4f m/s", 
-                         vx, vy);
+                // ROS_INFO("Navigation command sent: vx=%.4f m/s, vy=%.4f m/s", 
+                //          vx, vy);
             }
             else if (written > 0)
             {
-                ROS_WARN("Partial write: expected %zu bytes, but only wrote %d bytes", 
+                ROS_WARN_THROTTLE(2.0, "Partial write: expected %zu bytes, but only wrote %d bytes", 
                         sizeof(frame), written);
             }
             else
             {
-                ROS_WARN("Write failed: write returned %d", written);
+                ROS_WARN_THROTTLE(2.0, "Write failed: write returned %d", written);
             }
         }
         catch (const serial::IOException& e)
         {
-            ROS_WARN("Serial IO exception during navigation write: %s", e.what());
+            ROS_WARN_THROTTLE(2.0, "Serial IO exception during navigation write: %s", e.what());
             if (serial_.isOpen())
             {
                 serial_.close();
@@ -405,7 +405,7 @@ private:
         }
         catch (const serial::SerialException& e)
         {
-            ROS_WARN("Serial exception during navigation write: %s", e.what());
+            ROS_WARN_THROTTLE(2.0, "Serial exception during navigation write: %s", e.what());
             if (serial_.isOpen())
             {
                 serial_.close();
@@ -436,18 +436,18 @@ private:
         
         if (received_crc != calculated_crc)
         {
-            ROS_WARN("CRC16 mismatch: received=0x%04X, calculated=0x%04X", received_crc, calculated_crc);
+            ROS_WARN_THROTTLE(2.0, "CRC16 mismatch: received=0x%04X, calculated=0x%04X", received_crc, calculated_crc);
             
             // 添加详细调试信息以诊断结构体是否一致
-            ROS_WARN("=== CRC16 Debug Info ===");
-            ROS_WARN("Frame size: %zu bytes (HKFrameHeader=%zu, HKGameData=%zu, MCUDataFrame=%zu)",
+            ROS_WARN_THROTTLE(2.0, "=== CRC16 Debug Info ===");
+            ROS_WARN_THROTTLE(2.0, "Frame size: %zu bytes (HKFrameHeader=%zu, HKGameData=%zu, MCUDataFrame=%zu)",
                      sizeof(MCUDataFrame), sizeof(HKFrameHeader), sizeof(HKGameData), sizeof(MCUDataFrame));
-            ROS_WARN("CRC计算范围: 头部(%d) + 数据(%d) = %d 字节",
+            ROS_WARN_THROTTLE(2.0, "CRC计算范围: 头部(%d) + 数据(%d) = %d 字节",
                      HK_FRAME_HEADER_SIZE, HK_FRAME_DATA_SIZE, HK_FRAME_HEADER_SIZE + HK_FRAME_DATA_SIZE);
-            ROS_WARN("帧头信息: SOF=[0x%02X,0x%02X], type=0x%02X, len=%u, seq=%u",
+            ROS_WARN_THROTTLE(2.0, "帧头信息: SOF=[0x%02X,0x%02X], type=0x%02X, len=%u, seq=%u",
                      frame->header.sof[0], frame->header.sof[1], frame->header.packet_type, 
                      frame->header.length, frame->header.packet_seq);
-            ROS_WARN("数据片段 (前16字节): %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
+            ROS_WARN_THROTTLE(2.0, "数据片段 (前16字节): %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
                      ((uint8_t*)frame)[0], ((uint8_t*)frame)[1], ((uint8_t*)frame)[2], ((uint8_t*)frame)[3],
                      ((uint8_t*)frame)[4], ((uint8_t*)frame)[5], ((uint8_t*)frame)[6], ((uint8_t*)frame)[7],
                      ((uint8_t*)frame)[8], ((uint8_t*)frame)[9], ((uint8_t*)frame)[10], ((uint8_t*)frame)[11],
@@ -562,7 +562,7 @@ private:
                 }
                 else
                 {
-                    ROS_INFO("Invalid frame trailer: received 0x%02X 0x%02X (expected 0x%02X 0x%02X)",
+                    ROS_INFO_THROTTLE(2.0, "Invalid frame trailer: received 0x%02X 0x%02X (expected 0x%02X 0x%02X)",
                              frame_buffer_[HK_FRAME_SIZE - 2], frame_buffer_[HK_FRAME_SIZE - 1],
                              HK_FRAME_TRAILER_K, HK_FRAME_TRAILER_H);
                     
@@ -603,22 +603,22 @@ private:
         memcpy(&frame, frame_buffer_, HK_FRAME_SIZE);
         
         // 添加调试信息：打印接收到的完整帧数据
-        ROS_INFO("Received frame hex dump (first 40 bytes):");
-        for (size_t i = 0; i < 40 && i < HK_FRAME_SIZE; i += 16)
-        {
-            char hex_str[100];
-            int len = 0;
-            for (size_t j = 0; j < 16 && i + j < 40; j++)
-            {
-                len += sprintf(hex_str + len, "%02X ", frame_buffer_[i + j]);
-            }
-            ROS_INFO("  [%02d-%02d]: %s", (int)i, (int)i + 15, hex_str);
-        }
+        // ROS_INFO("Received frame hex dump (first 40 bytes):");
+        // for (size_t i = 0; i < 40 && i < HK_FRAME_SIZE; i += 16)
+        // {
+        //     char hex_str[100];
+        //     int len = 0;
+        //     for (size_t j = 0; j < 16 && i + j < 40; j++)
+        //     {
+        //         len += sprintf(hex_str + len, "%02X ", frame_buffer_[i + j]);
+        //     }
+        //     ROS_INFO("  [%02d-%02d]: %s", (int)i, (int)i + 15, hex_str);
+        // }
         
         // 验证帧头
         if (frame.header.sof[0] != HK_FRAME_SOF_H || frame.header.sof[1] != HK_FRAME_SOF_K)
         {
-            ROS_WARN("Invalid frame header: SOF=0x%02X 0x%02X (expected 0x%02X 0x%02X)",
+            ROS_WARN_THROTTLE(2.0, "Invalid frame header: SOF=0x%02X 0x%02X (expected 0x%02X 0x%02X)",
                     frame.header.sof[0], frame.header.sof[1], HK_FRAME_SOF_H, HK_FRAME_SOF_K);
             return;
         }
@@ -626,7 +626,7 @@ private:
         // 验证帧尾
         if (frame.trailer[0] != HK_FRAME_TRAILER_K || frame.trailer[1] != HK_FRAME_TRAILER_H)
         {
-            ROS_WARN("Invalid frame trailer: 0x%02X 0x%02X (expected 0x%02X 0x%02X)",
+            ROS_WARN_THROTTLE(2.0, "Invalid frame trailer: 0x%02X 0x%02X (expected 0x%02X 0x%02X)",
                     frame.trailer[0], frame.trailer[1], HK_FRAME_TRAILER_K, HK_FRAME_TRAILER_H);
             return;
         }
@@ -634,26 +634,26 @@ private:
         // 验证Packet Type
         if (frame.header.packet_type != HK_PACKET_TYPE_GAME)
         {
-            ROS_WARN("Invalid packet type: 0x%02X (expected 0x%02X)", 
+            ROS_WARN_THROTTLE(2.0, "Invalid packet type: 0x%02X (expected 0x%02X)", 
                     frame.header.packet_type, HK_PACKET_TYPE_GAME);
             return;
         }
         
         // 验证CRC16校验
-        ROS_INFO("CRC16 verification: received=0x%04X, will verify with header(%d) + data(%d) bytes",
-                 frame.packet_crc16, HK_FRAME_HEADER_SIZE, HK_FRAME_DATA_SIZE);
-        ROS_INFO("Frame tail bytes (last 6 bytes): %02X %02X %02X %02X %02X %02X",
-                 frame_buffer_[HK_FRAME_SIZE-6], frame_buffer_[HK_FRAME_SIZE-5], frame_buffer_[HK_FRAME_SIZE-4],
-                 frame_buffer_[HK_FRAME_SIZE-3], frame_buffer_[HK_FRAME_SIZE-2], frame_buffer_[HK_FRAME_SIZE-1]);
+        // ROS_INFO("CRC16 verification: received=0x%04X, will verify with header(%d) + data(%d) bytes",
+        //          frame.packet_crc16, HK_FRAME_HEADER_SIZE, HK_FRAME_DATA_SIZE);
+        // ROS_INFO("Frame tail bytes (last 6 bytes): %02X %02X %02X %02X %02X %02X",
+        //          frame_buffer_[HK_FRAME_SIZE-6], frame_buffer_[HK_FRAME_SIZE-5], frame_buffer_[HK_FRAME_SIZE-4],
+        //          frame_buffer_[HK_FRAME_SIZE-3], frame_buffer_[HK_FRAME_SIZE-2], frame_buffer_[HK_FRAME_SIZE-1]);
         
         if (!verifyCRC16(&frame))
         {
-            ROS_WARN("CRC16 verification failed");
+            ROS_WARN_THROTTLE(2.0, "CRC16 verification failed");
             return;
         }
         
-        ROS_INFO("Valid HK frame received: game_progress=%u, self_hp=%u, crc16=0x%04X",
-                 frame.data.game_progress, frame.data.current_HP, frame.packet_crc16);
+        // ROS_INFO("Valid HK frame received: game_progress=%u, self_hp=%u, crc16=0x%04X",
+        //          frame.data.game_progress, frame.data.current_HP, frame.packet_crc16);
         
         // 更新敌方位置数据（处理坐标有效性，单位转换cm -> m）
         cached_enemy_hero_x_ = frame.data.enemy_hero_x / 100.0f;
@@ -778,8 +778,8 @@ private:
         msg_bool.data = frame.data.power_rune_available;
         pub_power_rune_available_.publish(msg_bool);
         
-        ROS_INFO("MCU frame parsed: game_progress=%u, current_HP=%u",
-                 frame.data.game_progress, frame.data.current_HP);
+        // ROS_INFO("MCU frame parsed: game_progress=%u, current_HP=%u",
+        //          frame.data.game_progress, frame.data.current_HP);
     }
 };
 
