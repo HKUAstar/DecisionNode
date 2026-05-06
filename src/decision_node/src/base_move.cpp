@@ -33,10 +33,10 @@ public:
     nh_->param("pose_pose_orientation_z", qz, qz);
     nh_->param("pose_pose_orientation_w", qw, qw);
 
-    // 从四元数计算yaw角（关于世界系的夹角）
+    // 从四元数计算服务器输入的yaw角（关于世界系的夹角）
     // yaw = atan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy^2 + qz^2))
     // 返回范围: [-π, π] 弧度制
-    double target_yaw = std::atan2(
+    double server_yaw = std::atan2(
       2.0 * (qw * qz + qx * qy),
       1.0 - 2.0 * (qy * qy + qz * qz)
     );
@@ -52,16 +52,38 @@ public:
       ROS_WARN_THROTTLE(1.0, "CalculateAngle: odom.gimbal_angle not found in blackboard, using 0.0");
     }
 
-    // 目标yaw角减去当前云台角度
-    double result_yaw = target_yaw - gimbal_angle;
+    // 获取当前MCU的yaw_angle
+    double yaw_angle = 0.0;
+    try
+    {
+      yaw_angle = bb->get<double>("odom.yaw_angle");
+    }
+    catch (...)
+    {
+      ROS_WARN_THROTTLE(1.0, "CalculateAngle: odom.yaw_angle not found in blackboard, using 0.0");
+    }
+
+    // 目标角度取 server_yaw ± π/4，分别计算 result_yaw，
+    // 选择与 yaw_angle 差值更小的那个
+    double candidate1 = server_yaw + M_PI_4;
+    double candidate2 = server_yaw - M_PI_4;
+
+    double result1 = candidate1 - gimbal_angle;
+    double result2 = candidate2 - gimbal_angle;
+
+    double diff1 = std::abs(std::atan2(std::sin(result1 - yaw_angle), std::cos(result1 - yaw_angle)));
+    double diff2 = std::abs(std::atan2(std::sin(result2 - yaw_angle), std::cos(result2 - yaw_angle)));
+
+    double result_yaw = (diff1 <= diff2) ? result1 : result2;
+    double target_yaw = (diff1 <= diff2) ? candidate1 : candidate2;
 
     // 归一化到 [-π, π]
     result_yaw = std::atan2(std::sin(result_yaw), std::cos(result_yaw));
 
     bb->set("odom.target_yaw", result_yaw);
 
-    ROS_DEBUG("CalculateAngle: q=(%.3f, %.3f, %.3f, %.3f), target_yaw=%.3f, gimbal=%.3f, result=%.3f",
-              qx, qy, qz, qw, target_yaw, gimbal_angle, result_yaw);
+    ROS_DEBUG("CalculateAngle: q=(%.3f, %.3f, %.3f, %.3f), server_yaw=%.3f, target_yaw=%.3f, gimbal=%.3f, yaw_angle=%.3f, result=%.3f",
+              qx, qy, qz, qw, server_yaw, target_yaw, gimbal_angle, yaw_angle, result_yaw);
 
     return BT::NodeStatus::SUCCESS;
   }
