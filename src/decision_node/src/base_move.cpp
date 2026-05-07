@@ -164,22 +164,18 @@ public:
 
     float target_yaw = 0.0f;
     try { target_yaw = static_cast<float>(bb->get<double>("odom.target_yaw")); }
-    catch (...) { return BT::NodeStatus::SUCCESS; }
-
-    float last_yaw = -999.0f;
-    try { last_yaw = bb->get<float>("odom.last_target_yaw"); } catch (...) {}
-
-    // 只在值变化时才发布
-    if (std::abs(target_yaw - last_yaw) < 0.001f)
+    catch (...)
+    {
+      ROS_WARN_THROTTLE(1.0, "PublishTargetYaw: odom.target_yaw not in blackboard");
       return BT::NodeStatus::SUCCESS;
+    }
 
-    bb->set("odom.last_target_yaw", target_yaw);
-
+    // 持续性发布，确保MCU通讯节点始终收到-target_yaw最新值
     std_msgs::Float32 msg;
     msg.data = target_yaw;
     pub_->publish(msg);
 
-    ROS_DEBUG("PublishTargetYaw: published target_yaw = %.4f rad", target_yaw);
+    ROS_INFO_THROTTLE(2.0, "PublishTargetYaw: published target_yaw = %.4f rad", target_yaw);
     return BT::NodeStatus::SUCCESS;
   }
 

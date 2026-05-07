@@ -138,9 +138,9 @@ static_assert(sizeof(MCUDataFrame) == 76, "MCUDataFrame must be exactly 76 bytes
 #define HK_FRAME_TRAILER_H 0x48     // 'H'
 #define HK_PACKET_TYPE_GAME 0x01    // 比赛数据帧
 #define HK_PACKET_TYPE_NAV 0x02     // 导航命令帧
-#define HK_FRAME_SIZE sizeof(MCUDataFrame)  // 接收帧大小 82字节
-#define HK_FRAME_HEADER_SIZE 9      // 帧头大小
-#define HK_FRAME_DATA_SIZE 69       // 游戏数据大小
+#define HK_FRAME_SIZE sizeof(MCUDataFrame)  // 接收帧大小 76字节
+#define HK_FRAME_HEADER_SIZE sizeof(HKFrameHeader)   // 帧头大小 9字节
+#define HK_FRAME_DATA_SIZE sizeof(HKGameData)        // 游戏数据大小 63字节
 #define HK_NAV_FRAME_SIZE sizeof(NavigationCommandFrame)  // 导航命令帧大小 25字节
 #define HK_NAV_DATA_SIZE 12         // 导航命令数据大小
 

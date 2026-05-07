@@ -28,8 +28,8 @@
   
   <arg name="target_qx" default="0.0"/>
   <arg name="target_qy" default="0.0"/>
-  <arg name="target_qz" default="3.0"/>
-  <arg name="target_qw" default="1.0"/>
+  <arg name="target_qz" default="0.09543896919539213"/>
+  <arg name="target_qw" default="0.9995395515445303"/>
 
 
   <arg name="go_to_stair_x" default="0.0"/>

@@ -302,17 +302,11 @@ public:
     int spin_flag = 0;
     try { spin_flag = bb->get<int>("spin_flag"); } catch (...) {}
 
-    int last_flag = -1;
-    try { last_flag = bb->get<int>("spin.last_flag"); } catch (...) {}
-
-    if (spin_flag == last_flag)
-      return BT::NodeStatus::SUCCESS;
-
-    bb->set("spin.last_flag", spin_flag);
+    // 始终发送，确保MCU通讯节点始终收到最新的spin值
     std_msgs::UInt8 msg;
     msg.data = static_cast<uint8_t>(spin_flag);
     pub_->publish(msg);
-    ROS_DEBUG("PublishSpin: published spin_flag = %d", spin_flag);
+    ROS_INFO_THROTTLE(2.0, "PublishSpin: published spin_flag = %d", spin_flag);
     return BT::NodeStatus::SUCCESS;
   }
 

@@ -347,7 +347,7 @@ private:
         vy_mm = std::max((int32_t)-32768, std::min((int32_t)32767, vy_mm));
         frame.data.vx = (int16_t)vx_mm;            // mm/s
         frame.data.vy = (int16_t)vy_mm;            // mm/s
-        frame.data.target_yaw = (int16_t)((current_target_yaw_ * 100.0f));  // 转换为 0.01 rad/s
+        frame.data.target_yaw = (int16_t)((current_target_yaw_ * 1000.0f));  // 转换为 mrad
         frame.data.motion = current_motion_;        // 0=比赛未开始；1=进攻；2=防御；3=移动
         frame.data.spin = current_spin_;            // 0=正常；1=对齐角度；2=上坡；3=下坡
         frame.data.activate_power_rune = current_activate_power_rune_;  // 激活能量机关
@@ -430,7 +430,7 @@ private:
     {
         uint16_t received_crc = frame->packet_crc16;
         
-        // Packet CRC16: 对字节0到Data结束计算（0-77共78字节）
+        // Packet CRC16: 对字节0到Data结束计算（0-71共72字节 = header 9 + data 63）
         // 即从sof[0]开始到data末尾的所有数据，初始值0xFFFF
         uint16_t calculated_crc = calculateCRC16((uint8_t*)&frame->header, HK_FRAME_HEADER_SIZE + HK_FRAME_DATA_SIZE, 0xFFFF);
         
@@ -442,7 +442,7 @@ private:
             ROS_WARN_THROTTLE(2.0, "=== CRC16 Debug Info ===");
             ROS_WARN_THROTTLE(2.0, "Frame size: %zu bytes (HKFrameHeader=%zu, HKGameData=%zu, MCUDataFrame=%zu)",
                      sizeof(MCUDataFrame), sizeof(HKFrameHeader), sizeof(HKGameData), sizeof(MCUDataFrame));
-            ROS_WARN_THROTTLE(2.0, "CRC计算范围: 头部(%d) + 数据(%d) = %d 字节",
+            ROS_WARN_THROTTLE(2.0, "CRC计算范围: 头部(%zu) + 数据(%zu) = %zu 字节",
                      HK_FRAME_HEADER_SIZE, HK_FRAME_DATA_SIZE, HK_FRAME_HEADER_SIZE + HK_FRAME_DATA_SIZE);
             ROS_WARN_THROTTLE(2.0, "帧头信息: SOF=[0x%02X,0x%02X], type=0x%02X, len=%u, seq=%u",
                      frame->header.sof[0], frame->header.sof[1], frame->header.packet_type, 
