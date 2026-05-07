@@ -19,4 +19,3 @@
     <node name="command_test" pkg="decision_node" type="command_test" output="$(arg output)">
         <!-- 交互式命令输入 - 通过ROS topics发布命令给mcu_communicator -->
     </node>
-
