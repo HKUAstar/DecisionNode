@@ -1,20 +1,3 @@
-/**
- * chase.cpp
- *
- * 功能：根据雷达建议目标（ref.suggested_target），读取对应敌方坐标，
- *       判断其落在 YAML 中哪个 area 内，并将对应 node 坐标写入 goal.point。
- *
- * 流程：
- *   1. bb->get<uint8_t>("ref.suggested_target")  → 获取 target_id
- *   2. 根据 target_id 读取 ref.enemy_xxx_x/y（int16_t，单位：米）
- *   3. 在 YAML areas 中用射线法判断点落在哪个多边形内
- *   4. 取对应索引的 node 坐标，写入 bb->set("goal.point", ...)
- *
- * YAML 文件：map/RMUC2026_decision_graph.yaml
- *   - areas[]: 多边形列表，每个是一组 [x, y] 顶点
- *   - nodes[]: 图节点列表 [x, y, z]，与 areas 按索引一一对应
- */
-
 #include "decision_node/chase.hpp"
 
 #include <behaviortree_cpp_v3/bt_factory.h>

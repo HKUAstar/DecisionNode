@@ -71,6 +71,13 @@
           <SetAction action="DOWNSTAIR" />
         </Sequence>
 
+        <Sequence name="Chanse">
+          <Inverter>
+            <NotBulletSufficient />
+          </Inverter>
+          <SetAction action="CHASE" />
+        </Sequence>
+
 
         <!-- Default state -->
         <Sequence name="Patrol">

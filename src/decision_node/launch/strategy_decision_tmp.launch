@@ -19,6 +19,27 @@
   <arg name="harm_threshold_on" default="50"/>
   <arg name="harm_threshold_off" default="10"/>
 
+  <!-- TF Calibration: 4 point pairs (raw_pts -> map_pts) for 2D rigid transform -->
+  <arg name="tf_calib_src1_x" default="-7.2"/>
+  <arg name="tf_calib_src1_y" default="-4.5"/>
+  <arg name="tf_calib_tgt1_x" default="-6.3185"/>
+  <arg name="tf_calib_tgt1_y" default="-4.4952"/>
+
+  <arg name="tf_calib_src2_x" default="-7.2"/>
+  <arg name="tf_calib_src2_y" default="4.5"/>
+  <arg name="tf_calib_tgt2_x" default="-6.25608"/>
+  <arg name="tf_calib_tgt2_y" default="4.5555"/>
+
+  <arg name="tf_calib_src3_x" default="7.15"/>
+  <arg name="tf_calib_src3_y" default="-4.5"/>
+  <arg name="tf_calib_tgt3_x" default="7.19486"/>
+  <arg name="tf_calib_tgt3_y" default="-4.60131"/>
+
+  <arg name="tf_calib_src4_x" default="7.15"/>
+  <arg name="tf_calib_src4_y" default="4.5"/>
+  <arg name="tf_calib_tgt4_x" default="7.22272"/>
+  <arg name="tf_calib_tgt4_y" default="4.60319"/>
+
   <!-- BehaviorTree XML -->
   <arg name="bt_xml" default="$(find decision_node)/config/strategy_tree.xml"/>
 
@@ -116,6 +137,27 @@
     <param name="harm_threshold_on" value="$(arg harm_threshold_on)"/>
     <param name="harm_threshold_off" value="$(arg harm_threshold_off)"/>
     <param name="bt_xml" value="$(arg bt_xml)"/>
+
+    <!-- TF Calibration params -->
+    <param name="tf_calib/src_pt1_x" value="$(arg tf_calib_src1_x)"/>
+    <param name="tf_calib/src_pt1_y" value="$(arg tf_calib_src1_y)"/>
+    <param name="tf_calib/tgt_pt1_x" value="$(arg tf_calib_tgt1_x)"/>
+    <param name="tf_calib/tgt_pt1_y" value="$(arg tf_calib_tgt1_y)"/>
+
+    <param name="tf_calib/src_pt2_x" value="$(arg tf_calib_src2_x)"/>
+    <param name="tf_calib/src_pt2_y" value="$(arg tf_calib_src2_y)"/>
+    <param name="tf_calib/tgt_pt2_x" value="$(arg tf_calib_tgt2_x)"/>
+    <param name="tf_calib/tgt_pt2_y" value="$(arg tf_calib_tgt2_y)"/>
+
+    <param name="tf_calib/src_pt3_x" value="$(arg tf_calib_src3_x)"/>
+    <param name="tf_calib/src_pt3_y" value="$(arg tf_calib_src3_y)"/>
+    <param name="tf_calib/tgt_pt3_x" value="$(arg tf_calib_tgt3_x)"/>
+    <param name="tf_calib/tgt_pt3_y" value="$(arg tf_calib_tgt3_y)"/>
+
+    <param name="tf_calib/src_pt4_x" value="$(arg tf_calib_src4_x)"/>
+    <param name="tf_calib/src_pt4_y" value="$(arg tf_calib_src4_y)"/>
+    <param name="tf_calib/tgt_pt4_x" value="$(arg tf_calib_tgt4_x)"/>
+    <param name="tf_calib/tgt_pt4_y" value="$(arg tf_calib_tgt4_y)"/>
 
     <!-- Remap node-relative clicked_point -> desired global goal topic -->
     <remap from="clicked_point" to="$(arg goal_topic)"/>

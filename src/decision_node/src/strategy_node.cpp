@@ -49,6 +49,52 @@ std::string toUpper(std::string s)
   }
   return s;
 }
+// 2D 刚体变换（旋转+平移）的最小二乘求解
+// 从 N 组对应点对 (src[i] → tgt[i]) 计算最优旋转角 theta [rad]
+// 和平移 (tx, ty)，使得 sum ||R*src_i + t - tgt_i||^2 最小
+struct Rigid2D
+{
+  double theta = 0.0;
+  double tx    = 0.0;
+  double ty    = 0.0;
+};
+
+Rigid2D computeRigid2D(const std::vector<std::pair<double, double>>& src_pts,
+                       const std::vector<std::pair<double, double>>& tgt_pts)
+{
+  const size_t N = src_pts.size();
+  if (N == 0) return Rigid2D{};
+
+  // 1. 计算质心
+  double src_cx = 0, src_cy = 0, tgt_cx = 0, tgt_cy = 0;
+  for (size_t i = 0; i < N; ++i)
+  {
+    src_cx += src_pts[i].first;   src_cy += src_pts[i].second;
+    tgt_cx += tgt_pts[i].first;   tgt_cy += tgt_pts[i].second;
+  }
+  src_cx /= static_cast<double>(N); src_cy /= static_cast<double>(N);
+  tgt_cx /= static_cast<double>(N); tgt_cy /= static_cast<double>(N);
+
+  // 2. 去质心后求最优旋转角（最小二乘）
+  double num = 0, den = 0;
+  for (size_t i = 0; i < N; ++i)
+  {
+    double dx1 = src_pts[i].first  - src_cx;
+    double dy1 = src_pts[i].second - src_cy;
+    double dx2 = tgt_pts[i].first  - tgt_cx;
+    double dy2 = tgt_pts[i].second - tgt_cy;
+    num += dx1 * dy2 - dy1 * dx2;   // cross
+    den += dx1 * dx2 + dy1 * dy2;   // dot
+  }
+  double theta = std::atan2(num, den);
+
+  // 3. 回代求平移
+  double cos_t = std::cos(theta), sin_t = std::sin(theta);
+  double tx = tgt_cx - (cos_t * src_cx - sin_t * src_cy);
+  double ty = tgt_cy - (sin_t * src_cx + cos_t * src_cy);
+
+  return Rigid2D{theta, tx, ty};
+}
 
 }  // namespace
 
@@ -115,6 +161,7 @@ struct NavigationState
 
 struct OdomState
 {
+  double raw_x = 0.0, raw_y = 0.0;   // 原始坐标系下的位置（来自 /odom）
   double gimbal_angle = 0.0;  // 世界系中的yaw角（弧度）
   double qx = 0.0, qy = 0.0, qz = 0.0, qw = 1.0;  // 四元数
   double yaw_angle = 0.0;  // MCU上报的云台yaw角（弧度）
@@ -211,6 +258,24 @@ public:
   BT::NodeStatus tick() override
   {
     auto bb = config().blackboard;
+    
+    // ---- 读取 TF 变换参数，将原始坐标系下的位置转为目标坐标系 ----
+    double raw_x = state_->raw_x;
+    double raw_y = state_->raw_y;
+    try {
+      double theta = bb->get<double>("tf.src_to_tgt.theta");
+      double tx    = bb->get<double>("tf.src_to_tgt.tx");
+      double ty    = bb->get<double>("tf.src_to_tgt.ty");
+      double cos_t = std::cos(theta), sin_t = std::sin(theta);
+      double x_tgt = cos_t * raw_x - sin_t * raw_y + tx;
+      double y_tgt = sin_t * raw_x + cos_t * raw_y + ty;
+      bb->set("odom.x", x_tgt);
+      bb->set("odom.y", y_tgt);
+    } catch (...) {
+      // TF 参数尚未加载，直接使用原始坐标
+      bb->set("odom.x", raw_x);
+      bb->set("odom.y", raw_y);
+    }
     
     // 计算yaw角（关于世界系的夹角）
     // 从四元数 (qx, qy, qz, qw) 计算yaw角
@@ -926,8 +991,12 @@ int main(int argc, char** argv)
 
   auto blackboard = BT::Blackboard::create();
   
-  // Odom 订阅：获取世界系中的四元数，计算yaw角
+  // Odom 订阅：获取原始坐标系下的位姿（position + orientation）
   auto sub_odom = nh.subscribe<nav_msgs::Odometry>("/odom", 1, [&](const nav_msgs::Odometry::ConstPtr& msg) {
+    // 原始坐标系下的位置（后续由 UpdateOdomBB 做 TF 转换）
+    odom.raw_x = msg->pose.pose.position.x;
+    odom.raw_y = msg->pose.pose.position.y;
+    
     odom.qx = msg->pose.pose.orientation.x;
     odom.qy = msg->pose.pose.orientation.y;
     odom.qz = msg->pose.pose.orientation.z;
@@ -1190,6 +1259,42 @@ int main(int argc, char** argv)
   blackboard->set("server_yaw_flag", 0);  // 服务端yaw标志，默认为0
   blackboard->set("odom.target_angle", 0.0);  // 目标绝对角度，FindAngle计算
   blackboard->set("odom.target_yaw", 0.0);    // 目标相对角度，CalculateAngle计算
+
+  // ============================================================
+  // TF 标定：从 launch 参数读取 4 组点对 (src → tgt)，
+  // 计算原始坐标系到目标坐标系的 2D 刚体变换，存入黑板（只算一次）
+  // ============================================================
+  {
+    std::vector<std::pair<double, double>> src_pts(4);
+    std::vector<std::pair<double, double>> tgt_pts(4);
+    bool calib_ok = true;
+
+    for (int i = 0; i < 4; ++i)
+    {
+      std::string idx = std::to_string(i + 1);
+      calib_ok = calib_ok
+        && pnh.getParam("tf_calib/src_pt" + idx + "_x", src_pts[i].first)
+        && pnh.getParam("tf_calib/src_pt" + idx + "_y", src_pts[i].second)
+        && pnh.getParam("tf_calib/tgt_pt" + idx + "_x", tgt_pts[i].first)
+        && pnh.getParam("tf_calib/tgt_pt" + idx + "_y", tgt_pts[i].second);
+    }
+
+    Rigid2D tf;
+    if (calib_ok)
+    {
+      tf = computeRigid2D(src_pts, tgt_pts);
+      ROS_INFO("TF Calibration OK: theta=%.4f rad (%.2f deg), tx=%.4f, ty=%.4f",
+               tf.theta, tf.theta * 180.0 / M_PI, tf.tx, tf.ty);
+    }
+    else
+    {
+      ROS_WARN("TF Calibration: params incomplete, using identity transform");
+    }
+
+    blackboard->set("tf.src_to_tgt.theta", tf.theta);
+    blackboard->set("tf.src_to_tgt.tx",    tf.tx);
+    blackboard->set("tf.src_to_tgt.ty",    tf.ty);
+  }
 
   // Referee 状态默认值——在 ROS 话题数据到来前使用
   blackboard->set("ref.game_progress", uint8_t(0));
