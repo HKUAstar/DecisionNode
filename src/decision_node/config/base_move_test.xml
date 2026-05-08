@@ -84,6 +84,7 @@
 
         <Sequence name="ExecUpstair">
           <IsAction value="UPSTAIR" />
+          <ResetServerYawFlag />
           <SetGoalFromParams ns="upstair" />
           <SetSpinFlag target_spin="2" />
           <PublishGoalPoint topic="clicked_point" />

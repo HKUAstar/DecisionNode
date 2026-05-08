@@ -1187,6 +1187,9 @@ int main(int argc, char** argv)
   blackboard->set("bullet_num", 0);  // 补弹数量，默认为0
   blackboard->set("spin_flag", 0);   // 自旋模式，0=关闭，1=开启
   blackboard->set("spin.last_flag", -1);
+  blackboard->set("server_yaw_flag", 0);  // 服务端yaw标志，默认为0
+  blackboard->set("odom.target_angle", 0.0);  // 目标绝对角度，FindAngle计算
+  blackboard->set("odom.target_yaw", 0.0);    // 目标相对角度，CalculateAngle计算
 
   // Referee 状态默认值——在 ROS 话题数据到来前使用
   blackboard->set("ref.game_progress", uint8_t(0));

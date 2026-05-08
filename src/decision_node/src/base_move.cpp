@@ -12,10 +12,10 @@
 //   pose.pose.orientation.y  float64  在2D中为 0.0
 //   pose.pose.orientation.z  float64  对应偏航角（Yaw）的正弦值
 //   pose.pose.orientation.w  float64  对应偏航角（Yaw）的余弦值
-class CalculateAngle : public BT::SyncActionNode
+class FindAngle : public BT::SyncActionNode
 {
 public:
-  CalculateAngle(const std::string& name, const BT::NodeConfiguration& config, ros::NodeHandle* nh)
+  FindAngle(const std::string& name, const BT::NodeConfiguration& config, ros::NodeHandle* nh)
     : BT::SyncActionNode(name, config), nh_(nh)
   {
   }
@@ -34,8 +34,6 @@ public:
     nh_->param("pose_pose_orientation_w", qw, qw);
 
     // 从四元数计算服务器输入的yaw角（关于世界系的夹角）
-    // yaw = atan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy^2 + qz^2))
-    // 返回范围: [-π, π] 弧度制
     double server_yaw = std::atan2(
       2.0 * (qw * qz + qx * qy),
       1.0 - 2.0 * (qy * qy + qz * qz)
@@ -43,24 +41,18 @@ public:
 
     // 获取当前云台的gimbal_angle
     double gimbal_angle = 0.0;
-    try
-    {
-      gimbal_angle = bb->get<double>("odom.gimbal_angle");
-    }
+    try { gimbal_angle = bb->get<double>("odom.gimbal_angle"); }
     catch (...)
     {
-      ROS_WARN_THROTTLE(1.0, "CalculateAngle: odom.gimbal_angle not found in blackboard, using 0.0");
+      ROS_WARN_THROTTLE(1.0, "FindAngle: odom.gimbal_angle not found in blackboard, using 0.0");
     }
 
     // 获取当前MCU的yaw_angle
     double yaw_angle = 0.0;
-    try
-    {
-      yaw_angle = bb->get<double>("odom.yaw_angle");
-    }
+    try { yaw_angle = bb->get<double>("odom.yaw_angle"); }
     catch (...)
     {
-      ROS_WARN_THROTTLE(1.0, "CalculateAngle: odom.yaw_angle not found in blackboard, using 0.0");
+      ROS_WARN_THROTTLE(1.0, "FindAngle: odom.yaw_angle not found in blackboard, using 0.0");
     }
 
     // 目标角度取 server_yaw ± π/4，分别计算 result_yaw，
@@ -71,25 +63,63 @@ public:
     double result1 = candidate1 - gimbal_angle;
     double result2 = candidate2 - gimbal_angle;
 
-    double diff1 = std::abs(std::atan2(std::sin(result1 - yaw_angle), std::cos(result1 - yaw_angle)));
-    double diff2 = std::abs(std::atan2(std::sin(result2 - yaw_angle), std::cos(result2 - yaw_angle)));
+    double diff1 = std::abs(std::atan2(std::sin(result1 + yaw_angle), std::cos(result1 - yaw_angle)));
+    double diff2 = std::abs(std::atan2(std::sin(result2 + yaw_angle), std::cos(result2 - yaw_angle)));
 
-    double result_yaw = (diff1 <= diff2) ? result1 : result2;
-    double target_yaw = (diff1 <= diff2) ? candidate1 : candidate2;
+    double target_angle = (diff1 <= diff2) ? candidate1 : candidate2;
 
-    // 归一化到 [-π, π]
-    result_yaw = std::atan2(std::sin(result_yaw), std::cos(result_yaw));
+    bb->set("odom.target_angle", target_angle);
 
-    bb->set("odom.target_yaw", result_yaw);
-
-    ROS_DEBUG("CalculateAngle: q=(%.3f, %.3f, %.3f, %.3f), server_yaw=%.3f, target_yaw=%.3f, gimbal=%.3f, yaw_angle=%.3f, result=%.3f",
-              qx, qy, qz, qw, server_yaw, target_yaw, gimbal_angle, yaw_angle, result_yaw);
+    ROS_DEBUG("FindAngle: q=(%.3f, %.3f, %.3f, %.3f), server_yaw=%.3f, target_angle=%.3f, gimbal=%.3f, yaw_angle=%.3f",
+              qx, qy, qz, qw, server_yaw, target_angle, gimbal_angle, yaw_angle);
 
     return BT::NodeStatus::SUCCESS;
   }
 
 private:
   ros::NodeHandle* nh_;
+};
+
+class CalculateAngle : public BT::SyncActionNode
+{
+public:
+  CalculateAngle(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+
+    // 从黑板读取目标角度（FindAngle 选出的最佳候选角度）
+    double target_angle = 0.0;
+    try { target_angle = bb->get<double>("odom.target_angle"); }
+    catch (...)
+    {
+      ROS_WARN_THROTTLE(1.0, "CalculateAngle: odom.target_angle not found in blackboard, using 0.0");
+    }
+
+    // 获取当前云台的gimbal_angle，持续更新 target_yaw
+    double gimbal_angle = 0.0;
+    try { gimbal_angle = bb->get<double>("odom.gimbal_angle"); }
+    catch (...)
+    {
+      ROS_WARN_THROTTLE(1.0, "CalculateAngle: odom.gimbal_angle not found in blackboard, using 0.0");
+    }
+
+    double result_yaw = target_angle - gimbal_angle;
+    result_yaw = std::atan2(std::sin(result_yaw), std::cos(result_yaw));
+
+    bb->set("odom.target_yaw", result_yaw);
+
+    ROS_DEBUG("CalculateAngle: target_angle=%.3f, gimbal=%.3f -> target_yaw=%.3f",
+              target_angle, gimbal_angle, result_yaw);
+
+    return BT::NodeStatus::SUCCESS;
+  }
 };
 
 class CompareYaw : public BT::ConditionNode
@@ -203,12 +233,63 @@ public:
   }
 };
 
+class ResetServerYawFlag : public BT::SyncActionNode
+{
+public:
+  ResetServerYawFlag(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    bb->set("server_yaw_flag", 0);
+    ROS_DEBUG("ResetServerYawFlag: server_yaw_flag reset to 0");
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
+class CheckServerYawFlag : public BT::ConditionNode
+{
+public:
+  CheckServerYawFlag(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::ConditionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    int flag = 0;
+    try { flag = bb->get<int>("server_yaw_flag"); }
+    catch (...) { flag = 0; }
+
+    if (flag == 1)
+    {
+      ROS_DEBUG("CheckServerYawFlag: flag=1 -> SUCCESS");
+      return BT::NodeStatus::SUCCESS;
+    }
+    else
+    {
+      ROS_DEBUG("CheckServerYawFlag: flag=%d -> FAILURE", flag);
+      return BT::NodeStatus::FAILURE;
+    }
+  }
+};
+
 void RegisterBaseMoveNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle* nh, ros::Publisher* target_yaw_pub)
 {
-  factory.registerBuilder<CalculateAngle>(
-    "CalculateAngle", [nh](const std::string& name, const BT::NodeConfiguration& config) {
-      return std::make_unique<CalculateAngle>(name, config, nh);
+  factory.registerBuilder<FindAngle>(
+    "FindAngle", [nh](const std::string& name, const BT::NodeConfiguration& config) {
+      return std::make_unique<FindAngle>(name, config, nh);
     });
+
+  factory.registerNodeType<CalculateAngle>("CalculateAngle");
 
   factory.registerNodeType<CompareYaw>("CompareYaw");
 
@@ -218,4 +299,8 @@ void RegisterBaseMoveNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle* nh
     });
 
   factory.registerNodeType<ResetNavArrived>("ResetNavArrived");
+
+  factory.registerNodeType<ResetServerYawFlag>("ResetServerYawFlag");
+
+  factory.registerNodeType<CheckServerYawFlag>("CheckServerYawFlag");
 }
