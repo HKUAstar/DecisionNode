@@ -1,307 +1,253 @@
-#include <behaviortree_cpp_v3/behavior_tree.h>
+/**
+ * chase.cpp
+ *
+ * 功能：根据雷达建议目标（ref.suggested_target），读取对应敌方坐标，
+ *       判断其落在 YAML 中哪个 area 内，并将对应 node 坐标写入 goal.point。
+ *
+ * 流程：
+ *   1. bb->get<uint8_t>("ref.suggested_target")  → 获取 target_id
+ *   2. 根据 target_id 读取 ref.enemy_xxx_x/y（int16_t，单位：米）
+ *   3. 在 YAML areas 中用射线法判断点落在哪个多边形内
+ *   4. 取对应索引的 node 坐标，写入 bb->set("goal.point", ...)
+ *
+ * YAML 文件：map/RMUC2026_decision_graph.yaml
+ *   - areas[]: 多边形列表，每个是一组 [x, y] 顶点
+ *   - nodes[]: 图节点列表 [x, y, z]，与 areas 按索引一一对应
+ */
+
+#include "decision_node/chase.hpp"
+
 #include <behaviortree_cpp_v3/bt_factory.h>
+#include <behaviortree_cpp_v3/blackboard.h>
 #include <ros/ros.h>
-#include <std_msgs/UInt8.h>
+#include <ros/package.h>
 #include <geometry_msgs/PointStamped.h>
-#include <cmath>
+#include <yaml-cpp/yaml.h>
 
-// =====================================================
-// InitChase: Initialize chase mode with target selection
-// =====================================================
-// When entering RADICAL mode:
-// 1. Read suggested_target from ref.suggested_target
-// 2. Store corresponding enemy position coordinates
-// 3. Mark chase as initialized
-class InitChase : public BT::SyncActionNode
+#include <vector>
+#include <string>
+#include <utility>
+
+// ============================================================
+// 射线法：判断点 (px, py) 是否在多边形内部
+// ============================================================
+static bool pointInPolygon(double px, double py,
+                           const std::vector<std::pair<double, double>>& polygon)
 {
-public:
-  InitChase(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::SyncActionNode(name, config)
-  {
-  }
-
-  static BT::PortsList providedPorts() { return {}; }
-
-  BT::NodeStatus tick() override
-  {
-    auto bb = config().blackboard;
-
-    try
+    int n = static_cast<int>(polygon.size());
+    if (n < 3) return false;
+    bool inside = false;
+    for (int i = 0, j = n - 1; i < n; j = i++)
     {
-      // Read the suggested target ID from referee data
-      uint8_t target_id = bb->get<uint8_t>("ref.suggested_target");
-      
-      // Get enemy positions from blackboard
-      float target_x = 0.0f, target_y = 0.0f;
-      
-      // Map suggested_target ID to corresponding enemy position
-      // suggested_target: 0=Hero, 1=Engineer, 2=Standard-3, 3=Standard-4, 4=Sentry
-      switch (target_id)
-      {
-        case 0:  // Hero
-          target_x = bb->get<float>("ref.enemy_hero_x");
-          target_y = bb->get<float>("ref.enemy_hero_y");
-          ROS_INFO("InitChase: Targeting HERO at (%.2f, %.2f)", target_x, target_y);
-          break;
-
-        case 1:  // Engineer
-          target_x = bb->get<float>("ref.enemy_engineer_x");
-          target_y = bb->get<float>("ref.enemy_engineer_y");
-          ROS_INFO("InitChase: Targeting ENGINEER at (%.2f, %.2f)", target_x, target_y);
-          break;
-
-        case 2:  // Standard-3
-          target_x = bb->get<float>("ref.enemy_standard_3_x");
-          target_y = bb->get<float>("ref.enemy_standard_3_y");
-          ROS_INFO("InitChase: Targeting STANDARD-3 at (%.2f, %.2f)", target_x, target_y);
-          break;
-
-        case 3:  // Standard-4
-          target_x = bb->get<float>("ref.enemy_standard_4_x");
-          target_y = bb->get<float>("ref.enemy_standard_4_y");
-          ROS_INFO("InitChase: Targeting STANDARD-4 at (%.2f, %.2f)", target_x, target_y);
-          break;
-
-        case 4:  // Sentry
-          target_x = bb->get<float>("ref.enemy_sentry_x");
-          target_y = bb->get<float>("ref.enemy_sentry_y");
-          ROS_INFO("InitChase: Targeting SENTRY at (%.2f, %.2f)", target_x, target_y);
-          break;
-
-        default:
-          ROS_WARN("InitChase: Invalid suggested_target ID: %u", target_id);
-          return BT::NodeStatus::FAILURE;
-      }
-
-      // Store in blackboard
-      bb->set("chase.target_id", target_id);
-      bb->set("chase.target_x", target_x);
-      bb->set("chase.target_y", target_y);
-      bb->set("chase.initialized", true);
-
-      ROS_DEBUG("InitChase: Chase initialized with target_id=%u at (%.2f, %.2f)", 
-               target_id, target_x, target_y);
-      return BT::NodeStatus::SUCCESS;
-    }
-    catch (const std::exception& e)
-    {
-      ROS_WARN("InitChase: Exception caught - %s", e.what());
-      return BT::NodeStatus::FAILURE;
-    }
-  }
-};
-
-// =====================================================
-// UpdateChaseTarget: Update target position each tick
-// =====================================================
-// Continuously update the target coordinates in real-time
-// This ensures we always have the latest enemy position
-class UpdateChaseTarget : public BT::SyncActionNode
-{
-public:
-  UpdateChaseTarget(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::SyncActionNode(name, config)
-  {
-  }
-
-  static BT::PortsList providedPorts() { return {}; }
-
-  BT::NodeStatus tick() override
-  {
-    auto bb = config().blackboard;
-
-    try
-    {
-      // Check if chase is initialized
-      bool initialized = bb->get<bool>("chase.initialized");
-      if (!initialized)
-      {
-        ROS_WARN("UpdateChaseTarget: Chase not initialized yet");
-        return BT::NodeStatus::FAILURE;
-      }
-
-      // Get current target ID
-      uint8_t target_id = bb->get<uint8_t>("chase.target_id");
-      
-      // Read real-time position based on target ID
-      float target_x = 0.0f, target_y = 0.0f;
-      
-      switch (target_id)
-      {
-        case 0:  // Hero
-          target_x = bb->get<float>("ref.enemy_hero_x");
-          target_y = bb->get<float>("ref.enemy_hero_y");
-          break;
-
-        case 1:  // Engineer
-          target_x = bb->get<float>("ref.enemy_engineer_x");
-          target_y = bb->get<float>("ref.enemy_engineer_y");
-          break;
-
-        case 2:  // Standard-3
-          target_x = bb->get<float>("ref.enemy_standard_3_x");
-          target_y = bb->get<float>("ref.enemy_standard_3_y");
-          break;
-
-        case 3:  // Standard-4
-          target_x = bb->get<float>("ref.enemy_standard_4_x");
-          target_y = bb->get<float>("ref.enemy_standard_4_y");
-          break;
-
-        case 4:  // Sentry
-          target_x = bb->get<float>("ref.enemy_sentry_x");
-          target_y = bb->get<float>("ref.enemy_sentry_y");
-          break;
-
-        default:
-          ROS_WARN("UpdateChaseTarget: Invalid target ID: %u", target_id);
-          return BT::NodeStatus::FAILURE;
-      }
-
-      // Update position in blackboard
-      bb->set("chase.target_x", target_x);
-      bb->set("chase.target_y", target_y);
-
-      ROS_DEBUG("UpdateChaseTarget: Target #%u position updated to (%.2f, %.2f)", 
-               target_id, target_x, target_y);
-      return BT::NodeStatus::SUCCESS;
-    }
-    catch (const std::exception& e)
-    {
-      ROS_WARN("UpdateChaseTarget: Exception caught - %s", e.what());
-      return BT::NodeStatus::FAILURE;
-    }
-  }
-};
-
-// =====================================================
-// PublishChaseGoal: Publish chase target to clicked_point
-// =====================================================
-// This node publishes the target position to clicked_point topic
-// (same as SetGoalFromParamsCyclic, but with enemy coordinates)
-class PublishChaseGoal : public BT::SyncActionNode
-{
-public:
-  explicit PublishChaseGoal(const std::string& name, const BT::NodeConfiguration& config,
-                           ros::Publisher* goal_pub, bool* publish_on_change_only)
-    : BT::SyncActionNode(name, config), goal_pub_(goal_pub), publish_on_change_only_(publish_on_change_only)
-  {
-  }
-
-  static BT::PortsList providedPorts() { return {}; }
-
-  BT::NodeStatus tick() override
-  {
-    if (!goal_pub_)
-    {
-      ROS_WARN("PublishChaseGoal: goal_pub is null");
-      return BT::NodeStatus::FAILURE;
-    }
-
-    auto bb = config().blackboard;
-
-    try
-    {
-      // Get current chase target from blackboard
-      float target_x = bb->get<float>("chase.target_x");
-      float target_y = bb->get<float>("chase.target_y");
-      uint8_t target_id = bb->get<uint8_t>("chase.target_id");
-
-      // Create PointStamped message (same format as SetGoalFromParamsCyclic)
-      geometry_msgs::PointStamped goal;
-      goal.header.frame_id = "map";
-      goal.header.stamp = ros::Time::now();
-      goal.point.x = target_x;
-      goal.point.y = target_y;
-      goal.point.z = 0.0;
-
-      // Check if we should publish (based on change_only policy)
-      static float last_x = 0.0f, last_y = 0.0f;
-      bool should_publish = true;
-
-      if (publish_on_change_only_ && *publish_on_change_only_)
-      {
-        const float threshold = 0.01f;  // 1cm threshold
-        float dx = target_x - last_x;
-        float dy = target_y - last_y;
-        float distance = std::sqrt(dx * dx + dy * dy);
-        
-        if (distance < threshold)
+        double xi = polygon[i].first,  yi = polygon[i].second;
+        double xj = polygon[j].first,  yj = polygon[j].second;
+        if (((yi > py) != (yj > py)) &&
+            (px < (xj - xi) * (py - yi) / (yj - yi) + xi))
         {
-          should_publish = false;
+            inside = !inside;
         }
-      }
+    }
+    return inside;
+}
 
-      if (should_publish)
-      {
-        goal_pub_->publish(goal);
-        last_x = target_x;
-        last_y = target_y;
-        ROS_DEBUG("PublishChaseGoal: Published goal for target #%u at (%.2f, %.2f) to clicked_point",
-                 target_id, target_x, target_y);
-      }
+// ============================================================
+// 决策图数据结构：保存 YAML 中所有 areas 和 nodes
+// ============================================================
+struct DecisionGraph
+{
+    std::vector<std::vector<std::pair<double, double>>> areas;
+    std::vector<std::pair<double, double>> nodes;
+};
 
-      return BT::NodeStatus::SUCCESS;
+// ============================================================
+// 从 YAML 加载决策图
+// ============================================================
+static DecisionGraph loadDecisionGraph(const std::string& yaml_path)
+{
+    DecisionGraph graph;
+    try
+    {
+        YAML::Node root = YAML::LoadFile(yaml_path);
+
+        if (root["areas"])
+        {
+            for (const auto& area_node : root["areas"])
+            {
+                std::vector<std::pair<double, double>> polygon;
+                for (const auto& pt : area_node)
+                {
+                    double x = pt[0].as<double>();
+                    double y = pt[1].as<double>();
+                    polygon.emplace_back(x, y);
+                }
+                graph.areas.push_back(std::move(polygon));
+            }
+        }
+
+        if (root["nodes"])
+        {
+            for (const auto& node : root["nodes"])
+            {
+                double x = node[0].as<double>();
+                double y = node[1].as<double>();
+                graph.nodes.emplace_back(x, y);
+            }
+        }
+
+        ROS_INFO("[chase] Loaded %zu areas and %zu nodes from %s",
+                 graph.areas.size(), graph.nodes.size(), yaml_path.c_str());
     }
     catch (const std::exception& e)
     {
-      ROS_WARN("PublishChaseGoal: Exception caught - %s", e.what());
-      return BT::NodeStatus::FAILURE;
+        ROS_ERROR("[chase] Failed to load decision graph: %s", e.what());
     }
-  }
+    return graph;
+}
+
+// ============================================================
+// BT Node: SetChaseGoal
+//   根据 ref.suggested_target 选择追击目标，判断所在区域，
+//   将对应 node 坐标写入 goal.point
+// ============================================================
+class SetChaseGoal : public BT::SyncActionNode
+{
+public:
+    SetChaseGoal(const std::string& name, const BT::NodeConfiguration& config,
+                 const DecisionGraph* graph)
+        : BT::SyncActionNode(name, config), graph_(graph)
+    {
+    }
+
+    static BT::PortsList providedPorts() { return {}; }
+
+    BT::NodeStatus tick() override
+    {
+        auto bb = config().blackboard;
+
+        // ---- 1. 读取 suggested_target ----
+        uint8_t target_id = 0;
+        try {
+            target_id = bb->get<uint8_t>("ref.suggested_target");
+        } catch (...) {
+            ROS_WARN_THROTTLE(2.0, "[SetChaseGoal] ref.suggested_target not in blackboard, using 0");
+        }
+
+        // ---- 2. 根据 target_id 读取对应坐标（黑板 int16_t，单位：米） ----
+        double target_x = -999.0, target_y = -999.0;
+        bool valid = false;
+
+        switch (target_id)
+        {
+            case 0:  // 英雄
+                try {
+                    target_x = static_cast<double>(bb->get<int16_t>("ref.enemy_hero_x"));
+                    target_y = static_cast<double>(bb->get<int16_t>("ref.enemy_hero_y"));
+                    valid = true;
+                } catch (...) {}
+                break;
+            case 1:  // 工程
+                try {
+                    target_x = static_cast<double>(bb->get<int16_t>("ref.enemy_engineer_x"));
+                    target_y = static_cast<double>(bb->get<int16_t>("ref.enemy_engineer_y"));
+                    valid = true;
+                } catch (...) {}
+                break;
+            case 2:  // 步兵3
+                try {
+                    target_x = static_cast<double>(bb->get<int16_t>("ref.enemy_std3_x"));
+                    target_y = static_cast<double>(bb->get<int16_t>("ref.enemy_std3_y"));
+                    valid = true;
+                } catch (...) {}
+                break;
+            case 3:  // 步兵4
+                try {
+                    target_x = static_cast<double>(bb->get<int16_t>("ref.enemy_std4_x"));
+                    target_y = static_cast<double>(bb->get<int16_t>("ref.enemy_std4_y"));
+                    valid = true;
+                } catch (...) {}
+                break;
+            case 4:  // 哨兵
+                try {
+                    target_x = static_cast<double>(bb->get<int16_t>("ref.enemy_sentry_x"));
+                    target_y = static_cast<double>(bb->get<int16_t>("ref.enemy_sentry_y"));
+                    valid = true;
+                } catch (...) {}
+                break;
+            default:
+                ROS_WARN("[SetChaseGoal] Unknown target_id=%d", target_id);
+                return BT::NodeStatus::FAILURE;
+        }
+
+        if (!valid)
+        {
+            ROS_WARN_THROTTLE(2.0, "[SetChaseGoal] Target %d coordinates not available", target_id);
+            return BT::NodeStatus::FAILURE;
+        }
+
+        // ---- 3. 判断落在哪个 area 内 ----
+        int area_idx = -1;
+        for (size_t i = 0; i < graph_->areas.size(); ++i)
+        {
+            if (pointInPolygon(target_x, target_y, graph_->areas[i]))
+            {
+                area_idx = static_cast<int>(i);
+                break;
+            }
+        }
+
+        if (area_idx < 0)
+        {
+            ROS_WARN_THROTTLE(2.0, "[SetChaseGoal] Target %d at (%.2f, %.2f) not in any area",
+                              target_id, target_x, target_y);
+            return BT::NodeStatus::FAILURE;
+        }
+
+        // ---- 4. 取对应 node 坐标，写入 goal.point ----
+        if (area_idx >= static_cast<int>(graph_->nodes.size()))
+        {
+            ROS_ERROR("[SetChaseGoal] Area %d has no corresponding node (%zu nodes total)",
+                      area_idx, graph_->nodes.size());
+            return BT::NodeStatus::FAILURE;
+        }
+
+        double node_x = graph_->nodes[area_idx].first;
+        double node_y = graph_->nodes[area_idx].second;
+
+        geometry_msgs::PointStamped goal;
+        goal.header.stamp    = ros::Time::now();
+        goal.header.frame_id = "map";
+        goal.point.x = node_x;
+        goal.point.y = node_y;
+        goal.point.z = 0.0;
+
+        bb->set("goal.point", goal);
+        bb->set("goal.valid", true);
+
+        ROS_INFO("[SetChaseGoal] target_id=%d at area=%d, goal=(%.2f, %.2f)",
+                 target_id, area_idx, node_x, node_y);
+
+        return BT::NodeStatus::SUCCESS;
+    }
 
 private:
-  ros::Publisher* goal_pub_;
-  bool* publish_on_change_only_;
+    const DecisionGraph* graph_;
 };
 
-// =====================================================
-// ResetChase: Reset chase state when exiting RADICAL
-// =====================================================
-class ResetChase : public BT::SyncActionNode
+// ============================================================
+// 注册到 BehaviorTreeFactory
+// ============================================================
+void RegisterChaseNodes(BT::BehaviorTreeFactory& factory,
+                        ros::Publisher* /*goal_pub*/,
+                        bool* /*publish_on_change_only*/)
 {
-public:
-  ResetChase(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::SyncActionNode(name, config)
-  {
-  }
+    // 加载决策图（单例，所有 SetChaseGoal 节点共享同一份数据）
+    std::string yaml_path = ros::package::getPath("decision_node")
+                            + "/map/RMUC2026_decision_graph.yaml";
+    static auto graph = std::make_shared<DecisionGraph>(loadDecisionGraph(yaml_path));
 
-  static BT::PortsList providedPorts() { return {}; }
-
-  BT::NodeStatus tick() override
-  {
-    auto bb = config().blackboard;
-
-    try
-    {
-      bb->set("chase.target_id", uint8_t(0));
-      bb->set("chase.target_x", 0.0f);
-      bb->set("chase.target_y", 0.0f);
-      bb->set("chase.initialized", false);
-
-      ROS_DEBUG("ResetChase: Chase state reset");
-      return BT::NodeStatus::SUCCESS;
-    }
-    catch (const std::exception& e)
-    {
-      ROS_WARN("ResetChase: Exception caught - %s", e.what());
-      return BT::NodeStatus::FAILURE;
-    }
-  }
-};
-
-// =====================================================
-// Registration function
-// =====================================================
-void RegisterChaseNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* goal_pub, bool* publish_on_change_only)
-{
-  factory.registerNodeType<InitChase>("InitChase");
-  factory.registerNodeType<UpdateChaseTarget>("UpdateChaseTarget");
-  
-  factory.registerBuilder<PublishChaseGoal>(
-    "PublishChaseGoal", [goal_pub, publish_on_change_only](const std::string& name, const BT::NodeConfiguration& config) {
-      return std::make_unique<PublishChaseGoal>(name, config, goal_pub, publish_on_change_only);
-    });
-
-  factory.registerNodeType<ResetChase>("ResetChase");
+    factory.registerBuilder<SetChaseGoal>(
+        "SetChaseGoal",
+        [](const std::string& name, const BT::NodeConfiguration& config) {
+            return std::make_unique<SetChaseGoal>(name, config, graph.get());
+        });
 }
