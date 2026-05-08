@@ -76,6 +76,17 @@
         <Sequence name="ExecBaseAlign">
           <IsAction value="BASE_ALIGN" />
           <ResetNavArrived />
+          
+          <Fallback name="find_target">
+            <Sequence>
+              <Inverter>
+                <CheckServerYawFlag />
+              </Inverter>
+              <FindAngle />
+            </Sequence>
+            <AlwaysSuccess />
+          </Fallback>
+          <CalculateAngle />
           <SetSpinFlag target_spin="1" />
           <CalculateAngle />
           <PublishSpin />
