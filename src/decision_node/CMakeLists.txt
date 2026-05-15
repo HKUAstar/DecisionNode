@@ -57,6 +57,7 @@ add_executable(zone_detector src/zone_detector.cpp)
 target_link_libraries(strategy_node
     ${catkin_LIBRARIES}
     ${behaviortree_cpp_v3_LIBRARIES}
+    yaml-cpp
 )
 
 target_link_libraries(continuous_forwarder ${catkin_LIBRARIES})

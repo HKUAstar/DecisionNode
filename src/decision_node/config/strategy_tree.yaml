@@ -1,8 +1,4 @@
-# strategy_tree.yaml — 目标点坐标定义
-# 由 SetGoalFromParams / SetGoalFromParamsCyclic 读取
-
 goals:
-  # ============ 单点目标 ============
   supply:
     x: 1.2469596862792969
     y: -0.063079833984375

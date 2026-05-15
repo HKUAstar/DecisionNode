@@ -13,9 +13,12 @@
 #include <behaviortree_cpp_v3/bt_factory.h>
 #include <behaviortree_cpp_v3/blackboard.h>
 #include <behaviortree_cpp_v3/decorators/inverter_node.h>
+#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
+#include <behaviortree_cpp_v3/loggers/bt_file_logger.h>
 #include <ros/ros.h>
 #include <std_msgs/UInt16.h>
 #include <ros/package.h>
+#include <yaml-cpp/yaml.h>
 
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Point.h>
@@ -1326,7 +1329,6 @@ int main(int argc, char** argv)
   }
   ros::Publisher spin_pub = nh.advertise<std_msgs::UInt8>("spin", 1);
   ros::Publisher recover_pub = nh.advertise<std_msgs::UInt8>("recover", 1);
-  // ros::Publisher bullet_up_pub = nh.advertise<std_msgs::UInt8>("bullet_up", 1);
   ros::Publisher bullet_num_pub = nh.advertise<std_msgs::UInt8>("bullet_num", 1);
   ros::Publisher target_yaw_pub = nh.advertise<std_msgs::Float32>("/target_yaw", 1);
 
@@ -1391,7 +1393,7 @@ int main(int argc, char** argv)
       return std::make_unique<PublishGoalPoint>(name, config, &goal_pub, &publish_on_change_only);
     });
 
-  RegisterRecoverChangeNodes(factory, &recover_pub, &bullet_up_pub);
+  RegisterRecoverChangeNodes(factory, &recover_pub, nullptr);
   RegisterBulletSupplyNodes(factory, &bullet_num_pub);
   RegisterBattleFieldNodes(factory);
   RegisterChaseNodes(factory, &goal_pub, &publish_on_change_only);
@@ -1561,6 +1563,32 @@ int main(int argc, char** argv)
 
   BT::Tree tree = factory.createTreeFromText(xml_text, blackboard);
 
+  // ============================================================
+  // Groot2 可视化调试支持
+  // ============================================================
+  BT::Groot2Publisher publisher(tree, 1667);
+  BT::FileLogger2 file_logger(tree, "behavior_log.btlog");
+  ROS_INFO("Groot2 publisher started on port 1667, logging to behavior_log.btlog");
+
+  // ============================================================
+  // 导出节点模型 XML 供 Groot2 导入
+  // ============================================================
+  {
+    std::string node_models = BT::writeTreeNodesModelXML(factory);
+    std::string model_path = ros::package::getPath("decision_node") + "/config/node_models.xml";
+    std::ofstream f(model_path);
+    if (f.is_open())
+    {
+      f << node_models;
+      f.close();
+      ROS_INFO("Exported node models to %s (%zu bytes)", model_path.c_str(), node_models.size());
+    }
+    else
+    {
+      ROS_WARN("Failed to write node_models.xml to %s", model_path.c_str());
+    }
+  }
+
   // 初始化时发送一次默认数据到下位机
   {
     std_msgs::UInt8 motion_msg;
@@ -1571,15 +1599,11 @@ int main(int argc, char** argv)
     recover_msg.data = 0;   
     recover_pub.publish(recover_msg);
     
-    std_msgs::UInt8 bullet_up_msg;
-    bullet_up_msg.data = 0;  
-    bullet_up_pub.publish(bullet_up_msg);
-    
     std_msgs::UInt8 bullet_num_msg;
     bullet_num_msg.data = 0;  
     bullet_num_pub.publish(bullet_num_msg);
     
-    ROS_INFO("Initialization: Sent default values - motion=0, recover=0, bullet_up=0, bullet_num=0");
+    ROS_INFO("Initialization: Sent default values - motion=0, recover=0, bullet_num=0");
   }
 
   ros::Rate rate(std::max(1, tick_hz));

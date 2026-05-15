@@ -101,7 +101,7 @@
               </Inverter>
               <SetAction action="OPERATOR_COMMAND" />
               <ClearCounter counter_key="operator_command_count" />
-              <ReativeFallback>
+              <ReactiveFallback>
                 <Sequence name="ReturnToOperatorCommand">
                   <IsAction value="DOWNSTAIR" />
                   <CheckArrived />
@@ -124,19 +124,19 @@
                   <SetAction action="ELEVATED_GROUND_PATROL3" />
                 </Sequence>
                 <SetAction action="OPERATOR_COMMAND" />
-              </ReativeFallback>
+              </ReactiveFallback>
             </Sequence>
 
             <Sequence name="MaintainOperatorCommand">
               <IsAction value="OPERATOR_COMMAND" />
-              <CheckCounter counter_key="operator_command_count" threshold="500" />
+              <CompareValue key="operator_command_count" threshold="500" />
               <SetAction action="OPERATOR_COMMAND" />
             </Sequence>
 
 
             <ReactiveFallback name="PushActions">
               <Sequence name="StopWhenFindEnemy">
-                <CheckVision />
+                <CheckVision key="vision.detected" expected="true" />
                 <SetAction action="VISION" />
               </Sequence>
 
@@ -190,7 +190,7 @@
                         <IsAction value="ELEVATED_GROUND_PATROL2" />
                         <IsAction value="ELEVATED_GROUND_PATROL3" />
                       </ReactiveFallback>
-                      <ReactiveFallvack name="ExecuteElePatrol">
+                      <ReactiveFallback name="ExecuteElePatrol">
                         <Sequence name="ElevatedGroundPatrol1">
                           <IsAction value="ELEVATED_GROUND_PATROL0" />
                           <CheckArrived />
@@ -208,7 +208,7 @@
                           <CheckArrived />
                         <SetAction action="ELEVATED_GROUND_PATROL3" />
                         </Sequence>
-                      </ReactiveFallvack>
+                      </ReactiveFallback>
                     </Sequence>
 
                     <Sequence name="DownStair">
@@ -478,6 +478,7 @@
           <SetSpinFlag target_spin="0" />
           <PublishSpin />
         </Sequence>
+      </Sequence>
     </ReactiveSequence>
   </BehaviorTree>
 </root>

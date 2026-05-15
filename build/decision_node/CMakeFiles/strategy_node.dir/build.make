@@ -204,6 +204,7 @@ strategy_node_EXTERNAL_OBJECTS =
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libtinyxml2.so
+/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librosconsole.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librosconsole_log4cxx.so

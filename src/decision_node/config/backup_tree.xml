@@ -147,7 +147,7 @@
                 <SetMotionFlag target_motion="1" />
               </Sequence>
             <Sequence>   
-              <CheckVision />
+              <CheckVision key="vision.detected" expected="true" />
               <SetMotionFlag target_motion="3" />
             </Sequence>
             <AlwaysSuccess />
