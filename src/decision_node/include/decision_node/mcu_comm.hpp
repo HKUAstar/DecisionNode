@@ -177,7 +177,7 @@ struct NavigationCommandData
     int16_t  vy;                   // 偏移4-5: Y方向速度 (mm/s)
     int16_t  target_yaw;           // 偏移6-7: 对齐角度时使用的目标角度
     uint8_t  motion;               // 偏移8: 0=比赛未开始；1=进攻；2=防御；3=移动
-    uint8_t  spin;                 // 偏移9: 0=正常；1=对齐角度；2=上坡；3=下坡
+    uint8_t  spin;                 // 偏移9: 0=正常；1=对齐角度；2=上坡；3=下坡；4=视觉（内部量）
     uint8_t  activate_power_rune;  // 偏移10: 激活能量机关
     uint8_t  exchange_respwan;     // 偏移11: 兑换复活
 

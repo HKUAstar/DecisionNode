@@ -313,12 +313,18 @@ private:
     void sendNavigationCommand(float vx, float vy)
     {
         // 强制 vx/vy 置零
-        if (current_spin_ == 1)
+        if (current_spin_ == 1|| current_spin_==4)
         {
             vx = 0.0f;
             vy = 0.0f;
         }
-
+        
+        if(current_spin_==2)
+        {
+            vx *=2.0f;  // 上坡时加倍速度
+            vy *=2.0f;
+        }
+        
         current_nav_vx_ = vx;
         current_nav_vy_ = vy;
         
@@ -349,7 +355,9 @@ private:
         frame.data.vy = (int16_t)vy_mm;            // mm/s
         frame.data.target_yaw = (int16_t)((current_target_yaw_ * 1000.0f));  // 转换为 mrad
         frame.data.motion = current_motion_;        // 0=比赛未开始；1=进攻；2=防御；3=移动
-        frame.data.spin = current_spin_;            // 0=正常；1=对齐角度；2=上坡；3=下坡
+        // frame.data.spin = current_spin_;            // 0=正常；1=对齐角度；2=上坡；3=下坡
+        uint8_t spin_to_mcu = (current_spin_ == 4) ? 0 : current_spin_;
+        frame.data.spin = spin_to_mcu;
         frame.data.activate_power_rune = current_activate_power_rune_;  // 激活能量机关
         frame.data.exchange_respwan = current_exchange_respwan_;        // 兑换复活
 

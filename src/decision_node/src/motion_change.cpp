@@ -314,6 +314,71 @@ private:
   ros::Publisher* pub_;
 };
 
+class IncrementCounter : public BT::SyncActionNode
+{
+public:
+  IncrementCounter(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<std::string>("counter_key", "counter", "黑板中计数器的键名"),
+      BT::InputPort<int>("threshold", 30, "超时阈值（tick 数），达到此值返回 FAILURE"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    std::string key;
+    int threshold = 30;
+    (void)getInput("counter_key", key);
+    (void)getInput("threshold", threshold);
+
+    auto bb = config().blackboard;
+    int count = 0;
+    try { count = bb->get<int>(key); } catch (...) { count = 0; }
+    ++count;
+    bb->set(key, count);
+
+    if (count >= threshold)
+    {
+      ROS_WARN("IncrementCounter [%s]: timeout! count=%d >= threshold=%d",
+               key.c_str(), count, threshold);
+      return BT::NodeStatus::FAILURE;
+    }
+    // ROS_DEBUG("IncrementCounter [%s]: count=%d / %d", key.c_str(), count, threshold);
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
+class ClearCounter : public BT::SyncActionNode
+{
+public:
+  ClearCounter(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<std::string>("counter_key", "counter", "黑板中计数器的键名"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    std::string key;
+    (void)getInput("counter_key", key);
+    config().blackboard->set(key, 0);
+    ROS_DEBUG("ClearCounter [%s]: reset to 0", key.c_str());
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
 void RegisterMotionChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* motion_pub, ros::Publisher* spin_pub, bool* publish_on_change_only)
 {
   factory.registerNodeType<CheckArrived>("CheckArrived");
@@ -335,4 +400,8 @@ void RegisterMotionChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher*
       "PublishSpin", [spin_pub](const std::string& name, const BT::NodeConfiguration& config) {
         return std::make_unique<PublishSpin>(name, config, spin_pub);
       });
+
+  // 超时计数器节点（纯黑板操作，无需外部依赖）
+  factory.registerNodeType<IncrementCounter>("IncrementCounter");
+  factory.registerNodeType<ClearCounter>("ClearCounter");
 }
