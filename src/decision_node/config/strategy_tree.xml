@@ -8,6 +8,7 @@
         <UpdateTimersBB />
         <UpdateDerivedFlags danger_hp="{danger_hp}" sufficient_bullet="{sufficient_bullet}" />
         <UpdateOdomBB />
+        <UpdateBulletBB/>
       </Sequence>
 
       <ReactiveFallback name="DecideAction">
@@ -54,12 +55,35 @@
               <SetAction action="DEADSUPPLY" />
             </Sequence>
 
-            <Sequence name="Supply">
-              <ReactiveFallback name="CheckSuppliment">
+            <ReactiveFallback name="ChooseSupply">
+              <Sequence name="Supply">
                 <IsSentryInDanger danger_hp="{danger_hp}" hp_key="ref.remain_hp" />
                 <NotBulletSufficient />
-              </ReactiveFallback>
-              <SetAction action="SUPPLY" />
+                <SetAction action="SUPPLY" />
+              </Sequence>
+              <Fallback name="SupplyBullet">
+                <Sequence name="FreeBullet">
+                  <NotBulletSufficient />
+                  <Inverter>
+                    <CompareValue key="count.free_bullet" threshold="0" />
+                  </Inverter>
+                  <SetAction action="SUPPLY" />
+                </Sequence>
+                <Sequence name="BuyBullet">
+                  <NotBulletSufficient/>
+                  <Inverter>
+                    <CompareValue key="ref.remaining_gold_coin" threshold="200" />
+                  </Inverter>
+                  <SetAction action="GOTO_BUY" />
+                </Sequence>
+              </Fallback>
+            </ReactiveFallback>
+
+            <Sequence name="BuyBullet">
+              <IsAction value="GOTO_BUY" />
+              <CheckArrived />
+              <SetAction action="BUY_BULLET" />
+              <Wait duration="2.0" />
             </Sequence>
 
             <Sequence name="MaintainSupply">
@@ -91,7 +115,6 @@
                 <Sequence >
                   <IsAction value="DOWNSTAIR" />
                   <SetAction action="DOWNSTAIR" />
-                <Sequence>
                   <ReactiveFallback name="CheckElePatrol">
                     <IsAction value="ELEVATED_GROUND_PATROL0" />
                     <IsAction value="ELEVATED_GROUND_PATROL1" />
@@ -233,7 +256,6 @@
       <ReactiveFallback name="ExecuteAction">
         <Sequence>
           <IsAction value="INIT" />
-          <SetMotionFlag target_motion="0" />
           <PublishMotion />
           <ClearGoal />
         </Sequence>
@@ -249,16 +271,13 @@
         <Sequence>
           <IsAction value="DEADSUPPLY" />
           <SetGoalFromParams ns="supply" />
-          <SetSpinFlag target_spin="0" />
           <SetMotionFlag target_motion="3" />
           <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
           <PublishMotion />
         </Sequence>
 
         <Sequence>
           <IsAction value="SUPPLY" />
-          <SetSpinFlag target_spin="0" />
           <SetGoalFromParams ns="supply" />
           <ReactiveFallback name="MotionControl">
             <Sequence>
@@ -268,15 +287,30 @@
             <SetMotionFlag target_motion="3" />
           </ReactiveFallback>
           <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
           <PublishMotion />
+        </Sequence>
+
+        <Sequence>
+          <IsAction value="GOTO_BUY" />
+          <SetGoalFromParams ns="buy_bullet" />
+          <SetMotionFlag target_motion="3" />
+          <PublishGoalPoint topic="clicked_point" />
+          <PublishMotion />
+        </Sequence>
+
+        <Sequence>
+          <IsAction value="BUY_BULLET" />
+          <SetGoalFromParams ns="buy_bullet" />
+          <SetMotionFlag target_motion="3" />
+          <SetBulletNum mode="FIXED" fixed_supply="50" />
+          <PublishMotion />
+          <PublishGoalPoint topic="clicked_point" />
+          <PublishBulletNum />
         </Sequence>
 
         <Sequence>
           <IsAction value="OPERATOR_COMMAND" />
           <!-- <读指令,publish/> -->
-          <SetSpinFlag target_spin="0" />
-          <PublishSpin />
         </Sequence>
 
         <Sequence>
@@ -295,37 +329,30 @@
         <Sequence>
           <IsAction value="DEFEND_HOME"/>
           <SetGoalFromParams ns="defend_home" />
-          <SetSpinFlag target_spin="0" />
           <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
         </Sequence>
 
         <Sequence>
           <IsAction value="ATTACK_OUTPOST"/>
           <SetGoalFromParams ns="attack_outpost" />
-          <SetSpinFlag target_spin="0" />
           <SetMotionFlag target_motion="1" />
           <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
           <PublishMotion />
         </Sequence>
 
         <Sequence>
           <IsAction value="CHASE_ENEMY"/>
           <SetGoalFromParams ns="chase_enemy" />
-          <SetSpinFlag target_spin="0" />
           <SetMotionFlag target_motion="3" />
           <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
           <PublishMotion />
+        </Sequence>
 
         <Sequence>
           <IsAction value="DEFEND_RAMP_LAUNCH" />
-          <SetSpinFlag target_spin="0" />
           <SetMotionFlag target_motion="3" />
           <SetGoalFromParams ns="defend_ramp_launch" />
           <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
           <PublishMotion />
         </Sequence>
 
@@ -363,40 +390,32 @@
         <Sequence>
           <IsAction value="ELEVATED_GROUND_PATROL0"/>
           <SetGoalFromParams ns="elevated_ground_patrol0" />
-          <SetSpinFlag target_spin="0" />
           <SetMotionFlag target_motion="3" />
           <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
           <PublishMotion />
         </Sequence>
 
         <Sequence>
           <IsAction value="ELEVATED_GROUND_PATROL1"/>
           <SetGoalFromParams ns="elevated_ground_patrol1" />
-          <SetSpinFlag target_spin="0" />
           <SetMotionFlag target_motion="3" />
           <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
           <PublishMotion />
         </Sequence>
 
         <Sequence>
           <IsAction value="ELEVATED_GROUND_PATROL2"/>
           <SetGoalFromParams ns="elevated_ground_patrol2" />
-          <SetSpinFlag target_spin="0" />
           <SetMotionFlag target_motion="3" />
           <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
           <PublishMotion />
         </Sequence>
 
         <Sequence>
           <IsAction value="ELEVATED_GROUND_PATROL3"/>
           <SetGoalFromParams ns="elevated_ground_patrol3" />
-          <SetSpinFlag target_spin="0" />
           <SetMotionFlag target_motion="3" />
           <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
           <PublishMotion />
         </Sequence>
 
@@ -413,7 +432,6 @@
 
         <Sequence>
           <IsAction value="PATROL" />
-          <SetSpinFlag target_spin="0" />
           <SetMotionFlag target_motion="3" />
           <Fallback>
             <Sequence>
@@ -431,10 +449,35 @@
           </Fallback>
           <SetGoalFromParamsCyclic ns="patrol" point_count="2" />
           <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
           <PublishMotion />
         </Sequence>
       </ReactiveFallback>
+
+      <Sequence name="ResetValue">
+        <Sequence name="FreeBullet">
+          <!-- <CheckIntStatus key="ref.supplement" expected="1" /> -->
+          <CheckVision key="ref.supplement" expected="true" />
+          <SetBBValue key="count.free_bullet" type="int" value="0" />
+        </Sequence>
+        <Sequence name="Bullet">
+          <Inverter>
+            <IsAction value="BUY_BULLET" />
+          </Inverter>
+          <SetBBValue key="bullet_num" type="int" value="0" />
+         <PublishBulletNum />
+        </Sequence>
+        <Sequence name="Spin">
+          <Inverter>
+            <ReactiveFallback>
+              <IsAction value="UPSTAIR" />
+              <!-- <IsAction value="BASE_ALIGN" /> -->
+              <IsAction value="DOWNSTAIR" />
+              <IsAction value="VISION" />
+            </ReactiveFallback>
+          </Inverter>
+          <SetSpinFlag target_spin="0" />
+          <PublishSpin />
+        </Sequence>
     </ReactiveSequence>
   </BehaviorTree>
 </root>

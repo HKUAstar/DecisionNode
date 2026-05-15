@@ -148,9 +148,8 @@ struct RefereeState
 
   uint16_t enemy_base_HP;     //敌方基地血量
   
-
-
-
+  bool supplement_resource;  // /referee/supplement_resource
+  bool supplement_nonresource; // /referee/supplement_nonresource
 
 };
 
@@ -214,6 +213,7 @@ public:
     bb->set("ref.suggested_target", state_->suggested_target);
     bb->set("ref.radar_flags", state_->radar_flags);
     bb->set("ref.enemy_base_HP", state_->enemy_base_HP);
+    bb->set("ref.supplement", state_->supplement_resource || state_->supplement_nonresource);
     
     return BT::NodeStatus::SUCCESS;
   }
@@ -328,6 +328,72 @@ public:
     // 预留：[TODO] 后续可把 Strategy_Task.c 里的计数器/超时机制迁移到这里
     return BT::NodeStatus::SUCCESS;
   }
+};
+
+class UpdateBulletBB : public BT::SyncActionNode
+{
+public:
+  UpdateBulletBB(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config), last_minute_added_(0)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+
+    int game_progress = 0;
+    int remain_time = 420;
+    try {
+      game_progress = bb->get<int>("ref.game_progress");
+      remain_time = bb->get<int>("ref.stage_remain_time");
+    } catch (...) {}
+
+    if (game_progress != 4)
+    {
+      // 比赛未开始或已结束 → 清零
+      bb->set("count.free_bullet", 0);
+      last_minute_added_ = 0;
+      return BT::NodeStatus::SUCCESS;
+    }
+
+    // 比赛进行中：计算当前分钟数（420 为第 0 分钟，不增加）
+    int elapsed = 420 - remain_time;
+    if (elapsed < 0) elapsed = 0;
+    int current_minute = elapsed / 60;  // 0, 1, 2, ...
+
+    // 只在首次跨过新的分钟边界时增量 +100
+    if (current_minute > last_minute_added_)
+    {
+      int free_bullet = 0;
+      try { free_bullet = bb->get<int>("count.free_bullet"); } catch (...) {}
+
+      int increments = current_minute - last_minute_added_;
+      if (last_minute_added_ == 0 && current_minute >= 1)
+      {
+        // 从第 0 分钟开始，跳过 420s 那次（420s 不增加）
+        // 但如果 last_minute_added_=0 且 current_minute>=1，这是首次跨过 420→360 边界
+        free_bullet += increments * 100;
+      }
+      else if (last_minute_added_ >= 1)
+      {
+        free_bullet += increments * 100;
+      }
+
+      bb->set("count.free_bullet", free_bullet);
+      last_minute_added_ = current_minute;
+
+      ROS_INFO("UpdateBulletBB: +%d (elapsed=%ds, minute %d→%d), total=%d",
+               increments * 100, elapsed, current_minute - increments, current_minute, free_bullet);
+    }
+
+    return BT::NodeStatus::SUCCESS;
+  }
+
+private:
+  int last_minute_added_;  // 上次 +100 时对应的分钟数
 };
 
 class UpdateDerivedFlags : public BT::SyncActionNode
@@ -665,6 +731,67 @@ public:
   }
 };
 
+class SetBBValue : public BT::SyncActionNode
+{
+public:
+  SetBBValue(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<std::string>("key", "", "黑板键名"),
+      BT::InputPort<std::string>("type", "int", "值类型: int / double / bool / string"),
+      BT::InputPort<std::string>("value", "0", "目标值的字符串表示"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    std::string key, type, val_str;
+    if (!getInput("key", key) || key.empty())
+    {
+      ROS_WARN("SetBBValue: 'key' is required");
+      return BT::NodeStatus::FAILURE;
+    }
+    (void)getInput("type", type);
+    (void)getInput("value", val_str);
+
+    auto bb = config().blackboard;
+
+    if (type == "int")
+    {
+      bb->set(key, std::stoi(val_str));
+      ROS_INFO("SetBBValue: %s = %d (int)", key.c_str(), std::stoi(val_str));
+    }
+    else if (type == "double")
+    {
+      bb->set(key, std::stod(val_str));
+      ROS_INFO("SetBBValue: %s = %.3f (double)", key.c_str(), std::stod(val_str));
+    }
+    else if (type == "bool")
+    {
+      bool v = (val_str == "true" || val_str == "1");
+      bb->set(key, v);
+      ROS_INFO("SetBBValue: %s = %s (bool)", key.c_str(), v ? "true" : "false");
+    }
+    else if (type == "string")
+    {
+      bb->set(key, val_str);
+      ROS_INFO("SetBBValue: %s = \"%s\" (string)", key.c_str(), val_str.c_str());
+    }
+    else
+    {
+      ROS_WARN("SetBBValue: unknown type '%s'", type.c_str());
+      return BT::NodeStatus::FAILURE;
+    }
+
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
 class ClearGoal : public BT::SyncActionNode
 {
 public:
@@ -734,12 +861,12 @@ private:
   ros::Time wait_end_time_;
 };
 
-//[TODO]: 这里的目标点是从参数服务器读取的，
+//[TODO]: 从 strategy_tree.yaml 读取目标点坐标
 class SetGoalFromParams : public BT::SyncActionNode
 {
 public:
-  SetGoalFromParams(const std::string& name, const BT::NodeConfiguration& config, ros::NodeHandle* nh)
-    : BT::SyncActionNode(name, config), nh_(nh)
+  SetGoalFromParams(const std::string& name, const BT::NodeConfiguration& config, YAML::Node* yaml_root)
+    : BT::SyncActionNode(name, config), yaml_root_(yaml_root)
   {
   }
 
@@ -759,11 +886,29 @@ public:
       return BT::NodeStatus::FAILURE;
     }
 
-    const std::string base = std::string("goals/") + ns;
-
     double x = 0.0, y = 0.0;
-    (void)nh_->param(base + "/x", x, 0.0);
-    (void)nh_->param(base + "/y", y, 0.0);
+    bool found = false;
+
+    if (yaml_root_ && yaml_root_->IsDefined())
+    {
+      try
+      {
+        const YAML::Node pt = (*yaml_root_)["goals"][ns];
+        if (pt && pt["x"] && pt["y"])
+        {
+          x = pt["x"].as<double>();
+          y = pt["y"].as<double>();
+          found = true;
+        }
+      }
+      catch (...) { found = false; }
+    }
+
+    if (!found)
+    {
+      ROS_ERROR("SetGoalFromParams: namespace '%s' not found in strategy_tree.yaml", ns.c_str());
+      return BT::NodeStatus::FAILURE;
+    }
 
     ROS_DEBUG("SetGoalFromParams: ns=%s, goal=(%f, %f)", ns.c_str(), x, y);
 
@@ -782,14 +927,16 @@ public:
   }
 
 private:
-  ros::NodeHandle* nh_;
+  YAML::Node* yaml_root_;
 };
 
 class SetGoalFromParamsCyclic : public BT::SyncActionNode
 {
 public:
-  SetGoalFromParamsCyclic(const std::string& name, const BT::NodeConfiguration& config, ros::NodeHandle* nh)
-    : BT::SyncActionNode(name, config), nh_(nh)
+  SetGoalFromParamsCyclic(const std::string& name,
+                           const BT::NodeConfiguration& config,
+                           YAML::Node* yaml_root)
+    : BT::SyncActionNode(name, config), yaml_root_(yaml_root)
   {
   }
 
@@ -814,11 +961,9 @@ public:
 
     auto bb = config().blackboard;
 
-    // per-ns 独立索引 key，避免多个 action 互相干扰
     const std::string idx_key        = "cycle_idx_" + ns;
     const std::string last_action_key = "cycle_last_action_" + ns;
 
-    // 检测 action 是否切换 → 切换则将该 ns 的索引重置为 0
     std::string cur_action, last_action;
     try { cur_action  = bb->get<std::string>("action"); }       catch (...) {}
     try { last_action = bb->get<std::string>(last_action_key); } catch (...) {}
@@ -826,23 +971,36 @@ public:
     {
       bb->set(idx_key, 0);
       bb->set(last_action_key, cur_action);
-      ROS_DEBUG("SetGoalFromParamsCyclic[%s]: action changed (%s->%s), resetting index",
-                ns.c_str(), last_action.c_str(), cur_action.c_str());
     }
 
     int cycle_index = 0;
-    try {
-      cycle_index = bb->get<int>(idx_key);
-    } catch (...) {
-      bb->set(idx_key, 0);
-    }
-
-    // Read goal from parameters: goals/<ns>/point_<index>/{x,y}
-    const std::string base = std::string("goals/") + ns + "/point_" + std::to_string(cycle_index);
+    try { cycle_index = bb->get<int>(idx_key); } catch (...) { bb->set(idx_key, 0); }
 
     double x = 0.0, y = 0.0;
-    (void)nh_->param(base + "/x", x, 0.0);
-    (void)nh_->param(base + "/y", y, 0.0);
+    bool found = false;
+
+    if (yaml_root_ && yaml_root_->IsDefined())
+    {
+      try
+      {
+        const YAML::Node goal_node = (*yaml_root_)["goals"];
+        if (goal_node && goal_node[ns] && goal_node[ns]["point_" + std::to_string(cycle_index)])
+        {
+          const auto& pt = goal_node[ns]["point_" + std::to_string(cycle_index)];
+          x = pt["x"].as<double>();
+          y = pt["y"].as<double>();
+          found = true;
+        }
+      }
+      catch (...) { found = false; }
+    }
+
+    if (!found)
+    {
+      ROS_ERROR("SetGoalFromParamsCyclic[%s]: point_%d not found in strategy_tree.yaml",
+                ns.c_str(), cycle_index);
+      return BT::NodeStatus::FAILURE;
+    }
 
     geometry_msgs::PointStamped goal;
     goal.header.frame_id = "map";
@@ -855,12 +1013,11 @@ public:
     bb->set("goal.valid", true);
     ROS_DEBUG("SetGoalFromParamsCyclic[%s]: index=%d, goal=(%.3f, %.3f)",
               ns.c_str(), cycle_index, x, y);
-
     return BT::NodeStatus::SUCCESS;
   }
 
 private:
-  ros::NodeHandle* nh_;
+  YAML::Node* yaml_root_;
 };
 
 class AdvanceCycleIndex : public BT::SyncActionNode
@@ -930,19 +1087,39 @@ public:
 
     auto bb = config().blackboard;
     const bool valid = bb->get<bool>("goal.valid");
-    // ROS_INFO("PublishGoalPoint: goal.valid=%d", valid);
     if (!valid)
     {
-      // ROS_INFO("PublishGoalPoint: goal.valid is FALSE, skipping publish");
       return BT::NodeStatus::SUCCESS;
     }
 
-    const auto goal = bb->get<geometry_msgs::PointStamped>("goal.point");
-    // ROS_INFO("PublishGoalPoint: goal position=(%f, %f)", goal.point.x, goal.point.y);
+    auto goal = bb->get<geometry_msgs::PointStamped>("goal.point");
+
+    // ==== 逆 TF 变换：目标坐标系 → 原始坐标系 ====
+    // 正向: x_tgt = cosθ·x_src - sinθ·y_src + tx
+    // 逆向: x_src =  cosθ·(x_tgt - tx) + sinθ·(y_tgt - ty)
+    //        y_src = -sinθ·(x_tgt - tx) + cosθ·(y_tgt - ty)
+    try
+    {
+      double theta = bb->get<double>("tf.src_to_tgt.theta");
+      double tx    = bb->get<double>("tf.src_to_tgt.tx");
+      double ty    = bb->get<double>("tf.src_to_tgt.ty");
+
+      double dx = goal.point.x - tx;
+      double dy = goal.point.y - ty;
+      double cos_t = std::cos(theta);
+      double sin_t = std::sin(theta);
+
+      double x_inv =  cos_t * dx + sin_t * dy;
+      double y_inv = -sin_t * dx + cos_t * dy;
+
+      goal.point.x = x_inv;
+      goal.point.y = y_inv;
+      // goal.point.z, header 不变
+    }
+    catch (...) { /* TF 参数不存在，直接用原值发布 */ }
 
     if (*publish_on_change_only_)
     {
-      // crude de-dup: compare x/y only
       bool have_last = false;
       double last_x = 0.0, last_y = 0.0;
       try
@@ -958,14 +1135,12 @@ public:
 
       if (have_last && goal.point.x == last_x && goal.point.y == last_y)
       {
-        // ROS_INFO("PublishGoalPoint: Position unchanged, skipping publish");
         return BT::NodeStatus::SUCCESS;
       }
       bb->set("goal.last_x", goal.point.x);
       bb->set("goal.last_y", goal.point.y);
     }
 
-    // ROS_INFO("PublishGoalPoint: Publishing goal at (%f, %f)", goal.point.x, goal.point.y);
     pub_->publish(goal);
     return BT::NodeStatus::SUCCESS;
   }
@@ -1113,6 +1288,14 @@ int main(int argc, char** argv)
     ref.enemy_base_HP = msg->data;
   });
 
+  // 补弹资源
+  auto sub_supplement_resource = nh.subscribe<std_msgs::Bool>("/referee/supplement_resource", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
+    ref.supplement_resource = msg->data;
+  });
+  auto sub_supplement_nonresource = nh.subscribe<std_msgs::Bool>("/referee/supplement_nonresource", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
+    ref.supplement_nonresource = msg->data;
+  });
+
   // Navigation arrived (复用现有语义)
   auto sub_arrived = nh.subscribe<std_msgs::Bool>("/dstar_status", 10, 
     [&](const std_msgs::Bool::ConstPtr& msg) {
@@ -1121,9 +1304,29 @@ int main(int argc, char** argv)
 
   ros::Publisher goal_pub = nh.advertise<geometry_msgs::PointStamped>("clicked_point", 1);
   ros::Publisher motion_pub = nh.advertise<std_msgs::UInt8>("motion", 1);
+
+  // ============================================================
+  // 加载 strategy_tree.yaml（目标点配置）
+  // ============================================================
+  YAML::Node yaml_root;
+  std::string yaml_path;
+  if (pnh.getParam("goal_yaml", yaml_path) || true)
+  {
+    if (yaml_path.empty())
+      yaml_path = ros::package::getPath("decision_node") + "/config/strategy_tree.yaml";
+    try
+    {
+      yaml_root = YAML::LoadFile(yaml_path);
+      ROS_INFO("Loaded goal definitions from %s", yaml_path.c_str());
+    }
+    catch (const std::exception& e)
+    {
+      ROS_WARN("Failed to load %s: %s, falling back to ROS params", yaml_path.c_str(), e.what());
+    }
+  }
   ros::Publisher spin_pub = nh.advertise<std_msgs::UInt8>("spin", 1);
   ros::Publisher recover_pub = nh.advertise<std_msgs::UInt8>("recover", 1);
-  ros::Publisher bullet_up_pub = nh.advertise<std_msgs::UInt8>("bullet_up", 1);
+  // ros::Publisher bullet_up_pub = nh.advertise<std_msgs::UInt8>("bullet_up", 1);
   ros::Publisher bullet_num_pub = nh.advertise<std_msgs::UInt8>("bullet_num", 1);
   ros::Publisher target_yaw_pub = nh.advertise<std_msgs::Float32>("/target_yaw", 1);
 
@@ -1153,6 +1356,7 @@ int main(int argc, char** argv)
 
   factory.registerNodeType<UpdateVisionBB>("UpdateVisionBB");
   factory.registerNodeType<UpdateTimersBB>("UpdateTimersBB");
+  factory.registerNodeType<UpdateBulletBB>("UpdateBulletBB");
   factory.registerNodeType<UpdateDerivedFlags>("UpdateDerivedFlags");
 
   factory.registerNodeType<IsGameStarted>("IsGameStarted");
@@ -1164,6 +1368,7 @@ int main(int argc, char** argv)
   factory.registerNodeType<IsAction>("IsAction");
 
   factory.registerNodeType<SetAction>("SetAction");
+  factory.registerNodeType<SetBBValue>("SetBBValue");
   factory.registerNodeType<ClearGoal>("ClearGoal");
   factory.registerNodeType<Wait>("Wait");
   
@@ -1171,12 +1376,12 @@ int main(int argc, char** argv)
 
   factory.registerBuilder<SetGoalFromParams>(
     "SetGoalFromParams", [&](const std::string& name, const BT::NodeConfiguration& config) {
-      return std::make_unique<SetGoalFromParams>(name, config, &nh);
+      return std::make_unique<SetGoalFromParams>(name, config, &yaml_root);
     });
 
   factory.registerBuilder<SetGoalFromParamsCyclic>(
     "SetGoalFromParamsCyclic", [&](const std::string& name, const BT::NodeConfiguration& config) {
-      return std::make_unique<SetGoalFromParamsCyclic>(name, config, &nh);
+      return std::make_unique<SetGoalFromParamsCyclic>(name, config, &yaml_root);
     });
 
   factory.registerNodeType<AdvanceCycleIndex>("AdvanceCycleIndex");
@@ -1334,6 +1539,7 @@ int main(int argc, char** argv)
   blackboard->set("chase.target_x", 0.0f);
   blackboard->set("chase.target_y", 0.0f);
   blackboard->set("chase.initialized", false);
+  blackboard->set("count.free_bullet", 0);
   
   std::string bt_xml_path;
   pnh.param<std::string>("bt_xml", bt_xml_path, std::string(""));

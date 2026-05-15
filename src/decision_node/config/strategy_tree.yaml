@@ -1,0 +1,59 @@
+# strategy_tree.yaml — 目标点坐标定义
+# 由 SetGoalFromParams / SetGoalFromParamsCyclic 读取
+
+goals:
+  # ============ 单点目标 ============
+  supply:
+    x: 1.2469596862792969
+    y: -0.063079833984375
+
+  waitforop:
+    x: -0.2578093409538269
+    y: 0.7783498764038086
+
+  retreat:
+    x: 1.6883139610290527
+    y: -0.167863667011261
+
+  radical:
+    x: -4.910957336425781
+    y: -1.0084030628204346
+
+  radical1:
+    x: -6.02592658996582
+    y: -0.19354844093322754
+
+  defend_ramp_launch:
+    x: 2.0
+    y: -2.0
+
+  upstair:
+    x: -1.0
+    y: 0.0
+
+  downstair:
+    x: 1.0
+    y: 0.0
+
+  elevated_ground_patrol0:
+    x: -6.0
+    y: 2.0
+
+  elevated_ground_patrol1:
+    x: 0.0
+    y: 5.0
+
+  elevated_ground_patrol2:
+    x: 6.0
+    y: 2.0
+
+  elevated_ground_patrol3:
+    x: 0.0
+    y: -1.0
+
+  # ============ 巡逻循环点（4 点）============
+  patrol:
+    point_0: { x: -2.7552385330200195, y: 2.374694347381592 }
+    point_1: { x: -3.9389827251434326, y: 2.9706380367279053 }
+    point_2: { x: 3.0,                y: 3.0 }
+    point_3: { x: 4.0,                y: 4.0 }

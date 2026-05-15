@@ -64,6 +64,7 @@ struct HKGameData
     uint16_t stage_remain_time;
 
     uint16_t ally_base_HP;    //基地血量
+    //己方前哨站血量
 
     //下面的要从uint32_t event_data;解包出来
     uint8_t central_elevated_ground_status; // 中央高地状态（bit 7-8）
@@ -78,6 +79,11 @@ struct HKGameData
     uint16_t projectile_allowance_fortress;
     uint16_t remaining_gold_coin;
 
+    //0209
+    //己方基地增一点
+    //己方梯形高地增益点
+    //己方堡垒增益点
+    //己方与资源区重合补充和增益点
     //下面的要从uint32_t sentry_info;解包出来
     uint16_t accumulated_bullet_conversion; // 累计哨兵远程兑换弹量（bit 0-10）
     bool can_exchange_respawn;     // 哨兵是否可兑换复活（bit 20）
@@ -180,6 +186,7 @@ struct NavigationCommandData
     uint8_t  spin;                 // 偏移9: 0=正常；1=对齐角度；2=上坡；3=下坡；4=视觉（内部量）
     uint8_t  activate_power_rune;  // 偏移10: 激活能量机关
     uint8_t  exchange_respwan;     // 偏移11: 兑换复活
+    //买弹
 
 } __attribute__((packed));
 

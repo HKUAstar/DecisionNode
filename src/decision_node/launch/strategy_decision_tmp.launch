@@ -20,25 +20,25 @@
   <arg name="harm_threshold_off" default="10"/>
 
   <!-- TF Calibration: 4 point pairs (raw_pts -> map_pts) for 2D rigid transform -->
-  <arg name="tf_calib_src1_x" default="-7.2"/>
-  <arg name="tf_calib_src1_y" default="-4.5"/>
-  <arg name="tf_calib_tgt1_x" default="-6.3185"/>
-  <arg name="tf_calib_tgt1_y" default="-4.4952"/>
+  <arg name="tf_calib_src1_x" default="1"/>
+  <arg name="tf_calib_src1_y" default="1"/>
+  <arg name="tf_calib_tgt1_x" default="1"/>
+  <arg name="tf_calib_tgt1_y" default="1"/>
 
-  <arg name="tf_calib_src2_x" default="-7.2"/>
-  <arg name="tf_calib_src2_y" default="4.5"/>
-  <arg name="tf_calib_tgt2_x" default="-6.25608"/>
-  <arg name="tf_calib_tgt2_y" default="4.5555"/>
+  <arg name="tf_calib_src2_x" default="2"/>
+  <arg name="tf_calib_src2_y" default="2"/>
+  <arg name="tf_calib_tgt2_x" default="2"/>
+  <arg name="tf_calib_tgt2_y" default="2"/>
 
-  <arg name="tf_calib_src3_x" default="7.15"/>
-  <arg name="tf_calib_src3_y" default="-4.5"/>
-  <arg name="tf_calib_tgt3_x" default="7.19486"/>
-  <arg name="tf_calib_tgt3_y" default="-4.60131"/>
+  <arg name="tf_calib_src3_x" default="3"/>
+  <arg name="tf_calib_src3_y" default="3"/>
+  <arg name="tf_calib_tgt3_x" default="3"/>
+  <arg name="tf_calib_tgt3_y" default="3"/>
 
-  <arg name="tf_calib_src4_x" default="7.15"/>
-  <arg name="tf_calib_src4_y" default="4.5"/>
-  <arg name="tf_calib_tgt4_x" default="7.22272"/>
-  <arg name="tf_calib_tgt4_y" default="4.60319"/>
+  <arg name="tf_calib_src4_x" default="4"/>
+  <arg name="tf_calib_src4_y" default="4"/>
+  <arg name="tf_calib_tgt4_x" default="4"/>
+  <arg name="tf_calib_tgt4_y" default="4"/>
 
   <!-- BehaviorTree XML -->
   <arg name="bt_xml" default="$(find decision_node)/config/strategy_tree.xml"/>
@@ -46,75 +46,6 @@
   <!-- Goal output topic (dstarlite.launch expects /clicked_point) -->
   <arg name="goal_topic" default="/clicked_point"/>
 
-  <!-- Global goal parameters consumed by SetGoalFromParams/SetGoalFromParamsCyclic (nh, not pnh): goals/<ns>/{x,y} or goals/<ns>/point_<i>/{x,y} -->
-  <!-- Single point (for SUPPLY, WAITFOROP, RADICAL, RADICAL1) -->
-  <arg name="supply_x" default="1.2469596862792969"/>
-  <arg name="supply_y" default="-0.063079833984375"/>
-  <arg name="waitforop_x" default="-0.2578093409538269"/>
-  <arg name="waitforop_y" default="0.7783498764038086"/>
-  <arg name="retreat_x" default="1.6883139610290527"/>
-  <arg name="retreat_y" default="-0.167863667011261"/>
-  <arg name="radical_x" default="-4.910957336425781"/>
-  <arg name="radical_y" default="-1.0084030628204346"/>
-  <arg name="radical1_x" default="-6.02592658996582"/>
-  <arg name="radical1_y" default="-0.19354844093322754"/>
-  
-  <!-- Cyclic points for PATROL (4 points in loop) -->
-  <arg name="patrol_point_0_x" default="-2.7552385330200195"/>
-  <arg name="patrol_point_0_y" default=" 2.374694347381592"/>
-  <arg name="patrol_point_1_x" default="-3.9389827251434326"/>
-  <arg name="patrol_point_1_y" default="2.9706380367279053"/>
-  <arg name="patrol_point_2_x" default="3.0"/>
-  <arg name="patrol_point_2_y" default="3.0"/>
-  <arg name="patrol_point_3_x" default="4.0"/>
-  <arg name="patrol_point_3_y" default="4.0"/>
-
-  <!-- Set parameters on parameter server -->
-  <!-- Cyclic patrol points - 4 different points to cycle through -->
-  <param name="/goals/patrol/point_0/x" value="$(arg patrol_point_0_x)"/>
-  <param name="/goals/patrol/point_0/y" value="$(arg occupy_point_0_y)"/>
-  <param name="/goals/patrol/point_1/x" value="$(arg occupy_point_1_x)"/>
-  <param name="/goals/patrol/point_1/y" value="$(arg occupy_point_1_y)"/>
-  <param name="/goals/patrol/point_2/x" value="$(arg occupy_point_2_x)"/>
-  <param name="/goals/patrol/point_2/y" value="$(arg occupy_point_2_y)"/>
-  <param name="/goals/patrol/point_3/x" value="$(arg occupy_point_3_x)"/>
-  <param name="/goals/patrol/point_3/y" value="$(arg occupy_point_3_y)"/>
-  
-  <param name="/goals/supply/x" value="$(arg supply_x)"/>
-  <param name="/goals/supply/y" value="$(arg supply_y)"/>
-  <!-- SUPPLY point - also in cyclic format for consistency -->
-  <param name="/goals/supply/point_0/x" value="$(arg supply_x)"/>
-  <param name="/goals/supply/point_0/y" value="$(arg supply_y)"/>
-  <param name="/goals/supply/point_1/x" value="$(arg supply_x)"/>
-  <param name="/goals/supply/point_1/y" value="$(arg supply_y)"/>
-  <param name="/goals/supply/point_2/x" value="$(arg supply_x)"/>
-  <param name="/goals/supply/point_2/y" value="$(arg supply_y)"/>
-  <param name="/goals/supply/point_3/x" value="$(arg supply_x)"/>
-  <param name="/goals/supply/point_3/y" value="$(arg supply_y)"/>
-  
-  <!-- WAITFOROP point - for SetGoalFromParams direct access -->
-  <param name="/goals/waitforop/x" value="$(arg waitforop_x)"/>
-  <param name="/goals/waitforop/y" value="$(arg waitforop_y)"/>
-  <!-- WAITFOROP point - also in cyclic format for consistency -->
-  <param name="/goals/waitforop/point_0/x" value="$(arg waitforop_x)"/>
-  <param name="/goals/waitforop/point_0/y" value="$(arg waitforop_y)"/>
-  <param name="/goals/waitforop/point_1/x" value="$(arg waitforop_x)"/>
-  <param name="/goals/waitforop/point_1/y" value="$(arg waitforop_y)"/>
-  <param name="/goals/waitforop/point_2/x" value="$(arg waitforop_x)"/>
-  <param name="/goals/waitforop/point_2/y" value="$(arg waitforop_y)"/>
-  <param name="/goals/waitforop/point_3/x" value="$(arg waitforop_x)"/>
-  <param name="/goals/waitforop/point_3/y" value="$(arg waitforop_y)"/>
-
-  <param name="/goals/retreat/x" value="$(arg retreat_x)"/>
-  <param name="/goals/retreat/y" value="$(arg retreat_y)"/>
-  
-  <!-- RADICAL point - for SetGoalFromParams direct access -->
-  <param name="/goals/radical/x" value="$(arg radical_x)"/>
-  <param name="/goals/radical/y" value="$(arg radical_y)"/>
-
-  <!-- RADICAL1 point - for SetGoalFromParams direct access -->
-  <param name="/goals/radical1/x" value="$(arg radical1_x)"/>
-  <param name="/goals/radical1/y" value="$(arg radical1_y)"/>
 
   <!-- 目标位姿四元数 - CalculateAngle节点使用 -->
   <param name="pose.pose.orientation.x" value="0.0"/>

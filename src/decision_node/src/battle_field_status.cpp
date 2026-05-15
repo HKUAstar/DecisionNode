@@ -110,14 +110,14 @@ public:
     (void)getInput("key", key);
     (void)getInput("expected", expected);
 
-    int value = 0;
+    bool value = false;
     try
     {
-      value = config().blackboard->get<int>(key);
+      value = config().blackboard->get<bool>(key);
     }
     catch (const std::exception& e)
     {
-      ROS_WARN_THROTTLE(2.0, "CheckIntStatus: failed to read key '%s': %s",
+      ROS_WARN_THROTTLE(2.0, "CheckVision: failed to read bool key '%s': %s",
                         key.c_str(), e.what());
       return BT::NodeStatus::FAILURE;
     }
