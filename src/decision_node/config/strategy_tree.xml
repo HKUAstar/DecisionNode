@@ -64,9 +64,15 @@
               <Fallback name="SupplyBullet">
                 <Sequence name="FreeBullet">
                   <NotBulletSufficient />
+                  <ReactiveFallback>
+                  <Sequence>
+                    <CheckVision key="ref.ally_fortress_rfid" expected="true" />
+                    <CompareValue key="count.free_bullet" threshold="0" />
+                  </Sequence>
                   <Inverter>
                     <CompareValue key="count.free_bullet" threshold="0" />
                   </Inverter>
+                  </ReactiveFallback>
                   <SetAction action="SUPPLY" />
                 </Sequence>
                 <Sequence name="BuyBullet">
@@ -150,10 +156,19 @@
                  <!-- <前哨站血量判断> -->
                  <SetAction action="ATTACK_OUTPOST" />
                 </Sequence>
+
                 <ReactiveFallback name="Moving">
                   <Sequence name="ChaseEnemy">
-                    <!-- <检查雷达数据> -->
-                    <!-- <检查哨兵位置> -->
+                    <CheckRadarStatus />
+                    <Inverter>
+                      <IsAction="UPSTAIR" />
+                      <!-- <IsAction="BASE_ALIGN" /> -->
+                      <IsAction="DOWNSTAIR" />
+                      <IsAction="ELEVATED_GROUND_PATROL0" />
+                      <IsAction="ELEVATED_GROUND_PATROL1" />
+                      <IsAction="ELEVATED_GROUND_PATROL2" />
+                      <IsAction="ELEVATED_GROUND_PATROL3" />
+                    </Inverter>
                     <SetAction action="CHASE_ENEMY" />
                   </Sequence>
                 
@@ -342,7 +357,7 @@
 
         <Sequence>
           <IsAction value="CHASE_ENEMY"/>
-          <SetGoalFromParams ns="chase_enemy" />
+          <SetChaseGoal zone_num="1" />
           <SetMotionFlag target_motion="3" />
           <PublishGoalPoint topic="clicked_point" />
           <PublishMotion />

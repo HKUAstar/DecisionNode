@@ -732,6 +732,76 @@ actionlib_generate_messages_py/fast:
 .PHONY : actionlib_generate_messages_py/fast
 
 # Convenience name for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/rule:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/rule
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/rule
+
+# Convenience name for target.
+visualization_msgs_generate_messages_cpp: decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/rule
+.PHONY : visualization_msgs_generate_messages_cpp
+
+# fast build rule for target.
+visualization_msgs_generate_messages_cpp/fast:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/build
+.PHONY : visualization_msgs_generate_messages_cpp/fast
+
+# Convenience name for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/rule:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/rule
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/rule
+
+# Convenience name for target.
+visualization_msgs_generate_messages_eus: decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/rule
+.PHONY : visualization_msgs_generate_messages_eus
+
+# fast build rule for target.
+visualization_msgs_generate_messages_eus/fast:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/build
+.PHONY : visualization_msgs_generate_messages_eus/fast
+
+# Convenience name for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/rule:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/rule
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/rule
+
+# Convenience name for target.
+visualization_msgs_generate_messages_lisp: decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/rule
+.PHONY : visualization_msgs_generate_messages_lisp
+
+# fast build rule for target.
+visualization_msgs_generate_messages_lisp/fast:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/build
+.PHONY : visualization_msgs_generate_messages_lisp/fast
+
+# Convenience name for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/rule:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/rule
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/rule
+
+# Convenience name for target.
+visualization_msgs_generate_messages_nodejs: decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/rule
+.PHONY : visualization_msgs_generate_messages_nodejs
+
+# fast build rule for target.
+visualization_msgs_generate_messages_nodejs/fast:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/build
+.PHONY : visualization_msgs_generate_messages_nodejs/fast
+
+# Convenience name for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/rule:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/rule
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/rule
+
+# Convenience name for target.
+visualization_msgs_generate_messages_py: decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/rule
+.PHONY : visualization_msgs_generate_messages_py
+
+# fast build rule for target.
+visualization_msgs_generate_messages_py/fast:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/build
+.PHONY : visualization_msgs_generate_messages_py/fast
+
+# Convenience name for target.
 decision_node/CMakeFiles/strategy_node.dir/rule:
 	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/strategy_node.dir/rule
 .PHONY : decision_node/CMakeFiles/strategy_node.dir/rule
@@ -800,6 +870,20 @@ zone_detector: decision_node/CMakeFiles/zone_detector.dir/rule
 zone_detector/fast:
 	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/build
 .PHONY : zone_detector/fast
+
+# Convenience name for target.
+decision_node/CMakeFiles/visualize.dir/rule:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualize.dir/rule
+.PHONY : decision_node/CMakeFiles/visualize.dir/rule
+
+# Convenience name for target.
+visualize: decision_node/CMakeFiles/visualize.dir/rule
+.PHONY : visualize
+
+# fast build rule for target.
+visualize/fast:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualize.dir/build.make decision_node/CMakeFiles/visualize.dir/build
+.PHONY : visualize/fast
 
 src/base_move.o: src/base_move.cpp.o
 .PHONY : src/base_move.o
@@ -1017,6 +1101,30 @@ src/test.cpp.s:
 	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/continuous_forwarder.dir/build.make decision_node/CMakeFiles/continuous_forwarder.dir/src/test.cpp.s
 .PHONY : src/test.cpp.s
 
+src/visualize.o: src/visualize.cpp.o
+.PHONY : src/visualize.o
+
+# target to build an object file
+src/visualize.cpp.o:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualize.dir/build.make decision_node/CMakeFiles/visualize.dir/src/visualize.cpp.o
+.PHONY : src/visualize.cpp.o
+
+src/visualize.i: src/visualize.cpp.i
+.PHONY : src/visualize.i
+
+# target to preprocess a source file
+src/visualize.cpp.i:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualize.dir/build.make decision_node/CMakeFiles/visualize.dir/src/visualize.cpp.i
+.PHONY : src/visualize.cpp.i
+
+src/visualize.s: src/visualize.cpp.s
+.PHONY : src/visualize.s
+
+# target to generate assembly for a file
+src/visualize.cpp.s:
+	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualize.dir/build.make decision_node/CMakeFiles/visualize.dir/src/visualize.cpp.s
+.PHONY : src/visualize.cpp.s
+
 src/zone_detector.o: src/zone_detector.cpp.o
 .PHONY : src/zone_detector.o
 
@@ -1094,10 +1202,16 @@ help:
 	@echo "... tf2_msgs_generate_messages_lisp"
 	@echo "... tf2_msgs_generate_messages_nodejs"
 	@echo "... tf2_msgs_generate_messages_py"
+	@echo "... visualization_msgs_generate_messages_cpp"
+	@echo "... visualization_msgs_generate_messages_eus"
+	@echo "... visualization_msgs_generate_messages_lisp"
+	@echo "... visualization_msgs_generate_messages_nodejs"
+	@echo "... visualization_msgs_generate_messages_py"
 	@echo "... command_test"
 	@echo "... continuous_forwarder"
 	@echo "... mcu_communicator"
 	@echo "... strategy_node"
+	@echo "... visualize"
 	@echo "... zone_detector"
 	@echo "... src/base_move.o"
 	@echo "... src/base_move.i"
@@ -1126,6 +1240,9 @@ help:
 	@echo "... src/test.o"
 	@echo "... src/test.i"
 	@echo "... src/test.s"
+	@echo "... src/visualize.o"
+	@echo "... src/visualize.i"
+	@echo "... src/visualize.s"
 	@echo "... src/zone_detector.o"
 	@echo "... src/zone_detector.i"
 	@echo "... src/zone_detector.s"

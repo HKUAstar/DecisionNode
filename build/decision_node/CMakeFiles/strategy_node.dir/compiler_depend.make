@@ -6516,6 +6516,9 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
   /opt/ros/noetic/include/behaviortree_cpp_v3/decorators/timer_queue.h \
   /opt/ros/noetic/include/behaviortree_cpp_v3/exceptions.h \
   /opt/ros/noetic/include/behaviortree_cpp_v3/leaf_node.h \
+  /opt/ros/noetic/include/behaviortree_cpp_v3/loggers/abstract_logger.h \
+  /opt/ros/noetic/include/behaviortree_cpp_v3/loggers/bt_file_logger.h \
+  /opt/ros/noetic/include/behaviortree_cpp_v3/loggers/bt_zmq_publisher.h \
   /opt/ros/noetic/include/behaviortree_cpp_v3/tree_node.h \
   /opt/ros/noetic/include/behaviortree_cpp_v3/utils/any.hpp \
   /opt/ros/noetic/include/behaviortree_cpp_v3/utils/convert_impl.hpp \
@@ -6597,6 +6600,7 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
   /opt/ros/noetic/include/std_msgs/Bool.h \
   /opt/ros/noetic/include/std_msgs/Float32.h \
   /opt/ros/noetic/include/std_msgs/Header.h \
+  /opt/ros/noetic/include/std_msgs/Int16.h \
   /opt/ros/noetic/include/std_msgs/Int32.h \
   /opt/ros/noetic/include/std_msgs/UInt16.h \
   /opt/ros/noetic/include/std_msgs/UInt8.h \
@@ -7822,7 +7826,13 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/x86_64-linux-gnu/c++/9/bits/c++io.h:
 
+/opt/ros/noetic/include/std_msgs/Int16.h:
+
 /opt/ros/noetic/include/geometry_msgs/Twist.h:
+
+/opt/ros/noetic/include/behaviortree_cpp_v3/loggers/bt_zmq_publisher.h:
+
+/opt/ros/noetic/include/behaviortree_cpp_v3/loggers/bt_file_logger.h:
 
 /opt/ros/noetic/include/std_msgs/UInt16.h:
 
@@ -7881,6 +7891,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/x86_64-linux-gnu/sys/select.h:
 
 /usr/include/x86_64-linux-gnu/c++/9/bits/time_members.h:
+
+/opt/ros/noetic/include/behaviortree_cpp_v3/loggers/abstract_logger.h:
 
 /usr/include/x86_64-linux-gnu/c++/9/bits/gthr.h:
 

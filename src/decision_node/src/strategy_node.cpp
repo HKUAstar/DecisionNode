@@ -25,6 +25,7 @@
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/Int16.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/UInt8.h>
 
@@ -134,25 +135,29 @@ struct RefereeState
   uint16_t projectile_allowance; //全队可兑换17mm弹量（bit 1-11）
   bool power_rune_available; // 是否有可用的能量符（bit 14)
 
-  int16_t enemy_hero_x;     // 敌方英雄X (cm)
-  int16_t enemy_hero_y;     // 敌方英雄Y (cm)
-  int16_t enemy_engineer_x; // 敌方工程X (cm)
-  int16_t enemy_engineer_y; // 敌方工程Y (cm)
+  float enemy_hero_x;     // 敌方英雄X (m)
+  float enemy_hero_y;     // 敌方英雄Y (m)
+  float enemy_engineer_x; // 敌方工程X (m)
+  float enemy_engineer_y; // 敌方工程Y (m)
 
-  int16_t enemy_std3_x;     // 敌方步兵3 X 
-  int16_t enemy_std3_y;     // 敌方步兵3 Y 
-  int16_t enemy_std4_x;     // 敌方步兵4 X 
-  int16_t enemy_std4_y;     // 敌方步兵4 Y 
+  float enemy_std3_x;     // 敌方步兵3 X (m)
+  float enemy_std3_y;     // 敌方步兵3 Y (m)
+  float enemy_std4_x;     // 敌方步兵4 X (m)
+  float enemy_std4_y;     // 敌方步兵4 Y (m)
 
-  int16_t enemy_sentry_x;   // 敌方哨兵X 
-  int16_t enemy_sentry_y;   // 敌方哨兵Y 
+  float enemy_sentry_x;   // 敌方哨兵X (m)
+  float enemy_sentry_y;   // 敌方哨兵Y (m) 
   uint8_t suggested_target; // 雷达建议目标
   uint16_t radar_flags;     // 雷达标记信息
 
   uint16_t enemy_base_HP;     //敌方基地血量
   
+  int16_t operator_x;       // 操作手坐标X (mm，来自 /referee/operator Point)
+  int16_t operator_y;       // 操作手坐标Y (mm，来自 /referee/operator Point)
+
   bool supplement_resource;  // /referee/supplement_resource
   bool supplement_nonresource; // /referee/supplement_nonresource
+  bool ally_fortress_rfid;   // /ally_fortress_rfid
 
 };
 
@@ -216,7 +221,10 @@ public:
     bb->set("ref.suggested_target", state_->suggested_target);
     bb->set("ref.radar_flags", state_->radar_flags);
     bb->set("ref.enemy_base_HP", state_->enemy_base_HP);
+    bb->set("ref.operator_x", state_->operator_x);
+    bb->set("ref.operator_y", state_->operator_y);
     bb->set("ref.supplement", state_->supplement_resource || state_->supplement_nonresource);
+    bb->set("ref.ally_fortress_rfid", state_->ally_fortress_rfid);
     
     return BT::NodeStatus::SUCCESS;
   }
@@ -1256,26 +1264,26 @@ int main(int argc, char** argv)
     ref.power_rune_available = msg->data;
   });
 
-  // 敌方位置（geometry_msgs::Point → int16_t cm，注意单位转换 m → cm）
+  // 敌方位置（geometry_msgs::Point，单位 m → 直接存 float）
   auto sub_enemy_hero = nh.subscribe<geometry_msgs::Point>("/enemy/hero_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
-    ref.enemy_hero_x = static_cast<int16_t>(msg->x * 100.0f);
-    ref.enemy_hero_y = static_cast<int16_t>(msg->y * 100.0f);
+    ref.enemy_hero_x = msg->x;
+    ref.enemy_hero_y = msg->y;
   });
   auto sub_enemy_eng = nh.subscribe<geometry_msgs::Point>("/enemy/engineer_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
-    ref.enemy_engineer_x = static_cast<int16_t>(msg->x * 100.0f);
-    ref.enemy_engineer_y = static_cast<int16_t>(msg->y * 100.0f);
+    ref.enemy_engineer_x = msg->x;
+    ref.enemy_engineer_y = msg->y;
   });
   auto sub_enemy_std3 = nh.subscribe<geometry_msgs::Point>("/enemy/standard_3_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
-    ref.enemy_std3_x = static_cast<int16_t>(msg->x * 100.0f);
-    ref.enemy_std3_y = static_cast<int16_t>(msg->y * 100.0f);
+    ref.enemy_std3_x = msg->x;
+    ref.enemy_std3_y = msg->y;
   });
   auto sub_enemy_std4 = nh.subscribe<geometry_msgs::Point>("/enemy/standard_4_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
-    ref.enemy_std4_x = static_cast<int16_t>(msg->x * 100.0f);
-    ref.enemy_std4_y = static_cast<int16_t>(msg->y * 100.0f);
+    ref.enemy_std4_x = msg->x;
+    ref.enemy_std4_y = msg->y;
   });
   auto sub_enemy_sentry = nh.subscribe<geometry_msgs::Point>("/enemy/sentry_position", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
-    ref.enemy_sentry_x = static_cast<int16_t>(msg->x * 100.0f);
-    ref.enemy_sentry_y = static_cast<int16_t>(msg->y * 100.0f);
+    ref.enemy_sentry_x = msg->x;
+    ref.enemy_sentry_y = msg->y;
   });
 
   // 雷达
@@ -1291,12 +1299,21 @@ int main(int argc, char** argv)
     ref.enemy_base_HP = msg->data;
   });
 
+  // 操作手坐标 (geometry_msgs::Point, m → mm)
+  auto sub_operator = nh.subscribe<geometry_msgs::Point>("/referee/operator", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
+    ref.operator_x = static_cast<int16_t>(msg->x * 1000.0f);
+    ref.operator_y = static_cast<int16_t>(msg->y * 1000.0f);
+  });
+
   // 补弹资源
   auto sub_supplement_resource = nh.subscribe<std_msgs::Bool>("/referee/supplement_resource", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
     ref.supplement_resource = msg->data;
   });
   auto sub_supplement_nonresource = nh.subscribe<std_msgs::Bool>("/referee/supplement_nonresource", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
     ref.supplement_nonresource = msg->data;
+  });
+  auto sub_ally_fortress_rfid = nh.subscribe<std_msgs::Bool>("ally_fortress_rfid", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
+    ref.ally_fortress_rfid = msg->data;
   });
 
   // Navigation arrived (复用现有语义)
@@ -1466,6 +1483,8 @@ int main(int argc, char** argv)
   blackboard->set("server_yaw_flag", 0);  // 服务端yaw标志，默认为0
   blackboard->set("odom.target_angle", 0.0);  // 目标绝对角度，FindAngle计算
   blackboard->set("odom.target_yaw", 0.0);    // 目标相对角度，CalculateAngle计算
+  blackboard->set("odom.x", 0.0);             // 当前经TF转换后的x坐标
+  blackboard->set("odom.y", 0.0);             // 当前经TF转换后的y坐标
 
   // ============================================================
   // TF 标定：从 launch 参数读取 4 组点对 (src → tgt)，
@@ -1522,19 +1541,21 @@ int main(int argc, char** argv)
   blackboard->set("ref.out_of_combat", true);
   blackboard->set("ref.projectile_allowance", uint16_t(400));
   blackboard->set("ref.power_rune_available", false);
-  blackboard->set("ref.enemy_hero_x", int16_t(-8888));
-  blackboard->set("ref.enemy_hero_y", int16_t(-8888));
-  blackboard->set("ref.enemy_engineer_x", int16_t(-8888));
-  blackboard->set("ref.enemy_engineer_y", int16_t(-8888));
-  blackboard->set("ref.enemy_std3_x", int16_t(-8888));
-  blackboard->set("ref.enemy_std3_y", int16_t(-8888));
-  blackboard->set("ref.enemy_std4_x", int16_t(-8888));
-  blackboard->set("ref.enemy_std4_y", int16_t(-8888));
-  blackboard->set("ref.enemy_sentry_x", int16_t(-8888));
-  blackboard->set("ref.enemy_sentry_y", int16_t(-8888));
+  blackboard->set("ref.enemy_hero_x", -88.88f);
+  blackboard->set("ref.enemy_hero_y", -88.88f);
+  blackboard->set("ref.enemy_engineer_x", -88.88f);
+  blackboard->set("ref.enemy_engineer_y", -88.88f);
+  blackboard->set("ref.enemy_std3_x", -88.88f);
+  blackboard->set("ref.enemy_std3_y", -88.88f);
+  blackboard->set("ref.enemy_std4_x", -88.88f);
+  blackboard->set("ref.enemy_std4_y", -88.88f);
+  blackboard->set("ref.enemy_sentry_x", -88.88f);
+  blackboard->set("ref.enemy_sentry_y", -88.88f);
   blackboard->set("ref.suggested_target", uint8_t(0));
   blackboard->set("ref.radar_flags", uint16_t(0));
   blackboard->set("ref.enemy_base_HP", uint16_t(5000));
+  blackboard->set("ref.operator_x", int16_t(-8888));
+  blackboard->set("ref.operator_y", int16_t(-8888));
 
   // Chase mode initialization
   blackboard->set("chase.target_id", uint8_t(0));
@@ -1564,30 +1585,11 @@ int main(int argc, char** argv)
   BT::Tree tree = factory.createTreeFromText(xml_text, blackboard);
 
   // ============================================================
-  // Groot2 可视化调试支持
+  // Groot2 可视化调试支持（ZMQ + 文件日志）
   // ============================================================
-  BT::Groot2Publisher publisher(tree, 1667);
-  BT::FileLogger2 file_logger(tree, "behavior_log.btlog");
-  ROS_INFO("Groot2 publisher started on port 1667, logging to behavior_log.btlog");
-
-  // ============================================================
-  // 导出节点模型 XML 供 Groot2 导入
-  // ============================================================
-  {
-    std::string node_models = BT::writeTreeNodesModelXML(factory);
-    std::string model_path = ros::package::getPath("decision_node") + "/config/node_models.xml";
-    std::ofstream f(model_path);
-    if (f.is_open())
-    {
-      f << node_models;
-      f.close();
-      ROS_INFO("Exported node models to %s (%zu bytes)", model_path.c_str(), node_models.size());
-    }
-    else
-    {
-      ROS_WARN("Failed to write node_models.xml to %s", model_path.c_str());
-    }
-  }
+  BT::PublisherZMQ publisher(tree);
+  BT::FileLogger file_logger(tree, "behavior_log.fbl");
+  ROS_INFO("ZMQ publisher started (port 1667), logging to behavior_log.fbl");
 
   // 初始化时发送一次默认数据到下位机
   {

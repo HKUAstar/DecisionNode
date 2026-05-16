@@ -1,0 +1,8 @@
+<launch>
+  <arg name="map_file" default="$(find decision_node)/map/RMUC2026_decision.yaml"/>
+
+  <node pkg="map_server" type="map_server" name="map_server" args="$(arg map_file)" output="screen">
+    <remap from="map" to="/map"/>
+    <remap from="map_metadata" to="/map_metadata"/>
+  </node>
+</launch>

@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
     tf2
     tf2_ros
     tf2_geometry_msgs
+    visualization_msgs
+    roslib
 )
 
 find_package(behaviortree_cpp_v3 REQUIRED)
@@ -54,6 +56,8 @@ add_executable(command_test src/command_test.cpp)
 
 add_executable(zone_detector src/zone_detector.cpp)
 
+add_executable(visualize src/visualize.cpp)
+
 target_link_libraries(strategy_node
     ${catkin_LIBRARIES}
     ${behaviortree_cpp_v3_LIBRARIES}
@@ -71,10 +75,15 @@ target_link_libraries(zone_detector
     yaml-cpp
 )
 
+target_link_libraries(visualize
+    ${catkin_LIBRARIES}
+    yaml-cpp
+)
+
 # 安装规则 mcu_communicator
 install(DIRECTORY config launch
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(TARGETS strategy_node continuous_forwarder mcu_communicator command_test zone_detector
+install(TARGETS strategy_node continuous_forwarder mcu_communicator command_test zone_detector visualize
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 

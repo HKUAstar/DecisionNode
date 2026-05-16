@@ -245,7 +245,14 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: \
  /usr/include/c++/9/bits/stl_deque.h /usr/include/c++/9/bits/deque.tcc \
  /usr/include/c++/9/bits/stl_queue.h \
  /opt/ros/noetic/include/behaviortree_cpp_v3/decorators/delay_node.h \
- /opt/ros/noetic/include/ros/ros.h /opt/ros/noetic/include/ros/time.h \
+ /opt/ros/noetic/include/behaviortree_cpp_v3/loggers/bt_zmq_publisher.h \
+ /opt/ros/noetic/include/behaviortree_cpp_v3/loggers/abstract_logger.h \
+ /opt/ros/noetic/include/behaviortree_cpp_v3/loggers/bt_file_logger.h \
+ /usr/include/c++/9/fstream /usr/include/c++/9/bits/codecvt.h \
+ /usr/include/x86_64-linux-gnu/c++/9/bits/basic_file.h \
+ /usr/include/x86_64-linux-gnu/c++/9/bits/c++io.h \
+ /usr/include/c++/9/bits/fstream.tcc /opt/ros/noetic/include/ros/ros.h \
+ /opt/ros/noetic/include/ros/time.h \
  /opt/ros/noetic/include/ros/platform.h /usr/include/c++/9/stdlib.h \
  /usr/include/c++/9/cmath /usr/include/math.h \
  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
@@ -307,8 +314,7 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: \
  /usr/include/c++/9/bits/locale_facets_nonio.h \
  /usr/include/x86_64-linux-gnu/c++/9/bits/time_members.h \
  /usr/include/x86_64-linux-gnu/c++/9/bits/messages_members.h \
- /usr/include/libintl.h /usr/include/c++/9/bits/codecvt.h \
- /usr/include/c++/9/bits/locale_facets_nonio.tcc \
+ /usr/include/libintl.h /usr/include/c++/9/bits/locale_facets_nonio.tcc \
  /usr/include/c++/9/bits/locale_conv.h \
  /usr/include/c++/9/bits/quoted_string.h \
  /usr/include/boost/config/no_tr1/complex.hpp /usr/include/c++/9/complex \
@@ -1204,11 +1210,9 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: \
  /opt/ros/noetic/include/geometry_msgs/Vector3.h \
  /opt/ros/noetic/include/std_msgs/Bool.h \
  /opt/ros/noetic/include/std_msgs/Float32.h \
+ /opt/ros/noetic/include/std_msgs/Int16.h \
  /opt/ros/noetic/include/std_msgs/Int32.h \
- /opt/ros/noetic/include/std_msgs/UInt8.h /usr/include/c++/9/fstream \
- /usr/include/x86_64-linux-gnu/c++/9/bits/basic_file.h \
- /usr/include/x86_64-linux-gnu/c++/9/bits/c++io.h \
- /usr/include/c++/9/bits/fstream.tcc \
+ /opt/ros/noetic/include/std_msgs/UInt8.h \
  /mnt/d/decision_ws/src/decision_node/include/decision_node/battle_field_status.hpp \
  /mnt/d/decision_ws/src/decision_node/include/decision_node/motion_change.hpp \
  /mnt/d/decision_ws/src/decision_node/include/decision_node/recover_change.hpp \

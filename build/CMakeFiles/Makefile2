@@ -91,6 +91,7 @@ decision_node/all: decision_node/CMakeFiles/continuous_forwarder.dir/all
 decision_node/all: decision_node/CMakeFiles/mcu_communicator.dir/all
 decision_node/all: decision_node/CMakeFiles/command_test.dir/all
 decision_node/all: decision_node/CMakeFiles/zone_detector.dir/all
+decision_node/all: decision_node/CMakeFiles/visualize.dir/all
 .PHONY : decision_node/all
 
 # Recursive "preinstall" directory target.
@@ -138,11 +139,17 @@ decision_node/clean: decision_node/CMakeFiles/actionlib_generate_messages_eus.di
 decision_node/clean: decision_node/CMakeFiles/actionlib_generate_messages_lisp.dir/clean
 decision_node/clean: decision_node/CMakeFiles/actionlib_generate_messages_nodejs.dir/clean
 decision_node/clean: decision_node/CMakeFiles/actionlib_generate_messages_py.dir/clean
+decision_node/clean: decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/clean
+decision_node/clean: decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/clean
+decision_node/clean: decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/clean
+decision_node/clean: decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/clean
+decision_node/clean: decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/clean
 decision_node/clean: decision_node/CMakeFiles/strategy_node.dir/clean
 decision_node/clean: decision_node/CMakeFiles/continuous_forwarder.dir/clean
 decision_node/clean: decision_node/CMakeFiles/mcu_communicator.dir/clean
 decision_node/clean: decision_node/CMakeFiles/command_test.dir/clean
 decision_node/clean: decision_node/CMakeFiles/zone_detector.dir/clean
+decision_node/clean: decision_node/CMakeFiles/visualize.dir/clean
 .PHONY : decision_node/clean
 
 #=============================================================================
@@ -1469,6 +1476,136 @@ decision_node/CMakeFiles/actionlib_generate_messages_py.dir/clean:
 .PHONY : decision_node/CMakeFiles/actionlib_generate_messages_py.dir/clean
 
 #=============================================================================
+# Target rules for target decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir
+
+# All Build rule for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/all:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/depend
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num= "Built target visualization_msgs_generate_messages_cpp"
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/all
+
+# Build rule for subdir invocation for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/rule
+
+# Convenience name for target.
+visualization_msgs_generate_messages_cpp: decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/rule
+.PHONY : visualization_msgs_generate_messages_cpp
+
+# clean rule for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/clean:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/clean
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_cpp.dir/clean
+
+#=============================================================================
+# Target rules for target decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir
+
+# All Build rule for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/all:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/depend
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num= "Built target visualization_msgs_generate_messages_eus"
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/all
+
+# Build rule for subdir invocation for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/rule
+
+# Convenience name for target.
+visualization_msgs_generate_messages_eus: decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/rule
+.PHONY : visualization_msgs_generate_messages_eus
+
+# clean rule for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/clean:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/clean
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_eus.dir/clean
+
+#=============================================================================
+# Target rules for target decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir
+
+# All Build rule for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/all:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/depend
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num= "Built target visualization_msgs_generate_messages_lisp"
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/all
+
+# Build rule for subdir invocation for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/rule
+
+# Convenience name for target.
+visualization_msgs_generate_messages_lisp: decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/rule
+.PHONY : visualization_msgs_generate_messages_lisp
+
+# clean rule for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/clean:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/clean
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_lisp.dir/clean
+
+#=============================================================================
+# Target rules for target decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir
+
+# All Build rule for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/all:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/depend
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num= "Built target visualization_msgs_generate_messages_nodejs"
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/all
+
+# Build rule for subdir invocation for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/rule
+
+# Convenience name for target.
+visualization_msgs_generate_messages_nodejs: decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/rule
+.PHONY : visualization_msgs_generate_messages_nodejs
+
+# clean rule for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/clean:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/clean
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_nodejs.dir/clean
+
+#=============================================================================
+# Target rules for target decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir
+
+# All Build rule for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/all:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/depend
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num= "Built target visualization_msgs_generate_messages_py"
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/all
+
+# Build rule for subdir invocation for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/rule
+
+# Convenience name for target.
+visualization_msgs_generate_messages_py: decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/rule
+.PHONY : visualization_msgs_generate_messages_py
+
+# clean rule for target.
+decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/clean:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/build.make decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/clean
+.PHONY : decision_node/CMakeFiles/visualization_msgs_generate_messages_py.dir/clean
+
+#=============================================================================
 # Target rules for target decision_node/CMakeFiles/strategy_node.dir
 
 # All Build rule for target.
@@ -1579,7 +1716,7 @@ decision_node/CMakeFiles/command_test.dir/clean:
 decision_node/CMakeFiles/zone_detector.dir/all:
 	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/depend
 	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num=22,23 "Built target zone_detector"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num=24,25 "Built target zone_detector"
 .PHONY : decision_node/CMakeFiles/zone_detector.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1597,6 +1734,32 @@ zone_detector: decision_node/CMakeFiles/zone_detector.dir/rule
 decision_node/CMakeFiles/zone_detector.dir/clean:
 	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/clean
 .PHONY : decision_node/CMakeFiles/zone_detector.dir/clean
+
+#=============================================================================
+# Target rules for target decision_node/CMakeFiles/visualize.dir
+
+# All Build rule for target.
+decision_node/CMakeFiles/visualize.dir/all:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualize.dir/build.make decision_node/CMakeFiles/visualize.dir/depend
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualize.dir/build.make decision_node/CMakeFiles/visualize.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num=22,23 "Built target visualize"
+.PHONY : decision_node/CMakeFiles/visualize.dir/all
+
+# Build rule for subdir invocation for target.
+decision_node/CMakeFiles/visualize.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualize.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
+.PHONY : decision_node/CMakeFiles/visualize.dir/rule
+
+# Convenience name for target.
+visualize: decision_node/CMakeFiles/visualize.dir/rule
+.PHONY : visualize
+
+# clean rule for target.
+decision_node/CMakeFiles/visualize.dir/clean:
+	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualize.dir/build.make decision_node/CMakeFiles/visualize.dir/clean
+.PHONY : decision_node/CMakeFiles/visualize.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

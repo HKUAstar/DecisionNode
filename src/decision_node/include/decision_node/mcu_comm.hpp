@@ -57,6 +57,7 @@ struct HKFrameHeader
 // HK协议数据负载 - 比赛数据帧 (69字节)
 struct HKGameData
 {
+    //视觉位
     float yaw_angle;          // 云台yaw角 (rad)
     float chassis_imu;
 
@@ -65,6 +66,7 @@ struct HKGameData
 
     uint16_t ally_base_HP;    //基地血量
     //己方前哨站血量
+    // uint16_t ally_outpost_HP;
 
     //下面的要从uint32_t event_data;解包出来
     uint8_t central_elevated_ground_status; // 中央高地状态（bit 7-8）
@@ -80,10 +82,20 @@ struct HKGameData
     uint16_t remaining_gold_coin;
 
     //0209
-    //己方基地增一点
+    //己方基地增益点
+    // bool ally_base_rfid;
     //己方梯形高地增益点
+    //bool ally_trapezoidal_rfid;
     //己方堡垒增益点
+    //bool ally_fortress_rfid;
     //己方与资源区重合补充和增益点
+    //bool supplement_resource;
+    //bool supplement_nonresource;
+
+    //云台手坐标xcm
+    //云台手坐标ycm
+    //云台手信号
+    
     //下面的要从uint32_t sentry_info;解包出来
     uint16_t accumulated_bullet_conversion; // 累计哨兵远程兑换弹量（bit 0-10）
     bool can_exchange_respawn;     // 哨兵是否可兑换复活（bit 20）

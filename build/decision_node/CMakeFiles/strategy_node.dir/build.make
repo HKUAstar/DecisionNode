@@ -181,7 +181,6 @@ strategy_node_EXTERNAL_OBJECTS =
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libroscpp.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libpthread.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librosconsole.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librosconsole_log4cxx.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librosconsole_backend_interface.so
@@ -193,9 +192,15 @@ strategy_node_EXTERNAL_OBJECTS =
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librostime.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libcpp_common.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4
+/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libroslib.so
+/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librospack.so
+/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libpython3.8.so
+/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
+/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0
+/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
+/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libtinyxml2.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libbehaviortree_cpp_v3.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libroslib.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librospack.so
@@ -205,26 +210,7 @@ strategy_node_EXTERNAL_OBJECTS =
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libtinyxml2.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librosconsole.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librosconsole_log4cxx.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librosconsole_backend_interface.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/liblog4cxx.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libxmlrpcpp.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libtf2.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libroscpp_serialization.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librostime.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libcpp_common.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libbehaviortree_cpp_v3.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/libroslib.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /opt/ros/noetic/lib/librospack.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libpython3.8.so
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0
-/mnt/d/decision_ws/devel/lib/decision_node/strategy_node: /usr/lib/x86_64-linux-gnu/libtinyxml2.so
 /mnt/d/decision_ws/devel/lib/decision_node/strategy_node: decision_node/CMakeFiles/strategy_node.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable /mnt/d/decision_ws/devel/lib/decision_node/strategy_node"
 	cd /mnt/d/decision_ws/build/decision_node && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/strategy_node.dir/link.txt --verbose=$(VERBOSE)

@@ -101,7 +101,6 @@ continuous_forwarder_EXTERNAL_OBJECTS =
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /opt/ros/noetic/lib/libroscpp.so
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libpthread.so
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0
-/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /opt/ros/noetic/lib/librosconsole.so
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /opt/ros/noetic/lib/librosconsole_log4cxx.so
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /opt/ros/noetic/lib/librosconsole_backend_interface.so
@@ -113,9 +112,15 @@ continuous_forwarder_EXTERNAL_OBJECTS =
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /opt/ros/noetic/lib/librostime.so
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /opt/ros/noetic/lib/libcpp_common.so
-/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4
+/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /opt/ros/noetic/lib/libroslib.so
+/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /opt/ros/noetic/lib/librospack.so
+/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libpython3.8.so
+/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
+/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0
+/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
+/mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: /usr/lib/x86_64-linux-gnu/libtinyxml2.so
 /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder: decision_node/CMakeFiles/continuous_forwarder.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable /mnt/d/decision_ws/devel/lib/decision_node/continuous_forwarder"
 	cd /mnt/d/decision_ws/build/decision_node && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/continuous_forwarder.dir/link.txt --verbose=$(VERBOSE)

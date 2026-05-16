@@ -61,6 +61,13 @@ public:
         pub_suggested_target_ = nh_.advertise<std_msgs::UInt8>("/radar/suggested_target", 1);
         pub_radar_flags_ = nh_.advertise<std_msgs::UInt16>("/radar/radar_flags", 1);
 
+        // 补弹资源
+        pub_supplement_resource_ = nh_.advertise<std_msgs::Bool>("/referee/supplement_resource", 1);
+        pub_supplement_nonresource_ = nh_.advertise<std_msgs::Bool>("/referee/supplement_nonresource", 1);
+
+        // 操作手坐标 (geometry_msgs::Point, m)
+        pub_operator_ = nh_.advertise<geometry_msgs::Point>("/referee/operator", 1);
+
         // 导航相关（供 mcu_communicator 订阅）
         pub_cmd_vel_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
         pub_dstar_status_ = nh_.advertise<std_msgs::Bool>("/dstar_status", 1);
@@ -123,6 +130,9 @@ public:
             else if (command == "radar_flags")   { handleUInt16("/radar/radar_flags", pub_radar_flags_); }
             else if (command == "navigation")    { handleNavigation(); }
             else if (command == "dstar")         { handleDstar(); }
+            else if (command == "supp_resource")  { handleBool("/referee/supplement_resource", pub_supplement_resource_); }
+            else if (command == "supp_nonres")    { handleBool("/referee/supplement_nonresource", pub_supplement_nonresource_); }
+            else if (command == "operator")       { handleOperatorCoords(); }
             else if (!command.empty())
             {
                 std::cout << "Unknown command: " << command << std::endl;
@@ -165,6 +175,9 @@ private:
     ros::Publisher pub_enemy_sentry_;
     ros::Publisher pub_suggested_target_;
     ros::Publisher pub_radar_flags_;
+    ros::Publisher pub_supplement_resource_;
+    ros::Publisher pub_supplement_nonresource_;
+    ros::Publisher pub_operator_;
     ros::Publisher pub_cmd_vel_;
     ros::Publisher pub_dstar_status_;
 
@@ -228,6 +241,23 @@ private:
             ROS_INFO("Published %s = %.4f", topic.c_str(), val);
         }
         else { std::cin.clear(); std::cin.ignore(10000, '\n'); }
+    }
+
+    void handleOperatorCoords()
+    {
+        float x, y;
+        std::cout << "Enter x (m): ";
+        if (!(std::cin >> x)) { std::cin.clear(); std::cin.ignore(10000, '\n'); return; }
+        std::cout << "Enter y (m): ";
+        if (!(std::cin >> y)) { std::cin.clear(); std::cin.ignore(10000, '\n'); return; }
+        std::cin.ignore();
+
+        geometry_msgs::Point msg;
+        msg.x = x;
+        msg.y = y;
+        msg.z = 0.0f;
+        pub_operator_.publish(msg);
+        ROS_INFO("Published /referee/operator = (%.2f, %.2f)", x, y);
     }
 
     void handleBool(const std::string& topic, ros::Publisher& pub)
@@ -355,6 +385,10 @@ private:
         std::cout << "   suggested / radar_flags" << std::endl;
         std::cout << " Nav:" << std::endl;
         std::cout << "   navigation (vx,vy -> /cmd_vel) / dstar" << std::endl;
+        std::cout << " Supplement:" << std::endl;
+        std::cout << "   supp_resource / supp_nonres" << std::endl;
+        std::cout << " Operator:" << std::endl;
+        std::cout << "   operator (input x,y in m → Point)" << std::endl;
         std::cout << "   quit" << std::endl;
         std::cout << "=======================================================" << std::endl;
     }
