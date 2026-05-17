@@ -183,6 +183,7 @@ struct OdomState
 struct VisionState
 {
   float target_distance = 0.0f;  // /vision/target_distance
+  bool detected = false;         // /vision/detected
 };
 
 // ---------------------------
@@ -414,6 +415,7 @@ public:
   BT::NodeStatus tick() override
   {
     config().blackboard->set("vision.target_distance", state_->target_distance);
+    config().blackboard->set("vision.detected", state_->detected);
     return BT::NodeStatus::SUCCESS;
   }
 
@@ -433,7 +435,18 @@ public:
 
   BT::NodeStatus tick() override
   {
-    // 预留：[TODO] 后续可把 Strategy_Task.c 里的计数器/超时机制迁移到这里
+    auto bb = config().blackboard;
+
+    // 初始化 enemy_outpost 标志位（默认 true，表示有敌方前哨站）
+    try
+    {
+      (void)bb->get<bool>("count.enemy_outpost");
+    }
+    catch (...)
+    {
+      bb->set("count.enemy_outpost", true);
+    }
+
     return BT::NodeStatus::SUCCESS;
   }
 };
@@ -880,7 +893,7 @@ public:
     }
     config().blackboard->set("action", toUpper(action));
    
-     ROS_INFO_THROTTLE(0.1, "[SetAction] action set to %s", toUpper(action).c_str());
+     ROS_INFO_THROTTLE(2.0, "[SetAction] action set to %s", toUpper(action).c_str());
     return BT::NodeStatus::SUCCESS;
   }
 };
@@ -1671,6 +1684,9 @@ int main(int argc, char** argv)
   });
   auto sub_target_distance = nh.subscribe<std_msgs::Float32>("/vision/target_distance", 1, [&](const std_msgs::Float32::ConstPtr& msg) {
     vis.target_distance = msg->data;
+  });
+  auto sub_vision_detected = nh.subscribe<std_msgs::Bool>("/vision/detected", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
+    vis.detected = msg->data;
   });
 
   // Navigation arrived (复用现有语义)

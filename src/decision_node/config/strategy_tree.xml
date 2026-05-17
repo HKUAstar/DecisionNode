@@ -77,6 +77,9 @@
 
             <Sequence name="MaintainOperatorCommand">
               <IsAction value="OPERATOR_COMMAND" />
+              <Inverter>
+              <CheckArrived/>
+              </Inverter>
               <IncrementCounter counter_key="operator_command_count" threshold="500" />
               <SetAction action="OPERATOR_COMMAND" />
             </Sequence>
@@ -108,7 +111,7 @@
                       <CompareValue key="ref.projectile_allowance_fortress" threshold="1" />
                     </Sequence>
                   </ReactiveFallback>
-              <Fallback name="SupplyBullet">
+              <ReactiveFallback name="SupplyBullet">
                 <Sequence name="FreeBullet">
             
                   <Inverter>
@@ -144,7 +147,7 @@
                   </Inverter>
                   <SetAction action="GOTO_BUY" />
                 </Sequence>
-              </Fallback>
+              </ReactiveFallback>
               </Sequence>
 
             </ReactiveFallback>
@@ -180,19 +183,37 @@
 
               <Sequence name="MaintainAttackOutpost">
                 <IsAction value="STAY_AT_OUTPOST" />
+                <ReactiveFallback>
                 <WaitForVision duration="10" key="vision.detected" />
+                <Sequence>
+                <SetBBValue key="count.enemy_outpost" type="bool" value="false" />
+                <AlwaysFailure/>
+                </Sequence>
+                </ReactiveFallback>
                 <SetAction action="STAY_AT_OUTPOST" />
-              </Sequence>
-
-              <Sequence>
-              <IsAction value="ATTACK_OUTPOST"/>
-              <SetAction action="ATTACK_OUTPOST"/>
               </Sequence>
 
 
               <Sequence name="StopWhenFindEnemy">
                 <CheckVision key="vision.detected" expected="true" />
+                <Inverter>
+                <ReactiveFallback>
+                <IsAction value="STAY_AT_FORTRESS"/>
+                <IsAction value="STAY_AT_OUTPOST"/>
+                </ReactiveFallback>
+                </Inverter>
                 <SetAction action="VISION" />
+              </Sequence>
+
+              <Sequence>
+              <Inverter>
+              <ReactiveFallback>
+              <IsAction value="STAY_AT_OUTPOST"/>
+              <IsAction value="VISION"/>
+              </ReactiveFallback>
+              </Inverter>
+              <CheckVision key="count.enemy_outpost" expected="true" />
+              <SetAction action="ATTACK_OUTPOST"/>
               </Sequence>
 
               <Sequence name="DefendOutpost">
@@ -207,10 +228,16 @@
                 <SetAction action="DEFEND_FORTRESS"/>
               </Sequence>
 
+              <Sequence>
+              <IsAction value="DEFEND_FORTRESS" />
+              <CheckArrived/>
+              <SetAction action="STAY_AT_FORTRESS"/>
+              </Sequence>
+
               <Sequence name="MaintainFortress">
-                <IsAction value="DEFEND_FORTRESS" />
+                <IsAction value="STAY_AT_FORTRESS" />
                 <WaitForVision duration="10" key="vision.detected" />
-                <SetAction action="DEFEND_FORTRESS"/>
+                <SetAction action="STAY_AT_FORTRESS"/>
               </Sequence>
 
               <ReactiveFallback name="Attack">
@@ -410,16 +437,19 @@
         <Sequence>
           <IsAction value="DEFEND_FORTRESS"/>
           <SetGoalFromParams ns="defend_fortress" />
-          <ReactiveFallback>
-          <Sequence>
-          <IntenseHarm threshold_activate="100" threshold_deactivate="50" />
           <SetMotionFlag target_motion="3" />
-          </Sequence>
-          <SetMotionFlag target_motion="1" />
-          </ReactiveFallback>
           <PublishGoalPoint topic="clicked_point" />
           <PublishMotion/>
         </Sequence>
+
+        <Sequence>
+        <IsAction value="STAY_AT_FORTRESS"/>
+        <SetMotionFlag target_motion="1" />
+        <SetSpinFlag target_spin="4" />
+        <PublishMotion/>
+        <PublishSpin/>
+        </Sequence>
+
 
         
         <Sequence>
@@ -550,47 +580,53 @@
       </ReactiveFallback>
 
       <Sequence name="ResetValue">
-        <Sequence name="FreeBullet">
-          <!-- <CheckIntStatus key="ref.supplement" expected="1" /> -->
-          <CheckVision key="ref.supplement" expected="true" />
-          <SetBBValue key="count.free_bullet" type="int" value="0" />
-          <AlwaysSuccess/>
-        </Sequence>
-        <Sequence name="Bullet">
-          <Inverter>
-            <IsAction value="BUY_BULLET" />
-          </Inverter>
-          <SetBBValue key="bullet_num" type="int" value="0" />
-         <PublishBulletNum />
-          <AlwaysSuccess/>
-        </Sequence>
-        <Sequence name="Spin">
-          <Inverter>
-            <ReactiveFallback>
-              <!-- <IsAction value="UPSTAIR" /> -->
-              <!-- <IsAction value="BASE_ALIGN" /> -->
-              <!-- <IsAction value="DOWNSTAIR" /> -->
-              <IsAction value="VISION" />
-            </ReactiveFallback>
-          </Inverter>
-          <SetSpinFlag target_spin="0" />
-          <PublishSpin />
-          <AlwaysSuccess/>
-        </Sequence>
+        <Fallback>
+          <Sequence name="FreeBullet">
+            <CheckVision key="ref.supplement" expected="true" />
+            <SetBBValue key="count.free_bullet" type="int" value="0" />
+          </Sequence>
+          <AlwaysSuccess />
+        </Fallback>
+        <Fallback>
+          <Sequence name="Bullet">
+            <Inverter>
+              <IsAction value="BUY_BULLET" />
+            </Inverter>
+            <SetBBValue key="bullet_num" type="int" value="0" />
+            <PublishBulletNum />
+          </Sequence>
+          <AlwaysSuccess />
+        </Fallback>
+        <Fallback>
+          <Sequence name="Spin">
+            <Inverter>
+              <ReactiveFallback>
+                <IsAction value="VISION" />
+              </ReactiveFallback>
+            </Inverter>
+            <SetSpinFlag target_spin="0" />
+            <PublishSpin />
+          </Sequence>
+          <AlwaysSuccess />
+        </Fallback>
       </Sequence>
 
       <ReactiveFallback name="SpinSpeedControl">
         <Sequence>
           <IsAction value="DEADSUPPLY" />
           <SetSpinVelo target_spin_velo="0" />
+          <PublishSpinVelo />
         </Sequence>
         <Sequence>
           <CheckAttacked/>
           <SetSpinVelo target_spin_velo="2" />
           <Wait duration="2.0" />
+          <PublishSpinVelo />
         </Sequence>
+        <Sequence>
         <SetSpinVelo target_spin_velo="1" />
         <PublishSpinVelo />
+        </Sequence>
       </ReactiveFallback>
     </ReactiveSequence>
   </BehaviorTree>

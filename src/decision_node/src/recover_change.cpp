@@ -394,7 +394,7 @@ void RegisterBulletSupplyNodes(BT::BehaviorTreeFactory& factory, ros::Publisher*
   {
     factory.registerBuilder<PublishBulletNum>(
       "PublishBulletNum", [bullet_num_pub](const std::string& name, const BT::NodeConfiguration& config) {
-        static bool publish_on_change = true;  // 可根据需要调整
+        static bool publish_on_change = false;  // 始终发布，不去重
         return std::make_unique<PublishBulletNum>(name, config, bullet_num_pub, &publish_on_change);
       });
   }
