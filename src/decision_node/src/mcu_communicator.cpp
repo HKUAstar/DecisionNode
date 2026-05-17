@@ -22,9 +22,9 @@ public:
         nh_.param("serial_port", serial_port_, std::string("/dev/ttyUSB0"));
         nh_.param("baudrate", serial_baudrate_, 921600);
         
-        // 读取导航发布频率 (默认50Hz)
-        double nav_frequency = 50.0;
-        nh_.param("nav_frequency", nav_frequency, 50.0);
+        // 读取导航发布频率 (默认100Hz)
+        double nav_frequency = 100.0;
+        nh_.param("nav_frequency", nav_frequency, 100.0);
         double nav_period = 1.0 / nav_frequency;  // 转换为周期(秒)
         
         pub_yaw_angle_ = nh_.advertise<std_msgs::Float32>("/mcu/yaw_angle", 1);
@@ -89,6 +89,8 @@ public:
                                                                   &MCUCommunicator::activatePowerRuneCallback, this);
         sub_exchange_respwan_ = nh_.subscribe<std_msgs::UInt8>("/exchange_respwan", 1,
                                                               &MCUCommunicator::exchangeRespwanCallback, this);
+        sub_bullet_num_ = nh_.subscribe<std_msgs::UInt8>("/bullet_num", 1,
+                                                        &MCUCommunicator::bulletNumCallback, this);
         
         // 创建导航命令定时器
         navigation_timer_ = nh_.createTimer(ros::Duration(nav_period),
@@ -178,6 +180,7 @@ private:
     ros::Subscriber sub_target_yaw_;
     ros::Subscriber sub_activate_power_rune_;
     ros::Subscriber sub_exchange_respwan_;
+    ros::Subscriber sub_bullet_num_;
     
     ros::Timer navigation_timer_;
     
@@ -201,6 +204,7 @@ private:
     float current_target_yaw_ = 0.0f;      // 目标角度
     uint8_t current_activate_power_rune_ = 0;  // 激活能量机关
     uint8_t current_exchange_respwan_ = 0;     // 兑换复活
+    uint8_t current_bullet_num_ = 0;           // 买弹数量
     
     // 敌方位置缓存 - 用于处理-8888无效值
     float cached_enemy_hero_x_ = 0.0f;
@@ -317,6 +321,13 @@ private:
         current_exchange_respwan_ = msg->data;
         // ROS_INFO("Exchange respwan received: %u", current_exchange_respwan_);
     }
+    
+    // 买弹数量
+    void bulletNumCallback(const std_msgs::UInt8::ConstPtr& msg)
+    {
+        current_bullet_num_ = msg->data;
+        // ROS_INFO("Bullet num received: %u", current_bullet_num_);
+    }
     // ===== 新增 Callback 函数结束 =====
     
     // 导航命令定时器回调 - 固定频率发送NavigationFrame到下位机
@@ -377,6 +388,7 @@ private:
         frame.data.spin = spin_to_mcu;
         frame.data.activate_power_rune = current_activate_power_rune_;  // 激活能量机关
         frame.data.exchange_respwan = current_exchange_respwan_;        // 兑换复活
+        frame.data.bullet_num = current_bullet_num_;                    // 买弹数量
 
         // ROS_INFO_THROTTLE(0.5,
         //                  "Send nav frame: at_place=%u, vx=%.4f m/s(%d mm/s), vy=%.4f m/s(%d mm/s), target_yaw=%.4f, motion=%u, spin=%u, power_rune=%u, respwan=%u",
@@ -386,7 +398,7 @@ private:
         //                  current_target_yaw_, current_motion_, current_spin_,
         //                  current_activate_power_rune_, current_exchange_respwan_);
         
-        // 计算Packet CRC16 (对整个帧从字节0到数据段结尾, 21-4=17字节)
+        // 计算Packet CRC16 (对整个帧从字节0到数据段结尾, sizeof - 4 字节)
         frame.packet_crc16 = calculateCRC16((uint8_t*)&frame, 
                                            sizeof(NavigationCommandFrame) - 4, 0xFFFF);
         

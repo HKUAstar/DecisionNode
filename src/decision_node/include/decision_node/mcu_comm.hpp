@@ -163,8 +163,8 @@ static_assert(sizeof(MCUDataFrame) == 94, "MCUDataFrame must be exactly 94 bytes
 #define HK_FRAME_SIZE sizeof(MCUDataFrame)  // 接收帧大小 94字节
 #define HK_FRAME_HEADER_SIZE sizeof(HKFrameHeader)   // 帧头大小 9字节
 #define HK_FRAME_DATA_SIZE sizeof(HKGameData)        // 游戏数据大小 81字节
-#define HK_NAV_FRAME_SIZE sizeof(NavigationCommandFrame)  // 导航命令帧大小 25字节
-#define HK_NAV_DATA_SIZE 12         // 导航命令数据大小
+#define HK_NAV_FRAME_SIZE sizeof(NavigationCommandFrame)  // 导航命令帧大小 26字节
+#define HK_NAV_DATA_SIZE 13         // 导航命令数据大小
 
 // ===== 帧大小定义 =====
 #define MCU_FRAME_SIZE 256          // 接收缓冲大小
@@ -190,7 +190,7 @@ static constexpr uint8_t CRC8_TABLE[256] = {
 };
 
 
-// ===== 导航命令数据 - 上位机发下位机 (12字节) =====
+// ===== 导航命令数据 - 上位机发下位机  =====
 struct NavigationCommandData
 {
     uint8_t  reserved0;            // 偏移0: 空预留位
@@ -199,30 +199,28 @@ struct NavigationCommandData
     int16_t  vy;                   // 偏移4-5: Y方向速度 (mm/s)
     int16_t  target_yaw;           // 偏移6-7: 对齐角度时使用的目标角度
     uint8_t  motion;               // 偏移8: 0=比赛未开始；1=进攻；2=防御；3=移动
-    uint8_t  spin;                 // 偏移9: 0=正常；1=对齐角度；2=上坡；3=下坡；4=视觉（内部量）
+    uint8_t  spin;                 // 偏移9: 0=正常；1=对齐角度；2=上坡；3=下坡；5复活后的虚弱小陀螺 6受攻击加速小陀螺
     uint8_t  activate_power_rune;  // 偏移10: 激活能量机关
     uint8_t  exchange_respwan;     // 偏移11: 兑换复活
-    //买弹
-    //spin_velo 0复活后的虚弱状态转速 1正常状态 2受攻击加速
-
+    uint8_t  bullet_num;         //买弹，这里会持续2s发同一个数值，对应的是买一次不过应该大概率用不到
 } __attribute__((packed));
 
-static_assert(sizeof(NavigationCommandData) == 12, "NavigationCommandData must be exactly 12 bytes");
+static_assert(sizeof(NavigationCommandData) == 13, "NavigationCommandData must be exactly 13 bytes");
 
-// ===== 导航命令完整帧 (25 字节) =====
+// ===== 导航命令完整帧 (26 字节) =====
 /**
  * NUC → 下位机 导航命令完整HK协议帧
- * Header(9B) + Data(12B) + CRC16(2B) + Trailer(2B) = 25B
+ * Header(9B) + Data(13B) + CRC16(2B) + Trailer(2B) = 26B
  */
 struct NavigationCommandFrame
 {
     HKFrameHeader header;          // 0-8: 帧头 (9字节)
-    NavigationCommandData data;    // 9-20: 运动指令数据 (12字节)
-    uint16_t packet_crc16;         // 21-22: CRC16校验
-    uint8_t trailer[2];            // 23-24: 帧尾 'K', 'H'
+    NavigationCommandData data;    // 9-21: 运动指令数据 (13字节)
+    uint16_t packet_crc16;         // 22-23: CRC16校验
+    uint8_t trailer[2];            // 24-25: 帧尾 'K', 'H'
 } __attribute__((packed));
 
-static_assert(sizeof(NavigationCommandFrame) == 25, "NavigationCommandFrame must be exactly 25 bytes");
+static_assert(sizeof(NavigationCommandFrame) == 26, "NavigationCommandFrame must be exactly 26 bytes");
 
 // ===== CRC 计算函数 =====
 
