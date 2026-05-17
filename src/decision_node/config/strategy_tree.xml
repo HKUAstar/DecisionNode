@@ -463,6 +463,8 @@
         <Sequence>
         <IsAction value="STAY_AT_OUTPOST"/>
         <SetMotionFlag target_motion="3"/>
+        <SetSpinFlag target_spin="4" />
+        <PublishSpin/>
         <PublishMotion/>
         </Sequence>
 
@@ -597,35 +599,28 @@
           </Sequence>
           <AlwaysSuccess />
         </Fallback>
-        <Fallback>
-          <Sequence name="Spin">
-            <Inverter>
-              <ReactiveFallback>
-                <IsAction value="VISION" />
-              </ReactiveFallback>
-            </Inverter>
-            <SetSpinFlag target_spin="0" />
-            <PublishSpin />
-          </Sequence>
-          <AlwaysSuccess />
-        </Fallback>
       </Sequence>
 
-      <ReactiveFallback name="SpinSpeedControl">
+      <ReactiveFallback name="SpinControl">
+        <ReactiveFallback>
+        <IsAction value="VISION"/>
+        <IsAction value="STAY_AT_FORTRESS"/>
+        <IsAction value="STAY_AT_OUTPOST"/>
+        </ReactiveFallback>
         <Sequence>
           <IsAction value="DEADSUPPLY" />
-          <SetSpinVelo target_spin_velo="0" />
-          <PublishSpinVelo />
+          <SetSpinFlag target_spin="5" />
+          <PublishSpin />
         </Sequence>
         <Sequence>
           <CheckAttacked/>
-          <SetSpinVelo target_spin_velo="2" />
+          <SetSpinFlag target_spin="6" />
           <Wait duration="2.0" />
-          <PublishSpinVelo />
+          <PublishSpin />
         </Sequence>
         <Sequence>
-        <SetSpinVelo target_spin_velo="1" />
-        <PublishSpinVelo />
+        <SetSpinFlag target_spin="0" />
+        <PublishSpin />
         </Sequence>
       </ReactiveFallback>
     </ReactiveSequence>
