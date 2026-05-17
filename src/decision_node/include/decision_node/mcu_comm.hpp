@@ -42,7 +42,7 @@ static constexpr uint16_t CRC16_TABLE[256] = {
     0x7BC7, 0x6A4E, 0x58D5, 0x495C, 0x3DE3, 0x2C6A, 0x1EF1, 0x0F78,
 };
 
-// HK协议帧头 - 接收自上板(NUC)的数据帧格式 (总长度78字节)
+// HK协议帧头 - 接收自上板(NUC)的数据帧格式 
 struct HKFrameHeader
 {
     uint8_t sof[2];           // 0-1: 'H', 'K' (0x48, 0x4B)
@@ -54,12 +54,12 @@ struct HKFrameHeader
     uint8_t header_crc8;      // 8: 帧头CRC8校验
 } __attribute__((packed));
 
-// HK协议数据负载 - 比赛数据帧 (69字节)
+// HK协议数据负载 - 比赛数据帧 
 struct HKGameData
 {
     //视觉位
-    //Bool Checkarrived;
-    //uint16_t target_distance;(cm)
+    bool vision_detected;
+    uint16_t target_distance;// (单位cm)
 
     float yaw_angle;          // 云台yaw角 (rad)
     float chassis_imu;
@@ -68,8 +68,8 @@ struct HKGameData
     uint16_t stage_remain_time;
 
     uint16_t ally_base_HP;    //基地血量
-    //己方前哨站血量
-    // uint16_t ally_outpost_HP;
+   
+    uint16_t ally_outpost_HP; //己方前哨站血量
 
     //下面的要从uint32_t event_data;解包出来
     uint8_t central_elevated_ground_status; // 中央高地状态（bit 7-8）
@@ -86,19 +86,18 @@ struct HKGameData
 
     //0209
     //己方基地增益点
-    // bool ally_base_rfid;
-    //己方梯形高地增益点
-    //bool ally_trapezoidal_rfid;
-    //己方堡垒增益点
-    //bool ally_fortress_rfid;
-    //己方与资源区重合补充和增益点
-    //bool supplement_resource;
-    //bool supplement_nonresource;
-
-    //云台手坐标xcm
-    //云台手坐标ycm
-    //云台手信号
+    bool ally_base_rfid;
     
+    bool ally_fortress_rfid;//己方堡垒增益点
+    //己方与资源区重合补充和增益点
+    bool supplement_resource;//己方与资源区重合/不重合增益点
+    bool supplement_nonresource;
+   //0x0303云台手数据
+    float operator_x; //(若云台手没有发送信息则发-88.88当作标志)
+    float operator_y;
+    //云台手按下的键盘按键通用值
+    uint8_t cmd_keyboard;
+
     //下面的要从uint32_t sentry_info;解包出来
     uint16_t accumulated_bullet_conversion; // 累计哨兵远程兑换弹量（bit 0-10）
     bool can_exchange_respawn;     // 哨兵是否可兑换复活（bit 20）
@@ -138,18 +137,20 @@ struct HKGameData
     
 } __attribute__((packed));
 
-// HK协议完整数据帧 (82字节)
+
+
+// HK协议完整数据帧 (94字节)
 struct MCUDataFrame
 {
     HKFrameHeader header;     // 0-8: 帧头 (9字节)
-    HKGameData data;          // 9-77: 数据 (69字节)
-    uint16_t packet_crc16;    // 78-79: 数据CRC16
-    uint8_t trailer[2];       // 80-81: 帧尾 'K', 'H'
+    HKGameData data;          // 9-89: 数据 (81字节)
+    uint16_t packet_crc16;    // 90-91: 数据CRC16
+    uint8_t trailer[2];       // 92-93: 帧尾 'K', 'H'
 } __attribute__((packed));
 
 static_assert(sizeof(HKFrameHeader) == 9, "HKFrameHeader must be exactly 9 bytes");
-static_assert(sizeof(HKGameData) == 63, "HKGameData must be exactly 63 bytes");
-static_assert(sizeof(MCUDataFrame) == 76, "MCUDataFrame must be exactly 76 bytes");
+static_assert(sizeof(HKGameData) == 81, "HKGameData must be exactly 81 bytes");
+static_assert(sizeof(MCUDataFrame) == 94, "MCUDataFrame must be exactly 94 bytes");
 
 
 // HK协议相关常量
@@ -159,9 +160,9 @@ static_assert(sizeof(MCUDataFrame) == 76, "MCUDataFrame must be exactly 76 bytes
 #define HK_FRAME_TRAILER_H 0x48     // 'H'
 #define HK_PACKET_TYPE_GAME 0x01    // 比赛数据帧
 #define HK_PACKET_TYPE_NAV 0x02     // 导航命令帧
-#define HK_FRAME_SIZE sizeof(MCUDataFrame)  // 接收帧大小 76字节
+#define HK_FRAME_SIZE sizeof(MCUDataFrame)  // 接收帧大小 94字节
 #define HK_FRAME_HEADER_SIZE sizeof(HKFrameHeader)   // 帧头大小 9字节
-#define HK_FRAME_DATA_SIZE sizeof(HKGameData)        // 游戏数据大小 63字节
+#define HK_FRAME_DATA_SIZE sizeof(HKGameData)        // 游戏数据大小 81字节
 #define HK_NAV_FRAME_SIZE sizeof(NavigationCommandFrame)  // 导航命令帧大小 25字节
 #define HK_NAV_DATA_SIZE 12         // 导航命令数据大小
 

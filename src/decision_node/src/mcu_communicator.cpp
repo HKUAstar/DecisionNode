@@ -34,6 +34,7 @@ public:
         pub_stage_remain_time_ = nh_.advertise<std_msgs::UInt16>("/referee/stage_remain_time", 1);
         
         pub_ally_base_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/ally_base_hp", 1);
+        pub_ally_outpost_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/ally_outpost_hp", 1);
         
         pub_central_ground_status_ = nh_.advertise<std_msgs::UInt8>("/referee/central_ground_status", 1);
         pub_trap_ground_status_ = nh_.advertise<std_msgs::UInt8>("/referee/trap_ground_status", 1);
@@ -64,6 +65,14 @@ public:
         pub_radar_flags_ = nh_.advertise<std_msgs::UInt16>("/radar/radar_flags", 1);
         
         pub_enemy_base_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/enemy_base_hp", 1);
+        
+        // 新增字段的Publisher
+        pub_vision_detected_ = nh_.advertise<std_msgs::Bool>("/vision/detected", 1);
+        pub_vision_target_distance_ = nh_.advertise<std_msgs::Float32>("/vision/target_distance", 1);
+        pub_ally_base_rfid_ = nh_.advertise<std_msgs::Bool>("/referee/ally_base_rfid", 1);
+        pub_ally_fortress_rfid_ = nh_.advertise<std_msgs::Bool>("ally_fortress_rfid", 1);
+        pub_operator_ = nh_.advertise<geometry_msgs::Point>("/referee/operator", 1);
+        pub_cmd_keyboard_ = nh_.advertise<std_msgs::UInt8>("/referee/cmd_keyboard", 1);
         
     
         sub_dstar_status_ = nh_.subscribe<std_msgs::Bool>("/dstar_status", 1,
@@ -152,6 +161,14 @@ private:
     
     ros::Publisher pub_enemy_base_hp_;
     
+    // 新增字段的Publisher
+    ros::Publisher pub_vision_detected_;
+    ros::Publisher pub_vision_target_distance_;
+    ros::Publisher pub_ally_outpost_hp_;
+    ros::Publisher pub_ally_base_rfid_;
+    ros::Publisher pub_ally_fortress_rfid_;
+    ros::Publisher pub_operator_;
+    ros::Publisher pub_cmd_keyboard_;
     
     ros::Subscriber sub_dstar_status_;
     ros::Subscriber sub_cmd_vel_;
@@ -438,7 +455,7 @@ private:
     {
         uint16_t received_crc = frame->packet_crc16;
         
-        // Packet CRC16: 对字节0到Data结束计算（0-71共72字节 = header 9 + data 63）
+        // Packet CRC16: 对字节0到Data结束计算（header 9 + data 81 = 90字节）
         // 即从sof[0]开始到data末尾的所有数据，初始值0xFFFF
         uint16_t calculated_crc = calculateCRC16((uint8_t*)&frame->header, HK_FRAME_HEADER_SIZE + HK_FRAME_DATA_SIZE, 0xFFFF);
         
@@ -558,7 +575,7 @@ private:
             // 接收数据
             frame_buffer_[frame_buffer_index_++] = byte;
             
-            // 检查是否接收完整帧 (82字节)
+            // 检查是否接收完整帧 (94字节)
             if (frame_buffer_index_ == HK_FRAME_SIZE)
             {
                 // 验证帧尾 ('K', 'H')
@@ -785,6 +802,40 @@ private:
         
         msg_bool.data = frame.data.power_rune_available;
         pub_power_rune_available_.publish(msg_bool);
+        
+        // ===== 新增字段发布 =====
+        // vision_detected
+        msg_bool.data = frame.data.vision_detected;
+        pub_vision_detected_.publish(msg_bool);
+        
+        // target_distance (cm -> m)
+        msg_float.data = frame.data.target_distance / 100.0f;
+        pub_vision_target_distance_.publish(msg_float);
+        
+        // ally_outpost_HP
+        msg_uint16.data = frame.data.ally_outpost_HP;
+        pub_ally_outpost_hp_.publish(msg_uint16);
+        
+        // ally_base_rfid
+        msg_bool.data = frame.data.ally_base_rfid;
+        pub_ally_base_rfid_.publish(msg_bool);
+        
+        // ally_fortress_rfid
+        msg_bool.data = frame.data.ally_fortress_rfid;
+        pub_ally_fortress_rfid_.publish(msg_bool);
+        
+        // operator_x / operator_y -> Point
+        {
+            geometry_msgs::Point pt;
+            pt.x = frame.data.operator_x;
+            pt.y = frame.data.operator_y;
+            pt.z = 0.0f;
+            pub_operator_.publish(pt);
+        }
+        
+        // cmd_keyboard
+        msg_uint8.data = frame.data.cmd_keyboard;
+        pub_cmd_keyboard_.publish(msg_uint8);
         
         // ROS_INFO("MCU frame parsed: game_progress=%u, current_HP=%u",
         //          frame.data.game_progress, frame.data.current_HP);
