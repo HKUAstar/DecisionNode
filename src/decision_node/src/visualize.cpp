@@ -177,11 +177,11 @@ private:
         marker.id     = 1;
         marker.type   = visualization_msgs::Marker::LINE_LIST;
         marker.action = visualization_msgs::Marker::ADD;
-        marker.scale.x = 0.03;  // 线宽
-        marker.color.a = 0.6f;
-        marker.color.r = 0.8f;
+        marker.scale.x = 0.04;  // 线宽
+        marker.color.a = 0.8f;
+        marker.color.r = 1.0f;
         marker.color.g = 0.8f;
-        marker.color.b = 0.8f;
+        marker.color.b = 0.2f;
 
         for (size_t i = 0; i < graph_.edges.size(); ++i)
         {
@@ -216,10 +216,10 @@ private:
         marker.id     = 2;
         marker.type   = visualization_msgs::Marker::TEXT_VIEW_FACING;
         marker.action = visualization_msgs::Marker::ADD;
-        marker.scale.z = 0.2;  // 文字高度
+        marker.scale.z = 0.25;  // 文字高度
         marker.color.a = 1.0f;
-        marker.color.r = 1.0f;
-        marker.color.g = 1.0f;
+        marker.color.r = 0.2f;
+        marker.color.g = 0.9f;
         marker.color.b = 1.0f;
 
         for (size_t i = 0; i < graph_.nodes.size(); ++i)
@@ -247,11 +247,11 @@ private:
         marker.id     = 3;
         marker.type   = visualization_msgs::Marker::LINE_LIST;
         marker.action = visualization_msgs::Marker::ADD;
-        marker.scale.x = 0.02;
-        marker.color.a = 0.4f;
+        marker.scale.x = 0.025;
+        marker.color.a = 0.5f;
         marker.color.r = 1.0f;
-        marker.color.g = 1.0f;
-        marker.color.b = 0.3f;
+        marker.color.g = 0.5f;
+        marker.color.b = 0.0f;
 
         for (size_t i = 0; i < graph_.areas.size(); ++i)
         {

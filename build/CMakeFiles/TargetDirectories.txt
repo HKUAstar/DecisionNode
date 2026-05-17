@@ -84,7 +84,6 @@
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/continuous_forwarder.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/mcu_communicator.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/command_test.dir
-/mnt/d/decision_ws/build/decision_node/CMakeFiles/zone_detector.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/visualize.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/test.dir
 /mnt/d/decision_ws/build/decision_node/CMakeFiles/edit_cache.dir

@@ -25,7 +25,7 @@ public:
       ROS_ERROR("CheckArrived: Failed to get nav.arrived from blackboard: %s", e.what());
       return BT::NodeStatus::FAILURE;
     }
-    // ROS_INFO("CheckArrived: arrived=%d", arrived);
+    // ROS_INFO("CheckArrived: nav.arrived=%d", arrived);
     return arrived ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
@@ -50,7 +50,7 @@ public:
   {
     auto bb = config().blackboard;
     
-    int attack_threshold = 5;
+    int attack_threshold = 2;
     (void)getInput("attack_threshold", attack_threshold);
     
     // Get current HP from blackboard
@@ -306,7 +306,61 @@ public:
     std_msgs::UInt8 msg;
     msg.data = static_cast<uint8_t>(spin_flag);
     pub_->publish(msg);
-    ROS_INFO_THROTTLE(2.0, "PublishSpin: published spin_flag = %d", spin_flag);
+    // ROS_INFO_THROTTLE(2.0, "PublishSpin: published spin_flag = %d", spin_flag);
+    return BT::NodeStatus::SUCCESS;
+  }
+
+private:
+  ros::Publisher* pub_;
+};
+
+class SetSpinVelo : public BT::SyncActionNode
+{
+public:
+  SetSpinVelo(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<int>("target_spin_velo", 0, "Target spin angular velocity (0-255)"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    int target_spin_velo = 0;
+    (void)getInput("target_spin_velo", target_spin_velo);
+    config().blackboard->set("spin_velo", target_spin_velo);
+    ROS_DEBUG("SetSpinVelo: spin_velo set to %d", target_spin_velo);
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
+class PublishSpinVelo : public BT::SyncActionNode
+{
+public:
+  PublishSpinVelo(const std::string& name, const BT::NodeConfiguration& config,
+                  ros::Publisher* pub)
+    : BT::SyncActionNode(name, config), pub_(pub)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    int spin_velo = 0;
+    try { spin_velo = bb->get<int>("spin_velo"); } catch (...) {}
+
+    // 始终发送，确保MCU通讯节点始终收到最新的 spin_velo 值
+    std_msgs::UInt8 msg;
+    msg.data = static_cast<uint8_t>(spin_velo);
+    pub_->publish(msg);
+    // ROS_INFO_THROTTLE(2.0, "PublishSpinVelo: published spin_velo = %d", spin_velo);
     return BT::NodeStatus::SUCCESS;
   }
 
@@ -379,7 +433,7 @@ public:
   }
 };
 
-void RegisterMotionChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* motion_pub, ros::Publisher* spin_pub, bool* publish_on_change_only)
+void RegisterMotionChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher* motion_pub, ros::Publisher* spin_pub, ros::Publisher* spin_velo_pub, bool* publish_on_change_only)
 {
   factory.registerNodeType<CheckArrived>("CheckArrived");
   factory.registerNodeType<CheckAttacked>("CheckAttacked");
@@ -399,6 +453,14 @@ void RegisterMotionChangeNodes(BT::BehaviorTreeFactory& factory, ros::Publisher*
   factory.registerBuilder<PublishSpin>(
       "PublishSpin", [spin_pub](const std::string& name, const BT::NodeConfiguration& config) {
         return std::make_unique<PublishSpin>(name, config, spin_pub);
+      });
+
+  // ---- 自旋速度节点 ----
+  factory.registerNodeType<SetSpinVelo>("SetSpinVelo");
+
+  factory.registerBuilder<PublishSpinVelo>(
+      "PublishSpinVelo", [spin_velo_pub](const std::string& name, const BT::NodeConfiguration& config) {
+        return std::make_unique<PublishSpinVelo>(name, config, spin_velo_pub);
       });
 
   // 超时计数器节点（纯黑板操作，无需外部依赖）

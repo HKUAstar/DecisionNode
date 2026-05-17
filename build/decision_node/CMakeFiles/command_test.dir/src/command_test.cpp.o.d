@@ -1112,4 +1112,10 @@ decision_node/CMakeFiles/command_test.dir/src/command_test.cpp.o: \
  /opt/ros/noetic/include/geometry_msgs/Point.h \
  /opt/ros/noetic/include/geometry_msgs/Twist.h \
  /opt/ros/noetic/include/geometry_msgs/Vector3.h \
+ /opt/ros/noetic/include/nav_msgs/Odometry.h \
+ /opt/ros/noetic/include/std_msgs/Header.h \
+ /opt/ros/noetic/include/geometry_msgs/PoseWithCovariance.h \
+ /opt/ros/noetic/include/geometry_msgs/Pose.h \
+ /opt/ros/noetic/include/geometry_msgs/Quaternion.h \
+ /opt/ros/noetic/include/geometry_msgs/TwistWithCovariance.h \
  /usr/include/c++/9/thread

@@ -6,7 +6,6 @@
         <UpdateNavigationBB />
         <UpdateVisionBB />
         <UpdateTimersBB />
-        <UpdateDerivedFlags danger_hp="{danger_hp}" sufficient_bullet="{sufficient_bullet}" />
         <UpdateOdomBB />
       </Sequence>
 

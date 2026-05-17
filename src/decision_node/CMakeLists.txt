@@ -54,7 +54,7 @@ add_executable(mcu_communicator src/mcu_communicator.cpp)
 
 add_executable(command_test src/command_test.cpp)
 
-add_executable(zone_detector src/zone_detector.cpp)
+# add_executable(zone_detector src/zone_detector.cpp)  # TODO: missing source file
 
 add_executable(visualize src/visualize.cpp)
 
@@ -70,10 +70,10 @@ target_link_libraries(mcu_communicator ${catkin_LIBRARIES})
 
 target_link_libraries(command_test ${catkin_LIBRARIES})
 
-target_link_libraries(zone_detector
-    ${catkin_LIBRARIES}
-    yaml-cpp
-)
+# target_link_libraries(zone_detector
+#     ${catkin_LIBRARIES}
+#     yaml-cpp
+# )
 
 target_link_libraries(visualize
     ${catkin_LIBRARIES}
@@ -84,6 +84,6 @@ target_link_libraries(visualize
 install(DIRECTORY config launch
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-install(TARGETS strategy_node continuous_forwarder mcu_communicator command_test zone_detector visualize
+install(TARGETS strategy_node continuous_forwarder mcu_communicator command_test visualize  # zone_detector removed (missing source)
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 

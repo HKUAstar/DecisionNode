@@ -90,7 +90,6 @@ decision_node/all: decision_node/CMakeFiles/strategy_node.dir/all
 decision_node/all: decision_node/CMakeFiles/continuous_forwarder.dir/all
 decision_node/all: decision_node/CMakeFiles/mcu_communicator.dir/all
 decision_node/all: decision_node/CMakeFiles/command_test.dir/all
-decision_node/all: decision_node/CMakeFiles/zone_detector.dir/all
 decision_node/all: decision_node/CMakeFiles/visualize.dir/all
 .PHONY : decision_node/all
 
@@ -148,7 +147,6 @@ decision_node/clean: decision_node/CMakeFiles/strategy_node.dir/clean
 decision_node/clean: decision_node/CMakeFiles/continuous_forwarder.dir/clean
 decision_node/clean: decision_node/CMakeFiles/mcu_communicator.dir/clean
 decision_node/clean: decision_node/CMakeFiles/command_test.dir/clean
-decision_node/clean: decision_node/CMakeFiles/zone_detector.dir/clean
 decision_node/clean: decision_node/CMakeFiles/visualize.dir/clean
 .PHONY : decision_node/clean
 
@@ -1708,32 +1706,6 @@ command_test: decision_node/CMakeFiles/command_test.dir/rule
 decision_node/CMakeFiles/command_test.dir/clean:
 	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/command_test.dir/build.make decision_node/CMakeFiles/command_test.dir/clean
 .PHONY : decision_node/CMakeFiles/command_test.dir/clean
-
-#=============================================================================
-# Target rules for target decision_node/CMakeFiles/zone_detector.dir
-
-# All Build rule for target.
-decision_node/CMakeFiles/zone_detector.dir/all:
-	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/depend
-	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/d/decision_ws/build/CMakeFiles --progress-num=24,25 "Built target zone_detector"
-.PHONY : decision_node/CMakeFiles/zone_detector.dir/all
-
-# Build rule for subdir invocation for target.
-decision_node/CMakeFiles/zone_detector.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 2
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/zone_detector.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/decision_ws/build/CMakeFiles 0
-.PHONY : decision_node/CMakeFiles/zone_detector.dir/rule
-
-# Convenience name for target.
-zone_detector: decision_node/CMakeFiles/zone_detector.dir/rule
-.PHONY : zone_detector
-
-# clean rule for target.
-decision_node/CMakeFiles/zone_detector.dir/clean:
-	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/clean
-.PHONY : decision_node/CMakeFiles/zone_detector.dir/clean
 
 #=============================================================================
 # Target rules for target decision_node/CMakeFiles/visualize.dir

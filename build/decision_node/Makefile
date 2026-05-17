@@ -858,20 +858,6 @@ command_test/fast:
 .PHONY : command_test/fast
 
 # Convenience name for target.
-decision_node/CMakeFiles/zone_detector.dir/rule:
-	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/zone_detector.dir/rule
-.PHONY : decision_node/CMakeFiles/zone_detector.dir/rule
-
-# Convenience name for target.
-zone_detector: decision_node/CMakeFiles/zone_detector.dir/rule
-.PHONY : zone_detector
-
-# fast build rule for target.
-zone_detector/fast:
-	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/build
-.PHONY : zone_detector/fast
-
-# Convenience name for target.
 decision_node/CMakeFiles/visualize.dir/rule:
 	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 decision_node/CMakeFiles/visualize.dir/rule
 .PHONY : decision_node/CMakeFiles/visualize.dir/rule
@@ -1125,30 +1111,6 @@ src/visualize.cpp.s:
 	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/visualize.dir/build.make decision_node/CMakeFiles/visualize.dir/src/visualize.cpp.s
 .PHONY : src/visualize.cpp.s
 
-src/zone_detector.o: src/zone_detector.cpp.o
-.PHONY : src/zone_detector.o
-
-# target to build an object file
-src/zone_detector.cpp.o:
-	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/src/zone_detector.cpp.o
-.PHONY : src/zone_detector.cpp.o
-
-src/zone_detector.i: src/zone_detector.cpp.i
-.PHONY : src/zone_detector.i
-
-# target to preprocess a source file
-src/zone_detector.cpp.i:
-	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/src/zone_detector.cpp.i
-.PHONY : src/zone_detector.cpp.i
-
-src/zone_detector.s: src/zone_detector.cpp.s
-.PHONY : src/zone_detector.s
-
-# target to generate assembly for a file
-src/zone_detector.cpp.s:
-	cd /mnt/d/decision_ws/build && $(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/src/zone_detector.cpp.s
-.PHONY : src/zone_detector.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -1212,7 +1174,6 @@ help:
 	@echo "... mcu_communicator"
 	@echo "... strategy_node"
 	@echo "... visualize"
-	@echo "... zone_detector"
 	@echo "... src/base_move.o"
 	@echo "... src/base_move.i"
 	@echo "... src/base_move.s"
@@ -1243,9 +1204,6 @@ help:
 	@echo "... src/visualize.o"
 	@echo "... src/visualize.i"
 	@echo "... src/visualize.s"
-	@echo "... src/zone_detector.o"
-	@echo "... src/zone_detector.i"
-	@echo "... src/zone_detector.s"
 .PHONY : help
 
 

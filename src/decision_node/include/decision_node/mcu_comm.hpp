@@ -58,6 +58,9 @@ struct HKFrameHeader
 struct HKGameData
 {
     //视觉位
+    //Bool Checkarrived;
+    //uint16_t target_distance;(cm)
+
     float yaw_angle;          // 云台yaw角 (rad)
     float chassis_imu;
 
@@ -199,6 +202,7 @@ struct NavigationCommandData
     uint8_t  activate_power_rune;  // 偏移10: 激活能量机关
     uint8_t  exchange_respwan;     // 偏移11: 兑换复活
     //买弹
+    //spin_velo 0复活后的虚弱状态转速 1正常状态 2受攻击加速
 
 } __attribute__((packed));
 

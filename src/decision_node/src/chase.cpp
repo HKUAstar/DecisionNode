@@ -202,17 +202,17 @@ public:
             op_x = bb->get<double>("ref.operator_x");
             op_y = bb->get<double>("ref.operator_y");
         } catch (...) {
-            ROS_WARN_THROTTLE(2.0, "[CheckOperatorValid] ref.operator_x/y not in blackboard");
+            // ROS_WARN_THROTTLE(2.0, "[CheckOperatorValid] ref.operator_x/y not in blackboard");
             return BT::NodeStatus::FAILURE;
         }
 
         if (std::abs(op_x - (-88.88)) < 0.01 && std::abs(op_y - (-88.88)) < 0.01)
         {
-            ROS_INFO_THROTTLE(2.0, "[CheckOperatorValid] Operator position is invalid (-88.88,-88.88)");
+            // ROS_INFO_THROTTLE(2.0, "[CheckOperatorValid] Operator position is invalid (-88.88,-88.88)");
             return BT::NodeStatus::FAILURE;
         }
 
-        ROS_INFO_THROTTLE(2.0, "[CheckOperatorValid] Operator position valid at (%.2f, %.2f)", op_x, op_y);
+        // ROS_INFO_THROTTLE(2.0, "[CheckOperatorValid] Operator position valid at (%.2f, %.2f)", op_x, op_y);
         return BT::NodeStatus::SUCCESS;
     }
 };
@@ -368,7 +368,7 @@ public:
             return BT::NodeStatus::FAILURE;
         }
 
-        // ---- 3.5. 检查 zone ----
+        // ---- 3.5. 检查强制指定 zone ----（若指定了 zone_num，目标必须在该 zone 内）
         if (zone_num >= 0 && area_idx < static_cast<int>(graph_->zones.size()))
         {
             if (graph_->zones[area_idx] != zone_num)
@@ -411,6 +411,83 @@ private:
     const DecisionGraph* graph_;
 };
 
+
+class CheckGoalInZone : public BT::ConditionNode
+{
+public:
+    CheckGoalInZone(const std::string& name, const BT::NodeConfiguration& config,
+                    const DecisionGraph* graph)
+        : BT::ConditionNode(name, config), graph_(graph)
+    {
+    }
+
+    static BT::PortsList providedPorts()
+    {
+        return {
+            BT::InputPort<int>("zone_num", 0, "Target zone ID to check against"),
+        };
+    }
+
+    BT::NodeStatus tick() override
+    {
+        auto bb = config().blackboard;
+
+        // ---- 1. 读取 zone_num ----
+        int zone_num = 0;
+        (void)getInput("zone_num", zone_num);
+
+        // ---- 2. 读取 goal.point ----
+        geometry_msgs::PointStamped goal;
+        try {
+            goal = bb->get<geometry_msgs::PointStamped>("goal.point");
+        } catch (...) {
+            ROS_WARN_THROTTLE(2.0, "[CheckGoalInZone] goal.point not in blackboard");
+            return BT::NodeStatus::FAILURE;
+        }
+
+        double px = goal.point.x;
+        double py = goal.point.y;
+
+        // ---- 3. 判断落在哪个 area 内 ----
+        int area_idx = -1;
+        for (size_t i = 0; i < graph_->areas.size(); ++i)
+        {
+            if (pointInPolygon(px, py, graph_->areas[i]))
+            {
+                area_idx = static_cast<int>(i);
+                break;
+            }
+        }
+
+        if (area_idx < 0)
+        {
+            ROS_WARN_THROTTLE(2.0, "[CheckGoalInZone] goal (%.2f, %.2f) not in any area", px, py);
+            return BT::NodeStatus::FAILURE;
+        }
+
+        // ---- 4. 检查 zone ----
+        if (area_idx >= static_cast<int>(graph_->zones.size()))
+        {
+            ROS_WARN_THROTTLE(2.0, "[CheckGoalInZone] area %d has no zone data", area_idx);
+            return BT::NodeStatus::FAILURE;
+        }
+
+        if (graph_->zones[area_idx] == zone_num)
+        {
+            ROS_DEBUG("[CheckGoalInZone] goal (%.2f, %.2f) in area %d, zone=%d MATCH zone_num=%d",
+                      px, py, area_idx, graph_->zones[area_idx], zone_num);
+            return BT::NodeStatus::SUCCESS;
+        }
+
+        ROS_DEBUG("[CheckGoalInZone] goal (%.2f, %.2f) in area %d, zone=%d != zone_num=%d",
+                  px, py, area_idx, graph_->zones[area_idx], zone_num);
+        return BT::NodeStatus::FAILURE;
+    }
+
+private:
+    const DecisionGraph* graph_;
+};
+
 // ============================================================
 // 注册到 BehaviorTreeFactory
 // ============================================================
@@ -418,18 +495,23 @@ void RegisterChaseNodes(BT::BehaviorTreeFactory& factory,
                         ros::Publisher* /*goal_pub*/,
                         bool* /*publish_on_change_only*/)
 {
-    // 加载决策图（单例，所有 SetChaseGoal 节点共享同一份数据）
-    std::string yaml_path = ros::package::getPath("decision_node")
-                            + "/map/RMUC2026_decision_graph.yaml";
-    static auto graph = std::make_shared<DecisionGraph>(loadDecisionGraph(yaml_path));
+    // 加载决策图（单例，所有 SetChaseGoal / CheckGoalInZone 节点共享同一份数据）
+    static DecisionGraph s_graph = loadDecisionGraph(
+        ros::package::getPath("decision_node") + "/map/RMUC2026_decision_graph.yaml");
+    DecisionGraph* graph_ptr = &s_graph;
 
     factory.registerNodeType<CheckRadarStatus>("CheckRadarStatus");
     factory.registerNodeType<CheckOperatorValid>("CheckOperatorValid");
+    factory.registerBuilder<CheckGoalInZone>(
+        "CheckGoalInZone",
+        [graph_ptr](const std::string& name, const BT::NodeConfiguration& config) {
+            return std::make_unique<CheckGoalInZone>(name, config, graph_ptr);
+        });
     factory.registerNodeType<SetOperatorGoal>("SetOperatorGoal");
 
     factory.registerBuilder<SetChaseGoal>(
         "SetChaseGoal",
-        [](const std::string& name, const BT::NodeConfiguration& config) {
-            return std::make_unique<SetChaseGoal>(name, config, graph.get());
+        [graph_ptr](const std::string& name, const BT::NodeConfiguration& config) {
+            return std::make_unique<SetChaseGoal>(name, config, graph_ptr);
         });
 }

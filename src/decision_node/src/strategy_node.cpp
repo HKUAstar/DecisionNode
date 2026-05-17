@@ -107,57 +107,63 @@ Rigid2D computeRigid2D(const std::vector<std::pair<double, double>>& src_pts,
 // ---------------------------
 struct RefereeState
 {
-  float yaw_angle;          // 云台yaw角 (rad)
+  float yaw_angle = 0.0f;          // 云台yaw角 (rad)
   
-  uint8_t game_progress;    // 比赛阶段
-  uint16_t stage_remain_time;
-
-  uint16_t ally_base_HP;    //基地血量
+  uint8_t game_progress = 0;    // 比赛阶段
+  uint16_t stage_remain_time = 420;
 
   
-  uint8_t central_elevated_ground_status; // 中央高地状态（bit 7-8）
-  uint8_t trapezoidal_elevated_ground_status; // 梯形高地状态（bit 9-10）
-  uint8_t fortress_status; // 堡垒状态（bit 25-26）
-  uint8_t outpost_status; // 前哨战状态（bit 27-28）
+  uint16_t ally_base_HP = 5000;    //基地血量
 
-  uint8_t robot_id;         // 机器人ID
-  uint16_t current_HP;
+  uint16_t ally_1_robot_HP = 200; // 1号机器人血量
+  uint16_t ally_2_robot_HP = 250; // 2号机器人血量
+  uint16_t ally_3_robot_HP = 150; // 3号机器人血量
+  uint16_t ally_4_robot_HP = 150; // 4号机器人血量
 
-  uint16_t projectile_allowance_17mm;
-  uint16_t projectile_allowance_fortress;
-  uint16_t remaining_gold_coin;
+  uint8_t central_elevated_ground_status = 0; // 中央高地状态（bit 7-8）
+  uint8_t trapezoidal_elevated_ground_status = 0; // 梯形高地状态（bit 9-10）
+  uint8_t fortress_status = 0; // 堡垒状态（bit 25-26）
+  uint8_t outpost_status = 0; // 前哨战状态（bit 27-28）
+  uint16_t ally_outpost_HP = 1500; // 我方前哨战血量
 
-  uint16_t accumulated_bullet_conversion; // 累计哨兵远程兑换弹量（bit 0-10）
-  bool can_exchange_respawn;     // 哨兵是否可兑换复活（bit 20）
-  uint16_t respawn_money; // 哨兵复活所需金币（bit 21-31）
+  uint8_t robot_id = 7;         // 机器人ID
+  uint16_t current_HP = 400;
 
-  bool out_of_combat;       // 脱战状态（bit 0）
-  uint16_t projectile_allowance; //全队可兑换17mm弹量（bit 1-11）
-  bool power_rune_available; // 是否有可用的能量符（bit 14)
+  uint16_t projectile_allowance_17mm = 300;
+  uint16_t projectile_allowance_fortress = 100;
+  uint16_t remaining_gold_coin = 400;
 
-  float enemy_hero_x;     // 敌方英雄X (m)
-  float enemy_hero_y;     // 敌方英雄Y (m)
-  float enemy_engineer_x; // 敌方工程X (m)
-  float enemy_engineer_y; // 敌方工程Y (m)
+  uint16_t accumulated_bullet_conversion = 0; // 累计哨兵远程兑换弹量（bit 0-10）
+  bool can_exchange_respawn = false;     // 哨兵是否可兑换复活（bit 20）
+  uint16_t respawn_money = 760; // 哨兵复活所需金币（bit 21-31）
 
-  float enemy_std3_x;     // 敌方步兵3 X (m)
-  float enemy_std3_y;     // 敌方步兵3 Y (m)
-  float enemy_std4_x;     // 敌方步兵4 X (m)
-  float enemy_std4_y;     // 敌方步兵4 Y (m)
+  bool out_of_combat = true;       // 脱战状态（bit 0）
+  uint16_t projectile_allowance = 400; //全队可兑换17mm弹量（bit 1-11）
+  bool power_rune_available = false; // 是否有可用的能量符（bit 14)
 
-  float enemy_sentry_x;   // 敌方哨兵X (m)
-  float enemy_sentry_y;   // 敌方哨兵Y (m) 
-  uint8_t suggested_target; // 雷达建议目标
-  uint16_t radar_flags;     // 雷达标记信息
+  float enemy_hero_x = -88.88f;     // 敌方英雄X (m)
+  float enemy_hero_y = -88.88f;     // 敌方英雄Y (m)
+  float enemy_engineer_x = -88.88f; // 敌方工程X (m)
+  float enemy_engineer_y = -88.88f; // 敌方工程Y (m)
 
-  uint16_t enemy_base_HP;     //敌方基地血量
+  float enemy_std3_x = -88.88f;     // 敌方步兵3 X (m)
+  float enemy_std3_y = -88.88f;     // 敌方步兵3 Y (m)
+  float enemy_std4_x = -88.88f;     // 敌方步兵4 X (m)
+  float enemy_std4_y = -88.88f;     // 敌方步兵4 Y (m)
+
+  float enemy_sentry_x = -88.88f;   // 敌方哨兵X (m)
+  float enemy_sentry_y = -88.88f;   // 敌方哨兵Y (m) 
+  uint8_t suggested_target = 0; // 雷达建议目标
+  uint16_t radar_flags = 0;     // 雷达标记信息
+
+  uint16_t enemy_base_HP = 5000;     //敌方基地血量
   
-  int16_t operator_x;       // 操作手坐标X (mm，来自 /referee/operator Point)
-  int16_t operator_y;       // 操作手坐标Y (mm，来自 /referee/operator Point)
+  float operator_x = -88.88f;       // 操作手坐标X (m，来自 /referee/operator Point)
+  float operator_y = -88.88f;       // 操作手坐标Y (m，来自 /referee/operator Point)
 
-  bool supplement_resource;  // /referee/supplement_resource
-  bool supplement_nonresource; // /referee/supplement_nonresource
-  bool ally_fortress_rfid;   // /ally_fortress_rfid
+  bool supplement_resource = false;  // /referee/supplement_resource
+  bool supplement_nonresource = false; // /referee/supplement_nonresource
+  bool ally_fortress_rfid = false;   // /ally_fortress_rfid
 
 };
 
@@ -168,10 +174,15 @@ struct NavigationState
 
 struct OdomState
 {
-  double raw_x = 0.0, raw_y = 0.0;   // 原始坐标系下的位置（来自 /odom）
+  double raw_x = 0.0, raw_y = 0.0;   // 原始坐标系下的位置（来自 /odom）[m]
   double gimbal_angle = 0.0;  // 世界系中的yaw角（弧度）
   double qx = 0.0, qy = 0.0, qz = 0.0, qw = 1.0;  // 四元数
   double yaw_angle = 0.0;  // MCU上报的云台yaw角（弧度）
+};
+
+struct VisionState
+{
+  float target_distance = 0.0f;  // /vision/target_distance
 };
 
 // ---------------------------
@@ -193,10 +204,15 @@ public:
     bb->set("ref.game_progress", state_->game_progress);
     bb->set("ref.stage_remain_time", state_->stage_remain_time);
     bb->set("ref.ally_base_HP", state_->ally_base_HP);
+    bb->set("ref.ally_1_robot_HP", state_->ally_1_robot_HP);
+    bb->set("ref.ally_2_robot_HP", state_->ally_2_robot_HP);
+    bb->set("ref.ally_3_robot_HP", state_->ally_3_robot_HP);
+    bb->set("ref.ally_4_robot_HP", state_->ally_4_robot_HP);
     bb->set("ref.central_elevated_ground_status", state_->central_elevated_ground_status);
     bb->set("ref.trapezoidal_elevated_ground_status", state_->trapezoidal_elevated_ground_status);
     bb->set("ref.fortress_status", state_->fortress_status);
     bb->set("ref.outpost_status", state_->outpost_status);
+    bb->set("ref.ally_outpost_HP", state_->ally_outpost_HP);
     bb->set("ref.robot_id", state_->robot_id);
     bb->set("ref.current_HP", state_->current_HP);
     bb->set("ref.projectile_allowance_17mm", state_->projectile_allowance_17mm);
@@ -273,6 +289,11 @@ public:
     // ---- 读取 TF 变换参数，将原始坐标系下的位置转为目标坐标系 ----
     double raw_x = state_->raw_x;
     double raw_y = state_->raw_y;
+
+    // 始终写入原始坐标
+    bb->set("odom.raw_x", raw_x);
+    bb->set("odom.raw_y", raw_y);
+
     try {
       double theta = bb->get<double>("tf.src_to_tgt.theta");
       double tx    = bb->get<double>("tf.src_to_tgt.tx");
@@ -307,10 +328,10 @@ private:
   const OdomState* state_;
 };
 
-class UpdateVisionBB : public BT::SyncActionNode
+class CalculateVisionYaw : public BT::SyncActionNode
 {
 public:
-  UpdateVisionBB(const std::string& name, const BT::NodeConfiguration& config)
+  CalculateVisionYaw(const std::string& name, const BT::NodeConfiguration& config)
     : BT::SyncActionNode(name, config)
   {
   }
@@ -319,9 +340,85 @@ public:
 
   BT::NodeStatus tick() override
   {
-    // V1: explicitly弃用视觉模块。这里保持节点存在，但不写入任何视觉字段。[TODO] 后续可接真实视觉数据
+    auto bb = config().blackboard;
+
+    // 读取当前 gimbal_angle（由 UpdateOdomBB 写入）
+    double yaw = 0.0;
+    try {
+      yaw = bb->get<double>("odom.gimbal_angle");
+    } catch (...) {
+      return BT::NodeStatus::FAILURE;
+    }
+
+    // 死区阈值(度) 
+    constexpr double kDeadbandDeg = 2.5;
+    constexpr double kEmaAlpha    = 0.10;   // EMA 平滑系数
+    constexpr double kDeadbandRad = kDeadbandDeg * M_PI / 180.0;
+
+    // 1) EMA 低通滤波（角度感知，处理 ±π 环绕）
+    if (ema_initialized_)
+    {
+      double diff = yaw - yaw_ema_;
+      while (diff >  M_PI) diff -= 2.0 * M_PI;
+      while (diff < -M_PI) diff += 2.0 * M_PI;
+      yaw_ema_ += kEmaAlpha * diff;
+      while (yaw_ema_ >  M_PI) yaw_ema_ -= 2.0 * M_PI;
+      while (yaw_ema_ < -M_PI) yaw_ema_ += 2.0 * M_PI;
+    }
+    else
+    {
+      yaw_ema_ = yaw;
+      ema_initialized_ = true;
+    }
+
+    // 2) 死区：只有 EMA 偏离 stable 超过阈值才更新
+    if (stable_initialized_)
+    {
+      double diff = yaw_ema_ - stable_yaw_;
+      while (diff >  M_PI) diff -= 2.0 * M_PI;
+      while (diff < -M_PI) diff += 2.0 * M_PI;
+      if (std::abs(diff) > kDeadbandRad)
+      {
+        stable_yaw_ = yaw_ema_;
+      }
+    }
+    else
+    {
+      stable_yaw_ = yaw_ema_;
+      stable_initialized_ = true;
+    }
+
+    bb->set("odom.yaw_ema",    yaw_ema_);
+    bb->set("odom.stable_yaw", stable_yaw_);
+
     return BT::NodeStatus::SUCCESS;
   }
+
+private:
+  double yaw_ema_ = 0.0;
+  bool   ema_initialized_ = false;
+  double stable_yaw_ = 0.0;
+  bool   stable_initialized_ = false;
+};
+
+class UpdateVisionBB : public BT::SyncActionNode
+{
+public:
+  UpdateVisionBB(const std::string& name, const BT::NodeConfiguration& config, const VisionState* state)
+    : BT::SyncActionNode(name, config), state_(state)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    config().blackboard->set("vision.target_distance", state_->target_distance);
+    return BT::NodeStatus::SUCCESS;
+  }
+
+private:
+  const VisionState* state_;
 };
 
 class UpdateTimersBB : public BT::SyncActionNode
@@ -502,7 +599,8 @@ public:
   }
 
 private:
-  int last_hp_ = -1;
+  int last_hp_         = -1;
+  ros::Time last_tick_ = ros::Time(0);
   std::deque<std::pair<ros::Time, int>> damage_history_;
 };
 
@@ -510,7 +608,7 @@ class IntenseHarm : public BT::ConditionNode
 {
 public:
   IntenseHarm(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::ConditionNode(name, config), is_active_(false)
+    : BT::ConditionNode(name, config), is_active_(false), last_hp_(-1)
   {
   }
 
@@ -525,28 +623,47 @@ public:
   BT::NodeStatus tick() override
   {
     auto bb = config().blackboard;
-    int damage_2s = 0;
+    int remain_hp = 0;
     try {
-        damage_2s = bb->get<int>("derived.damage_2s");
+      remain_hp = bb->get<int>("ref.current_HP");
     } catch (...) {
-        damage_2s = 0;
+      return BT::NodeStatus::FAILURE;
     }
 
-    int t_on = 100;
-    int t_off = 50;
+    ros::Time now = ros::Time::now();
+    if (last_hp_ == -1) last_hp_ = remain_hp;
+
+    if (remain_hp < last_hp_) {
+      damage_history_.push_back({now, last_hp_ - remain_hp});
+    }
+    last_hp_ = remain_hp;
+
+    // 清理 2 秒以外的旧记录
+    while (!damage_history_.empty()) {
+      if ((now - damage_history_.front().first).toSec() > 2.0)
+        damage_history_.pop_front();
+      else
+        break;
+    }
+
+    int damage_2s = 0;
+    for (const auto& e : damage_history_) damage_2s += e.second;
+    // ----------------------------------------------------
+
+    int t_on = 100, t_off = 50;
     getInput("threshold_activate", t_on);
     getInput("threshold_deactivate", t_off);
 
     if (!is_active_) {
-        if (damage_2s > t_on) {
-            is_active_ = true;
-            ROS_INFO("IntenseHarm: Activated! Damage(2s)=%d >= %d", damage_2s, t_on);
-        }
+      if (damage_2s > t_on) {
+        is_active_ = true;
+        ROS_INFO("IntenseHarm: Activated! Damage(2s)=%d >= %d", damage_2s, t_on);
+      }
     } else {
-        if (damage_2s < t_off) {
-            is_active_ = false;
-            ROS_INFO("IntenseHarm: Deactivated! Damage(2s)=%d < %d", damage_2s, t_off);
-        }
+      if (damage_2s < t_off) {
+        is_active_ = false;
+        ROS_INFO("IntenseHarm: Deactivated! Damage(2s)=%d < %d", damage_2s, t_off);
+      }
     }
 
     return is_active_ ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
@@ -554,6 +671,8 @@ public:
 
 private:
   bool is_active_;
+  int  last_hp_;
+  std::deque<std::pair<ros::Time, int>> damage_history_;
 };
 
 // ---------------------------
@@ -598,8 +717,13 @@ public:
 
   BT::NodeStatus tick() override
   {
-    const bool is_dead = config().blackboard->get<bool>("is_dead");
-    return is_dead ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    int hp = 0;
+    try {
+      hp = config().blackboard->get<int>("ref.current_HP");
+    } catch (...) {
+      return BT::NodeStatus::FAILURE;
+    }
+    return (hp <= 0) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
 
@@ -615,8 +739,13 @@ public:
 
   BT::NodeStatus tick() override
   {
-    const bool is_dead = config().blackboard->get<bool>("is_dead");
-    return (!is_dead) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    int hp = 0;
+    try {
+      hp = config().blackboard->get<int>("ref.current_HP");
+    } catch (...) {
+      return BT::NodeStatus::FAILURE;
+    }
+    return (hp > 0) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
 
@@ -668,12 +797,26 @@ public:
   {
   }
 
-  static BT::PortsList providedPorts() { return {}; }
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<int>("sufficient_bullet", 10, "Bullet threshold: below this is insufficient"),
+    };
+  }
 
   BT::NodeStatus tick() override
   {
-    const bool bullet_sufficient = config().blackboard->get<bool>("bullet_sufficient");
-    return (!bullet_sufficient) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    int bullet = 0;
+    try {
+      bullet = config().blackboard->get<int>("ref.projectile_allowance_17mm");
+    } catch (...) {
+      return BT::NodeStatus::FAILURE;
+    }
+
+    int threshold = 10;
+    (void)getInput("sufficient_bullet", threshold);
+
+    return (bullet < threshold) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
 
@@ -737,7 +880,7 @@ public:
     }
     config().blackboard->set("action", toUpper(action));
    
-     ROS_INFO_THROTTLE(2.0, "[SetAction] action set to %s", toUpper(action).c_str());
+     ROS_INFO_THROTTLE(0.1, "[SetAction] action set to %s", toUpper(action).c_str());
     return BT::NodeStatus::SUCCESS;
   }
 };
@@ -775,23 +918,23 @@ public:
     if (type == "int")
     {
       bb->set(key, std::stoi(val_str));
-      ROS_INFO("SetBBValue: %s = %d (int)", key.c_str(), std::stoi(val_str));
+      // ROS_INFO("SetBBValue: %s = %d (int)", key.c_str(), std::stoi(val_str));
     }
     else if (type == "double")
     {
       bb->set(key, std::stod(val_str));
-      ROS_INFO("SetBBValue: %s = %.3f (double)", key.c_str(), std::stod(val_str));
+      // ROS_INFO("SetBBValue: %s = %.3f (double)", key.c_str(), std::stod(val_str));
     }
     else if (type == "bool")
     {
       bool v = (val_str == "true" || val_str == "1");
       bb->set(key, v);
-      ROS_INFO("SetBBValue: %s = %s (bool)", key.c_str(), v ? "true" : "false");
+      // ROS_INFO("SetBBValue: %s = %s (bool)", key.c_str(), v ? "true" : "false");
     }
     else if (type == "string")
     {
       bb->set(key, val_str);
-      ROS_INFO("SetBBValue: %s = \"%s\" (string)", key.c_str(), val_str.c_str());
+      // ROS_INFO("SetBBValue: %s = \"%s\" (string)", key.c_str(), val_str.c_str());
     }
     else
     {
@@ -823,11 +966,11 @@ public:
 };
 
 // Wait: 等待指定的秒数
-class Wait : public BT::SyncActionNode
+class Wait : public BT::StatefulActionNode
 {
 public:
   Wait(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::SyncActionNode(name, config), wait_end_time_(ros::Time(0))
+    : BT::StatefulActionNode(name, config)
   {
   }
 
@@ -838,7 +981,7 @@ public:
     };
   }
 
-  BT::NodeStatus tick() override
+  BT::NodeStatus onStart() override
   {
     double duration = 1.0;
     if (!getInput("duration", duration))
@@ -846,33 +989,32 @@ public:
       return BT::NodeStatus::FAILURE;
     }
 
-    auto bb = config().blackboard;
-    
-    // 第一次进入时，记录开始时间
-    if (wait_end_time_ == ros::Time(0))
-    {
-      wait_end_time_ = ros::Time::now() + ros::Duration(duration);
-      ROS_DEBUG("Wait: Starting wait for %.2f seconds", duration);
-      return BT::NodeStatus::RUNNING;
-    }
+    wait_end_time_ = ros::Time::now() + ros::Duration(duration);
+    ROS_DEBUG("Wait: Starting wait for %.2f seconds", duration);
+    return BT::NodeStatus::RUNNING;
+  }
 
-    // 检查是否超过等待时间
+  BT::NodeStatus onRunning() override
+  {
     if (ros::Time::now() >= wait_end_time_)
     {
       ROS_DEBUG("Wait: Wait completed");
-      wait_end_time_ = ros::Time(0);  // 重置计时器
       return BT::NodeStatus::SUCCESS;
     }
-
-    // 还没等够，继续等待
     return BT::NodeStatus::RUNNING;
+  }
+
+  void onHalted() override
+  {
+    ROS_DEBUG("Wait: Halted");
   }
 
 private:
   ros::Time wait_end_time_;
 };
 
-//[TODO]: 从 strategy_tree.yaml 读取目标点坐标
+// 从 strategy_tree.yaml 读取目标点坐标
+// 支持红蓝方切换：根据 robot_id 自动选择 goals.red 或 goals.blue
 class SetGoalFromParams : public BT::SyncActionNode
 {
 public:
@@ -897,6 +1039,22 @@ public:
       return BT::NodeStatus::FAILURE;
     }
 
+    // ----- 确定队伍 -----
+    auto bb = config().blackboard;
+    std::string team = "red";  // 默认红方
+    if (yaml_root_ && (*yaml_root_)["goals"]["blue"].IsDefined())
+    {
+      try
+      {
+        uint8_t robot_id = bb->get<uint8_t>("ref.robot_id");
+        if (robot_id == 107)
+          team = "blue";
+        else
+          team = "red";
+      }
+      catch (...) { /* 无法读取 robot_id，使用默认红方 */ }
+    }
+
     double x = 0.0, y = 0.0;
     bool found = false;
 
@@ -904,7 +1062,8 @@ public:
     {
       try
       {
-        const YAML::Node pt = (*yaml_root_)["goals"][ns];
+        const YAML::Node goals = (*yaml_root_)["goals"];
+        const YAML::Node pt = goals[team][ns];
         if (pt && pt["x"] && pt["y"])
         {
           x = pt["x"].as<double>();
@@ -917,11 +1076,11 @@ public:
 
     if (!found)
     {
-      ROS_ERROR("SetGoalFromParams: namespace '%s' not found in strategy_tree.yaml", ns.c_str());
+      ROS_ERROR("SetGoalFromParams: namespace '%s' not found (team=%s) in strategy_tree.yaml", ns.c_str(), team.c_str());
       return BT::NodeStatus::FAILURE;
     }
 
-    ROS_DEBUG("SetGoalFromParams: ns=%s, goal=(%f, %f)", ns.c_str(), x, y);
+    ROS_DEBUG("SetGoalFromParams: team=%s, ns=%s, goal=(%f, %f)", team.c_str(), ns.c_str(), x, y);
 
     geometry_msgs::PointStamped goal;
     goal.header.frame_id = "map";
@@ -930,9 +1089,8 @@ public:
     goal.point.y = y;
     goal.point.z = 0.0;
 
-    auto bb = config().blackboard;
     bb->set("goal.point", goal);
-    bb->set("goal.valid", true);  
+    bb->set("goal.valid", true);
     ROS_DEBUG("SetGoalFromParams: goal.valid set to TRUE");
     return BT::NodeStatus::SUCCESS;
   }
@@ -972,6 +1130,21 @@ public:
 
     auto bb = config().blackboard;
 
+    // ----- 确定队伍 -----
+    std::string team = "red";  // 默认红方
+    if (yaml_root_ && (*yaml_root_)["goals"]["blue"].IsDefined())
+    {
+      try
+      {
+        uint8_t robot_id = bb->get<uint8_t>("ref.robot_id");
+        if (robot_id == 107)
+          team = "blue";
+        else
+          team = "red";
+      }
+      catch (...) { /* 无法读取 robot_id，使用默认红方 */ }
+    }
+
     const std::string idx_key        = "cycle_idx_" + ns;
     const std::string last_action_key = "cycle_last_action_" + ns;
 
@@ -994,10 +1167,11 @@ public:
     {
       try
       {
-        const YAML::Node goal_node = (*yaml_root_)["goals"];
-        if (goal_node && goal_node[ns] && goal_node[ns]["point_" + std::to_string(cycle_index)])
+        const YAML::Node goals = (*yaml_root_)["goals"];
+        const YAML::Node goal_node = goals[team][ns];
+        if (goal_node && goal_node["point_" + std::to_string(cycle_index)])
         {
-          const auto& pt = goal_node[ns]["point_" + std::to_string(cycle_index)];
+          const auto& pt = goal_node["point_" + std::to_string(cycle_index)];
           x = pt["x"].as<double>();
           y = pt["y"].as<double>();
           found = true;
@@ -1008,8 +1182,8 @@ public:
 
     if (!found)
     {
-      ROS_ERROR("SetGoalFromParamsCyclic[%s]: point_%d not found in strategy_tree.yaml",
-                ns.c_str(), cycle_index);
+      ROS_ERROR("SetGoalFromParamsCyclic[%s]: point_%d not found (team=%s) in strategy_tree.yaml",
+                ns.c_str(), cycle_index, team.c_str());
       return BT::NodeStatus::FAILURE;
     }
 
@@ -1069,6 +1243,170 @@ public:
     cycle_index = (cycle_index + 1) % point_count;
     bb->set(idx_key, cycle_index);
     ROS_DEBUG("AdvanceCycleIndex[%s]: advanced to index=%d", ns.c_str(), cycle_index);
+
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
+
+class RecordVisionAnchor : public BT::SyncActionNode
+{
+public:
+  RecordVisionAnchor(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+
+    std::string cur_action;
+    try { cur_action = bb->get<std::string>("action"); }
+    catch (...) { return BT::NodeStatus::FAILURE; }
+
+    if (cur_action != last_action_)
+    {
+      last_action_ = cur_action;
+      if (cur_action == "VISION")
+      {
+        try {
+          double x = bb->get<double>("odom.raw_x");
+          double y = bb->get<double>("odom.raw_y");
+          bb->set("vision.anchor_x", x);
+          bb->set("vision.anchor_y", y);
+          ROS_INFO("[RecordVisionAnchor] Anchor set at (%.2f, %.2f)", x, y);
+        } catch (...) {
+          ROS_WARN_THROTTLE(2.0, "[RecordVisionAnchor] Failed to read odom.raw_x/y");
+          return BT::NodeStatus::FAILURE;
+        }
+      }
+    }
+    return BT::NodeStatus::SUCCESS;
+  }
+
+private:
+  std::string last_action_;
+};
+
+
+class CheckVisionAnchorDistance : public BT::ConditionNode
+{
+public:
+  CheckVisionAnchorDistance(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::ConditionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<double>("max_distance", 1.5, "Max allowed distance from anchor (m)"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+
+    double cur_x = 0.0, cur_y = 0.0;
+    double anchor_x = 0.0, anchor_y = 0.0;
+    try {
+      cur_x    = bb->get<double>("odom.raw_x");
+      cur_y    = bb->get<double>("odom.raw_y");
+      anchor_x = bb->get<double>("vision.anchor_x");
+      anchor_y = bb->get<double>("vision.anchor_y");
+    } catch (...) {
+      return BT::NodeStatus::FAILURE;
+    }
+
+    double max_dist = 1.5;
+    (void)getInput("max_distance", max_dist);
+
+    double dist = std::hypot(cur_x - anchor_x, cur_y - anchor_y);
+    if (dist > max_dist)
+    {
+      ROS_WARN_THROTTLE(1.0, "[CheckVisionAnchorDistance] %.2fm > limit %.2fm, stopping",
+                        dist, max_dist);
+      return BT::NodeStatus::FAILURE;
+    }
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
+class SetVisionTarget : public BT::SyncActionNode
+{
+public:
+  SetVisionTarget(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return {
+      BT::InputPort<double>("offset_distance", 0.4, "Distance to stop before the target (m)"),
+    };
+  }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+
+    // 1. 读取哨兵自身位置（原始坐标系）
+    double odom_x = 0.0, odom_y = 0.0;
+    try {
+      odom_x = bb->get<double>("odom.raw_x");
+      odom_y = bb->get<double>("odom.raw_y");
+    } catch (...) {
+      ROS_WARN_THROTTLE(2.0, "[SetVisionTarget] odom.raw_x / odom.raw_y not in blackboard");
+      return BT::NodeStatus::FAILURE;
+    }
+
+    // 2. 读取目标距离
+    float target_distance = 0.0f;
+    try {
+      target_distance = bb->get<float>("vision.target_distance");
+    } catch (...) {
+      ROS_WARN_THROTTLE(2.0, "[SetVisionTarget] vision.target_distance not in blackboard");
+      return BT::NodeStatus::FAILURE;
+    }
+
+    // 3. 读取目标角度（世界系，弧度）
+    double stable_yaw = 0.0;
+    try {
+      stable_yaw = bb->get<double>("odom.stable_yaw");
+    } catch (...) {
+      ROS_WARN_THROTTLE(2.0, "[SetVisionTarget] odom.stable_yaw not in blackboard");
+      return BT::NodeStatus::FAILURE;
+    }
+
+    // 4. 读取回退距离（默认 0.4m）
+    double offset = 0.4;
+    (void)getInput("offset_distance", offset);
+
+    // 5. 计算目标点的绝对坐标
+    //    目标在: (odom_x + target_distance * cos(yaw), odom_y + target_distance * sin(yaw))
+    //    我们想到达目标前方 offset 处，即:
+    double effective_distance = std::max(0.0, static_cast<double>(target_distance) - offset);
+    double goal_x = odom_x + effective_distance * std::cos(stable_yaw);
+    double goal_y = odom_y + effective_distance * std::sin(stable_yaw);
+
+    // 6. 写入黑板
+    geometry_msgs::PointStamped goal;
+    goal.header.stamp    = ros::Time::now();
+    goal.header.frame_id = "map";
+    goal.point.x = goal_x;
+    goal.point.y = goal_y;
+    goal.point.z = 0.0;
+
+    bb->set("goal.point", goal);
+    bb->set("goal.valid", true);
+
+    ROS_INFO_THROTTLE(2.0, "[SetVisionTarget] dist=%.2fm, yaw=%.2f°, offset=%.2fm → goal=(%.2f, %.2f)",
+                      target_distance, stable_yaw * 180.0 / M_PI, offset, goal_x, goal_y);
 
     return BT::NodeStatus::SUCCESS;
   }
@@ -1174,6 +1512,7 @@ int main(int argc, char** argv)
   RefereeState ref;
   NavigationState nav;
   OdomState odom;
+  VisionState vis;
 
   auto blackboard = BT::Blackboard::create();
   
@@ -1212,6 +1551,18 @@ int main(int argc, char** argv)
   auto sub_ally_base_hp = nh.subscribe<std_msgs::UInt16>("/referee/ally_base_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
     ref.ally_base_HP = msg->data;
   });
+  auto sub_ally_1_hp = nh.subscribe<std_msgs::UInt16>("/referee/ally_1_robot_HP", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.ally_1_robot_HP = msg->data;
+  });
+  auto sub_ally_2_hp = nh.subscribe<std_msgs::UInt16>("/referee/ally_2_robot_HP", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.ally_2_robot_HP = msg->data;
+  });
+  auto sub_ally_3_hp = nh.subscribe<std_msgs::UInt16>("/referee/ally_3_robot_HP", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.ally_3_robot_HP = msg->data;
+  });
+  auto sub_ally_4_hp = nh.subscribe<std_msgs::UInt16>("/referee/ally_4_robot_HP", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.ally_4_robot_HP = msg->data;
+  });
   auto sub_central_ground = nh.subscribe<std_msgs::UInt8>("/referee/central_ground_status", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.central_elevated_ground_status = msg->data;
   });
@@ -1223,6 +1574,9 @@ int main(int argc, char** argv)
   });
   auto sub_outpost = nh.subscribe<std_msgs::UInt8>("/referee/outpost_status", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.outpost_status = msg->data;
+  });
+  auto sub_ally_outpost_hp = nh.subscribe<std_msgs::UInt16>("/referee/ally_outpost_hp", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
+    ref.ally_outpost_HP = msg->data;
   });
 
   // 自身状态
@@ -1301,8 +1655,8 @@ int main(int argc, char** argv)
 
   // 操作手坐标 (geometry_msgs::Point, m → mm)
   auto sub_operator = nh.subscribe<geometry_msgs::Point>("/referee/operator", 1, [&](const geometry_msgs::Point::ConstPtr& msg) {
-    ref.operator_x = static_cast<int16_t>(msg->x * 1000.0f);
-    ref.operator_y = static_cast<int16_t>(msg->y * 1000.0f);
+    ref.operator_x = msg->x;
+    ref.operator_y = msg->y;
   });
 
   // 补弹资源
@@ -1314,6 +1668,9 @@ int main(int argc, char** argv)
   });
   auto sub_ally_fortress_rfid = nh.subscribe<std_msgs::Bool>("ally_fortress_rfid", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
     ref.ally_fortress_rfid = msg->data;
+  });
+  auto sub_target_distance = nh.subscribe<std_msgs::Float32>("/vision/target_distance", 1, [&](const std_msgs::Float32::ConstPtr& msg) {
+    vis.target_distance = msg->data;
   });
 
   // Navigation arrived (复用现有语义)
@@ -1345,6 +1702,7 @@ int main(int argc, char** argv)
     }
   }
   ros::Publisher spin_pub = nh.advertise<std_msgs::UInt8>("spin", 1);
+  ros::Publisher spin_velo_pub = nh.advertise<std_msgs::UInt8>("spin_velo", 1);
   ros::Publisher recover_pub = nh.advertise<std_msgs::UInt8>("recover", 1);
   ros::Publisher bullet_num_pub = nh.advertise<std_msgs::UInt8>("bullet_num", 1);
   ros::Publisher target_yaw_pub = nh.advertise<std_msgs::Float32>("/target_yaw", 1);
@@ -1373,11 +1731,13 @@ int main(int argc, char** argv)
       return std::make_unique<UpdateOdomBB>(name, config, &odom);
     });
 
-  factory.registerNodeType<UpdateVisionBB>("UpdateVisionBB");
+  factory.registerBuilder<UpdateVisionBB>(
+    "UpdateVisionBB", [&](const std::string& name, const BT::NodeConfiguration& config) {
+      return std::make_unique<UpdateVisionBB>(name, config, &vis);
+    });
+  factory.registerNodeType<CalculateVisionYaw>("CalculateVisionYaw");
   factory.registerNodeType<UpdateTimersBB>("UpdateTimersBB");
   factory.registerNodeType<UpdateBulletBB>("UpdateBulletBB");
-  factory.registerNodeType<UpdateDerivedFlags>("UpdateDerivedFlags");
-
   factory.registerNodeType<IsGameStarted>("IsGameStarted");
   factory.registerNodeType<IsSentryDead>("IsSentryDead");
   factory.registerNodeType<IsSentryAlive>("IsSentryAlive");
@@ -1391,7 +1751,7 @@ int main(int argc, char** argv)
   factory.registerNodeType<ClearGoal>("ClearGoal");
   factory.registerNodeType<Wait>("Wait");
   
-  RegisterMotionChangeNodes(factory, &motion_pub, &spin_pub, &publish_on_change_only);
+  RegisterMotionChangeNodes(factory, &motion_pub, &spin_pub, &spin_velo_pub, &publish_on_change_only);
 
   factory.registerBuilder<SetGoalFromParams>(
     "SetGoalFromParams", [&](const std::string& name, const BT::NodeConfiguration& config) {
@@ -1404,6 +1764,10 @@ int main(int argc, char** argv)
     });
 
   factory.registerNodeType<AdvanceCycleIndex>("AdvanceCycleIndex");
+
+  factory.registerNodeType<RecordVisionAnchor>("RecordVisionAnchor");
+  factory.registerNodeType<CheckVisionAnchorDistance>("CheckVisionAnchorDistance");
+  factory.registerNodeType<SetVisionTarget>("SetVisionTarget");
 
   factory.registerBuilder<PublishGoalPoint>(
     "PublishGoalPoint", [&](const std::string& name, const BT::NodeConfiguration& config) {
@@ -1485,6 +1849,14 @@ int main(int argc, char** argv)
   blackboard->set("odom.target_yaw", 0.0);    // 目标相对角度，CalculateAngle计算
   blackboard->set("odom.x", 0.0);             // 当前经TF转换后的x坐标
   blackboard->set("odom.y", 0.0);             // 当前经TF转换后的y坐标
+  blackboard->set("odom.raw_x", 0.0);         // 原始坐标系下x坐标（来自 /odom）
+  blackboard->set("odom.raw_y", 0.0);         // 原始坐标系下y坐标（来自 /odom）
+  blackboard->set("vision.anchor_x", 0.0);    // VISION 锚点 x（RecordVisionAnchor 写入）
+  blackboard->set("vision.anchor_y", 0.0);    // VISION 锚点 y（RecordVisionAnchor 写入）
+  blackboard->set("odom.yaw_ema", 0.0);       // CalculateVisionYaw: EMA平滑后的yaw
+  blackboard->set("odom.stable_yaw", 0.0);    // CalculateVisionYaw: 死区稳定后的中心线yaw
+  blackboard->set("vision.target_distance", 0.0f);  // /vision/target_distance
+  blackboard->set("vision.detected", false);        // 视觉检测标志，默认无目标
 
   // ============================================================
   // TF 标定：从 launch 参数读取 4 组点对 (src → tgt)，
@@ -1526,10 +1898,16 @@ int main(int argc, char** argv)
   blackboard->set("ref.game_progress", uint8_t(0));
   blackboard->set("ref.stage_remain_time", uint16_t(420));
   blackboard->set("ref.ally_base_HP", uint16_t(5000));
+  blackboard->set("ref.ally_1_robot_HP", uint16_t(200));
+  blackboard->set("ref.ally_2_robot_HP", uint16_t(250));
+  blackboard->set("ref.ally_3_robot_HP", uint16_t(150));
+  blackboard->set("ref.ally_4_robot_HP", uint16_t(150));
+  blackboard->set("ref.infantry_dead", 0);
   blackboard->set("ref.central_elevated_ground_status", uint8_t(0));
   blackboard->set("ref.trapezoidal_elevated_ground_status", uint8_t(0));
   blackboard->set("ref.fortress_status", uint8_t(0));
   blackboard->set("ref.outpost_status", uint8_t(0));
+  blackboard->set("ref.ally_outpost_HP", uint16_t(1500));
   blackboard->set("ref.robot_id", uint8_t(7));
   blackboard->set("ref.current_HP", uint16_t(400));
   blackboard->set("ref.projectile_allowance_17mm", uint16_t(300));
@@ -1554,13 +1932,13 @@ int main(int argc, char** argv)
   blackboard->set("ref.suggested_target", uint8_t(0));
   blackboard->set("ref.radar_flags", uint16_t(0));
   blackboard->set("ref.enemy_base_HP", uint16_t(5000));
-  blackboard->set("ref.operator_x", int16_t(-8888));
-  blackboard->set("ref.operator_y", int16_t(-8888));
+  blackboard->set("ref.operator_x", -88.88f);
+  blackboard->set("ref.operator_y", -88.88f);
 
   // Chase mode initialization
   blackboard->set("chase.target_id", uint8_t(0));
-  blackboard->set("chase.target_x", 0.0f);
-  blackboard->set("chase.target_y", 0.0f);
+  blackboard->set("chase.target_x", -88.88f);
+  blackboard->set("chase.target_y", -88.88f);
   blackboard->set("chase.initialized", false);
   blackboard->set("count.free_bullet", 0);
   
@@ -1585,11 +1963,11 @@ int main(int argc, char** argv)
   BT::Tree tree = factory.createTreeFromText(xml_text, blackboard);
 
   // ============================================================
-  // Groot2 可视化调试支持（ZMQ + 文件日志）
+  // Groot2 可视化调试支持（ZMQ + 文件日志，V3 协议）
   // ============================================================
-  BT::PublisherZMQ publisher(tree);
+  BT::PublisherZMQ publisher(tree, 25, 1666, 1667);
   BT::FileLogger file_logger(tree, "behavior_log.fbl");
-  ROS_INFO("ZMQ publisher started (port 1667), logging to behavior_log.fbl");
+  ROS_INFO("ZMQ publisher started on port 1666 (publisher) / 1667 (server), logging to behavior_log.fbl");
 
   // 初始化时发送一次默认数据到下位机
   {

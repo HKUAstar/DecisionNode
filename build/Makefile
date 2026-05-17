@@ -926,19 +926,6 @@ command_test/fast:
 .PHONY : command_test/fast
 
 #=============================================================================
-# Target rules for targets named zone_detector
-
-# Build rule for target.
-zone_detector: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 zone_detector
-.PHONY : zone_detector
-
-# fast build rule for target.
-zone_detector/fast:
-	$(MAKE) $(MAKESILENT) -f decision_node/CMakeFiles/zone_detector.dir/build.make decision_node/CMakeFiles/zone_detector.dir/build
-.PHONY : zone_detector/fast
-
-#=============================================================================
 # Target rules for targets named visualize
 
 # Build rule for target.
@@ -1023,7 +1010,6 @@ help:
 	@echo "... mcu_communicator"
 	@echo "... strategy_node"
 	@echo "... visualize"
-	@echo "... zone_detector"
 .PHONY : help
 
 
