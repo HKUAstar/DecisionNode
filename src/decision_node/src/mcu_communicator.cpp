@@ -37,7 +37,6 @@ public:
         pub_ally_outpost_hp_ = nh_.advertise<std_msgs::UInt16>("/referee/ally_outpost_hp", 1);
         
         pub_central_ground_status_ = nh_.advertise<std_msgs::UInt8>("/referee/central_ground_status", 1);
-        pub_trap_ground_status_ = nh_.advertise<std_msgs::UInt8>("/referee/trap_ground_status", 1);
         pub_fortress_status_ = nh_.advertise<std_msgs::UInt8>("/referee/fortress_status", 1);
         pub_outpost_status_ = nh_.advertise<std_msgs::UInt8>("/referee/outpost_status", 1);
 
@@ -48,7 +47,6 @@ public:
         pub_projectile_fortress_ = nh_.advertise<std_msgs::UInt16>("/referee/projectile_fortress", 1);
         pub_remaining_gold_ = nh_.advertise<std_msgs::UInt16>("/referee/remaining_gold", 1);
 
-        pub_accumulated_bullet_ = nh_.advertise<std_msgs::UInt16>("/referee/accumulated_bullet", 1);
         pub_can_exchange_respawn_ = nh_.advertise<std_msgs::Bool>("/referee/can_exchange_respawn", 1);
         pub_respawn_money_ = nh_.advertise<std_msgs::UInt16>("/referee/respawn_money", 1);
         
@@ -72,7 +70,6 @@ public:
         pub_ally_base_rfid_ = nh_.advertise<std_msgs::Bool>("/referee/ally_base_rfid", 1);
         pub_ally_fortress_rfid_ = nh_.advertise<std_msgs::Bool>("ally_fortress_rfid", 1);
         pub_operator_ = nh_.advertise<geometry_msgs::Point>("/referee/operator", 1);
-        pub_cmd_keyboard_ = nh_.advertise<std_msgs::UInt8>("/referee/cmd_keyboard", 1);
         
     
         sub_dstar_status_ = nh_.subscribe<std_msgs::Bool>("/dstar_status", 1,
@@ -134,7 +131,6 @@ private:
     ros::Publisher pub_ally_base_hp_;
 
     ros::Publisher pub_central_ground_status_;
-    ros::Publisher pub_trap_ground_status_;
     ros::Publisher pub_fortress_status_;
     ros::Publisher pub_outpost_status_;
 
@@ -145,7 +141,6 @@ private:
     ros::Publisher pub_projectile_fortress_;
     ros::Publisher pub_remaining_gold_;
 
-    ros::Publisher pub_accumulated_bullet_;
     ros::Publisher pub_can_exchange_respawn_;
     ros::Publisher pub_respawn_money_;
 
@@ -170,7 +165,6 @@ private:
     ros::Publisher pub_ally_base_rfid_;
     ros::Publisher pub_ally_fortress_rfid_;
     ros::Publisher pub_operator_;
-    ros::Publisher pub_cmd_keyboard_;
     
     ros::Subscriber sub_dstar_status_;
     ros::Subscriber sub_cmd_vel_;
@@ -386,8 +380,9 @@ private:
         // frame.data.spin = current_spin_;            // 0=正常；1=对齐角度；2=上坡；3=下坡
         uint8_t spin_to_mcu = (current_spin_ == 4) ? 0 : current_spin_;
         frame.data.spin = spin_to_mcu;
-        frame.data.activate_power_rune = current_activate_power_rune_;  // 激活能量机关
-        frame.data.exchange_respwan = current_exchange_respwan_;        // 兑换复活
+        frame.data.rune_respwan_flag = 0;
+        if (current_activate_power_rune_) frame.data.rune_respwan_flag |= RUNE_RESPAWN_FLAG_POWER_RUNE;
+        if (current_exchange_respwan_)   frame.data.rune_respwan_flag |= RUNE_RESPAWN_FLAG_EXCHANGE;
         frame.data.bullet_num = current_bullet_num_;                    // 买弹数量
 
         // ROS_INFO_THROTTLE(0.5,
@@ -713,12 +708,12 @@ private:
         geometry_msgs::Point enemy_pos;
 
         
-        // 云台yaw角
-        msg_float.data = frame.data.yaw_angle;
+        // 云台yaw角 (mmrad -> rad)
+        msg_float.data = frame.data.yaw_angle / 1000.0f;
         pub_yaw_angle_.publish(msg_float);
         
-        // 底盘IMU角
-        msg_float.data = frame.data.chassis_imu;
+        // 底盘IMU角 (mmrad -> rad)
+        msg_float.data = frame.data.chassis_imu / 1000.0f;
         pub_chassis_imu_.publish(msg_float);
         
         // 比赛状态
@@ -776,17 +771,15 @@ private:
         msg_uint16.data = frame.data.enemy_base_HP;
         pub_enemy_base_hp_.publish(msg_uint16);
         
-        msg_uint8.data = frame.data.central_elevated_ground_status;
-        pub_central_ground_status_.publish(msg_uint8);
-        
-        msg_uint8.data = frame.data.trapezoidal_elevated_ground_status;
-        pub_trap_ground_status_.publish(msg_uint8);
-        
-        msg_uint8.data = frame.data.fortress_status;
-        pub_fortress_status_.publish(msg_uint8);
-        
-        msg_uint8.data = frame.data.outpost_status;
-        pub_outpost_status_.publish(msg_uint8);
+        {
+            uint8_t es = frame.data.event_status;
+            msg_uint8.data = (es & EVENT_STATUS_CENTRAL_GROUND_MASK) >> EVENT_STATUS_CENTRAL_GROUND_SHIFT;
+            pub_central_ground_status_.publish(msg_uint8);
+            msg_uint8.data = (es & EVENT_STATUS_FORTRESS_MASK) >> EVENT_STATUS_FORTRESS_SHIFT;
+            pub_fortress_status_.publish(msg_uint8);
+            msg_uint8.data = (es & EVENT_STATUS_OUTPOST_MASK) >> EVENT_STATUS_OUTPOST_SHIFT;
+            pub_outpost_status_.publish(msg_uint8);
+        }
         
         msg_uint16.data = frame.data.projectile_allowance_17mm;
         pub_projectile_17mm_.publish(msg_uint16);
@@ -797,28 +790,34 @@ private:
         msg_uint16.data = frame.data.remaining_gold_coin;
         pub_remaining_gold_.publish(msg_uint16);
         
-        msg_uint16.data = frame.data.accumulated_bullet_conversion;
-        pub_accumulated_bullet_.publish(msg_uint16);
-        
-        msg_bool.data = frame.data.can_exchange_respawn;
+        msg_bool.data = frame.data.bool_zip & BOOL_ZIP_CAN_EXCHANGE_RESPAWN;
         pub_can_exchange_respawn_.publish(msg_bool);
         
         msg_uint16.data = frame.data.respawn_money;
         pub_respawn_money_.publish(msg_uint16);
         
-        msg_bool.data = frame.data.out_of_combat;
+        msg_bool.data = frame.data.bool_zip & BOOL_ZIP_OUT_OF_COMBAT;
         pub_out_of_combat_.publish(msg_bool);
         
         msg_uint16.data = frame.data.projectile_allowance;
         pub_projectile_allowance_.publish(msg_uint16);
         
-        msg_bool.data = frame.data.power_rune_available;
+        msg_bool.data = frame.data.bool_zip & BOOL_ZIP_POWER_RUNE_AVAILABLE;
         pub_power_rune_available_.publish(msg_bool);
         
         // ===== 新增字段发布 =====
-        // vision_detected
-        msg_bool.data = frame.data.vision_detected;
-        pub_vision_detected_.publish(msg_bool);
+        // bool_zip 解包
+        {
+            uint8_t bz = frame.data.bool_zip;
+            msg_bool.data = bz & BOOL_ZIP_VISION_DETECTED;
+            pub_vision_detected_.publish(msg_bool);
+            
+            msg_bool.data = bz & BOOL_ZIP_ALLY_BASE_RFID;
+            pub_ally_base_rfid_.publish(msg_bool);
+            
+            msg_bool.data = bz & BOOL_ZIP_ALLY_FORTRESS_RFID;
+            pub_ally_fortress_rfid_.publish(msg_bool);
+        }
         
         // target_distance (cm -> m)
         msg_float.data = frame.data.target_distance / 100.0f;
@@ -828,26 +827,14 @@ private:
         msg_uint16.data = frame.data.ally_outpost_HP;
         pub_ally_outpost_hp_.publish(msg_uint16);
         
-        // ally_base_rfid
-        msg_bool.data = frame.data.ally_base_rfid;
-        pub_ally_base_rfid_.publish(msg_bool);
-        
-        // ally_fortress_rfid
-        msg_bool.data = frame.data.ally_fortress_rfid;
-        pub_ally_fortress_rfid_.publish(msg_bool);
-        
-        // operator_x / operator_y -> Point
+        // operator_x / operator_y (cm -> m) -> Point
         {
             geometry_msgs::Point pt;
-            pt.x = frame.data.operator_x;
-            pt.y = frame.data.operator_y;
+            pt.x = frame.data.operator_x / 100.0f;
+            pt.y = frame.data.operator_y / 100.0f;
             pt.z = 0.0f;
             pub_operator_.publish(pt);
         }
-        
-        // cmd_keyboard
-        msg_uint8.data = frame.data.cmd_keyboard;
-        pub_cmd_keyboard_.publish(msg_uint8);
         
         // ROS_INFO("MCU frame parsed: game_progress=%u, current_HP=%u",
         //          frame.data.game_progress, frame.data.current_HP);

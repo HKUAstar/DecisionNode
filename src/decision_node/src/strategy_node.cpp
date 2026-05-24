@@ -121,7 +121,6 @@ struct RefereeState
   uint16_t ally_4_robot_HP = 150; // 4号机器人血量
 
   uint8_t central_elevated_ground_status = 0; // 中央高地状态（bit 7-8）
-  uint8_t trapezoidal_elevated_ground_status = 0; // 梯形高地状态（bit 9-10）
   uint8_t fortress_status = 0; // 堡垒状态（bit 25-26）
   uint8_t outpost_status = 0; // 前哨战状态（bit 27-28）
   uint16_t ally_outpost_HP = 1500; // 我方前哨战血量
@@ -133,7 +132,6 @@ struct RefereeState
   uint16_t projectile_allowance_fortress = 100;
   uint16_t remaining_gold_coin = 400;
 
-  uint16_t accumulated_bullet_conversion = 0; // 累计哨兵远程兑换弹量（bit 0-10）
   bool can_exchange_respawn = false;     // 哨兵是否可兑换复活（bit 20）
   uint16_t respawn_money = 760; // 哨兵复活所需金币（bit 21-31）
 
@@ -210,7 +208,6 @@ public:
     bb->set("ref.ally_3_robot_HP", state_->ally_3_robot_HP);
     bb->set("ref.ally_4_robot_HP", state_->ally_4_robot_HP);
     bb->set("ref.central_elevated_ground_status", state_->central_elevated_ground_status);
-    bb->set("ref.trapezoidal_elevated_ground_status", state_->trapezoidal_elevated_ground_status);
     bb->set("ref.fortress_status", state_->fortress_status);
     bb->set("ref.outpost_status", state_->outpost_status);
     bb->set("ref.ally_outpost_HP", state_->ally_outpost_HP);
@@ -219,7 +216,6 @@ public:
     bb->set("ref.projectile_allowance_17mm", state_->projectile_allowance_17mm);
     bb->set("ref.projectile_allowance_fortress", state_->projectile_allowance_fortress);
     bb->set("ref.remaining_gold_coin", state_->remaining_gold_coin);
-    bb->set("ref.accumulated_bullet_conversion", state_->accumulated_bullet_conversion);
     bb->set("ref.can_exchange_respawn", state_->can_exchange_respawn);
     bb->set("ref.respawn_money", state_->respawn_money);
     bb->set("ref.out_of_combat", state_->out_of_combat);
@@ -1579,9 +1575,6 @@ int main(int argc, char** argv)
   auto sub_central_ground = nh.subscribe<std_msgs::UInt8>("/referee/central_ground_status", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.central_elevated_ground_status = msg->data;
   });
-  auto sub_trap_ground = nh.subscribe<std_msgs::UInt8>("/referee/trap_ground_status", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
-    ref.trapezoidal_elevated_ground_status = msg->data;
-  });
   auto sub_fortress = nh.subscribe<std_msgs::UInt8>("/referee/fortress_status", 1, [&](const std_msgs::UInt8::ConstPtr& msg) {
     ref.fortress_status = msg->data;
   });
@@ -1612,9 +1605,6 @@ int main(int argc, char** argv)
   });
 
   // 哨兵特殊
-  auto sub_acc_bullet = nh.subscribe<std_msgs::UInt16>("/referee/accumulated_bullet", 1, [&](const std_msgs::UInt16::ConstPtr& msg) {
-    ref.accumulated_bullet_conversion = msg->data;
-  });
   auto sub_can_respawn = nh.subscribe<std_msgs::Bool>("/referee/can_exchange_respawn", 1, [&](const std_msgs::Bool::ConstPtr& msg) {
     ref.can_exchange_respawn = msg->data;
   });
@@ -1920,7 +1910,6 @@ int main(int argc, char** argv)
   blackboard->set("ref.ally_4_robot_HP", uint16_t(150));
   blackboard->set("ref.infantry_dead", 0);
   blackboard->set("ref.central_elevated_ground_status", uint8_t(0));
-  blackboard->set("ref.trapezoidal_elevated_ground_status", uint8_t(0));
   blackboard->set("ref.fortress_status", uint8_t(0));
   blackboard->set("ref.outpost_status", uint8_t(0));
   blackboard->set("ref.ally_outpost_HP", uint16_t(1500));
@@ -1929,7 +1918,6 @@ int main(int argc, char** argv)
   blackboard->set("ref.projectile_allowance_17mm", uint16_t(300));
   blackboard->set("ref.projectile_allowance_fortress", uint16_t(100));
   blackboard->set("ref.remaining_gold_coin", uint16_t(400));
-  blackboard->set("ref.accumulated_bullet_conversion", uint16_t(0));
   blackboard->set("ref.can_exchange_respawn", false);
   blackboard->set("ref.respawn_money", uint16_t(760));
   blackboard->set("ref.out_of_combat", true);

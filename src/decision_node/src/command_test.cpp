@@ -58,8 +58,6 @@ public:
         pub_projectile_fortress_ = nh_.advertise<std_msgs::UInt16>("/referee/projectile_fortress", 1);
         pub_remaining_gold_ = nh_.advertise<std_msgs::UInt16>("/referee/remaining_gold", 1);
 
-        // 哨兵特殊
-        pub_accumulated_bullet_ = nh_.advertise<std_msgs::UInt16>("/referee/accumulated_bullet", 1);
         pub_can_exchange_respawn_ = nh_.advertise<std_msgs::Bool>("/referee/can_exchange_respawn", 1);
         pub_respawn_money_ = nh_.advertise<std_msgs::UInt16>("/referee/respawn_money", 1);
 
@@ -151,7 +149,6 @@ public:
             else if (command == "proj_17mm")     { handleUInt16("/referee/projectile_17mm", pub_projectile_17mm_); }
             else if (command == "proj_fort")     { handleUInt16("/referee/projectile_fortress", pub_projectile_fortress_); }
             else if (command == "gold")          { handleUInt16("/referee/remaining_gold", pub_remaining_gold_); }
-            else if (command == "acc_bullet")    { handleUInt16("/referee/accumulated_bullet", pub_accumulated_bullet_); }
             else if (command == "can_respawn")   { handleBool("/referee/can_exchange_respawn", pub_can_exchange_respawn_); }
             else if (command == "respawn_money") { handleUInt16("/referee/respawn_money", pub_respawn_money_); }
             else if (command == "out_combat")    { handleBool("/referee/out_of_combat", pub_out_of_combat_); }
@@ -207,7 +204,6 @@ private:
     ros::Publisher pub_projectile_17mm_;
     ros::Publisher pub_projectile_fortress_;
     ros::Publisher pub_remaining_gold_;
-    ros::Publisher pub_accumulated_bullet_;
     ros::Publisher pub_can_exchange_respawn_;
     ros::Publisher pub_respawn_money_;
     ros::Publisher pub_out_of_combat_;
@@ -522,7 +518,6 @@ private:
             pub_projectile_17mm_.publish(u16);
             pub_projectile_fortress_.publish(u16);
             pub_remaining_gold_.publish(u16);
-            pub_accumulated_bullet_.publish(u16);
             pub_respawn_money_.publish(u16);
             pub_projectile_allowance_.publish(u16);
 
