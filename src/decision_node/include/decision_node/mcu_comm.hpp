@@ -57,25 +57,21 @@ struct HKFrameHeader
 // HK协议数据负载 - 比赛数据帧 
 struct HKGameData
 {
-    //视觉位
-    bool vision_detected;
-    uint16_t target_distance;// (单位cm)
+    uint8_t  bool_zip;             // 视觉/增益点/RFID标志压缩位
+    uint16_t target_distance;      //视觉识别的距离目标的距离 (单位cm)
 
-    float yaw_angle;          // 云台yaw角 (rad)
-    float chassis_imu;
+    int16_t yaw_angle;             // 云台yaw角 (mmrad)
+    int16_t chassis_imu;           // 底盘IMU (mmrad)
 
-    uint8_t game_progress;    // 比赛阶段
+    uint8_t game_progress;         // 比赛阶段
     uint16_t stage_remain_time;
 
-    uint16_t ally_base_HP;    //基地血量
+    uint16_t ally_base_HP;         //基地血量
    
-    uint16_t ally_outpost_HP; //己方前哨站血量
+    uint16_t ally_outpost_HP;      //己方前哨站血量
 
     //下面的要从uint32_t event_data;解包出来
-    uint8_t central_elevated_ground_status; // 中央高地状态（bit 7-8）
-    uint8_t trapezoidal_elevated_ground_status; // 梯形高地状态（bit 9-10）
-    uint8_t fortress_status; // 堡垒状态（bit 25-26）
-    uint8_t outpost_status; // 前哨战状态（bit 27-28）
+    uint8_t event_status;         // bit[1:0]=中央高地, bit[3:2]=堡垒, bit[5:4]=前哨站
 
     uint8_t robot_id;         // 机器人ID
     uint16_t current_HP;
@@ -83,30 +79,15 @@ struct HKGameData
     uint16_t projectile_allowance_17mm;
     uint16_t projectile_allowance_fortress;
     uint16_t remaining_gold_coin;
-
-    //0209
-    //己方基地增益点
-    bool ally_base_rfid;
-    
-    bool ally_fortress_rfid;//己方堡垒增益点
-    //己方与资源区重合补充和增益点
-    bool supplement_resource;//己方与资源区重合/不重合增益点
-    bool supplement_nonresource;
    //0x0303云台手数据
-    float operator_x; //(若云台手没有发送信息则发-88.88当作标志)
-    float operator_y;
-    //云台手按下的键盘按键通用值
-    uint8_t cmd_keyboard;
+    int16_t operator_x; // 云台手坐标X (cm, 无效时发-8888)
+    int16_t operator_y; // 云台手坐标Y (cm, 无效时发-8888)
 
     //下面的要从uint32_t sentry_info;解包出来
-    uint16_t accumulated_bullet_conversion; // 累计哨兵远程兑换弹量（bit 0-10）
-    bool can_exchange_respawn;     // 哨兵是否可兑换复活（bit 20）
     uint16_t respawn_money; // 哨兵复活所需金币（bit 21-31）
 
     //下面的要从uint16_t sentry_info_2解包出来
-    bool out_of_combat;       // 脱战状态（bit 0）
     uint16_t projectile_allowance; //全队可兑换17mm弹量（bit 1-11）
-    bool power_rune_available; // 是否有可用的能量符（bit 14)
 
     
     //0x0301多机通讯链路
@@ -139,18 +120,18 @@ struct HKGameData
 
 
 
-// HK协议完整数据帧 (94字节)
+// HK协议完整数据帧
 struct MCUDataFrame
 {
     HKFrameHeader header;     // 0-8: 帧头 (9字节)
-    HKGameData data;          // 9-89: 数据 (81字节)
-    uint16_t packet_crc16;    // 90-91: 数据CRC16
-    uint8_t trailer[2];       // 92-93: 帧尾 'K', 'H'
+    HKGameData data;          // 9-: 数据
+    uint16_t packet_crc16;    // 数据CRC16
+    uint8_t trailer[2];       // 帧尾 'K', 'H'
 } __attribute__((packed));
 
 static_assert(sizeof(HKFrameHeader) == 9, "HKFrameHeader must be exactly 9 bytes");
-static_assert(sizeof(HKGameData) == 81, "HKGameData must be exactly 81 bytes");
-static_assert(sizeof(MCUDataFrame) == 94, "MCUDataFrame must be exactly 94 bytes");
+static_assert(sizeof(HKGameData) == 60, "HKGameData must be exactly 60 bytes");
+static_assert(sizeof(MCUDataFrame) == 73, "MCUDataFrame must be exactly 73 bytes");
 
 
 // HK协议相关常量
@@ -160,11 +141,31 @@ static_assert(sizeof(MCUDataFrame) == 94, "MCUDataFrame must be exactly 94 bytes
 #define HK_FRAME_TRAILER_H 0x48     // 'H'
 #define HK_PACKET_TYPE_GAME 0x01    // 比赛数据帧
 #define HK_PACKET_TYPE_NAV 0x02     // 导航命令帧
-#define HK_FRAME_SIZE sizeof(MCUDataFrame)  // 接收帧大小 94字节
+#define RUNE_RESPAWN_FLAG_POWER_RUNE  (1 << 0)  // rune_respwan_flag bit0: 激活能量机关
+#define RUNE_RESPAWN_FLAG_EXCHANGE    (1 << 1)  // rune_respwan_flag bit1: 兑换复活
+
+// ===== bool_zip 位定义 (HKGameData) =====
+#define BOOL_ZIP_VISION_DETECTED      (1 << 0)  // bool_zip bit0: 视觉检测到目标
+#define BOOL_ZIP_ALLY_BASE_RFID       (1 << 1)  // bool_zip bit1: 己方基地增益点
+#define BOOL_ZIP_ALLY_FORTRESS_RFID   (1 << 2)  // bool_zip bit2: 己方堡垒增益点
+#define BOOL_ZIP_SUPPLEMENT_RESOURCE  (1 << 3)  // bool_zip bit3: 资源区重合增益点
+#define BOOL_ZIP_SUPPLEMENT_NONRES       (1 << 4)  // bool_zip bit4: 非重合资源区增益点
+#define BOOL_ZIP_CAN_EXCHANGE_RESPAWN    (1 << 5)  // bool_zip bit5: 哨兵是否可兑换复活
+#define BOOL_ZIP_OUT_OF_COMBAT           (1 << 6)  // bool_zip bit6: 脱战状态
+#define BOOL_ZIP_POWER_RUNE_AVAILABLE    (1 << 7)  // bool_zip bit7: 是否有可用的能量符
+
+// ===== event_status 位定义 (HKGameData) =====
+#define EVENT_STATUS_CENTRAL_GROUND_MASK  0x03  // bit[1:0]: 中央高地 1=己方,2=对方
+#define EVENT_STATUS_FORTRESS_MASK        0x0C  // bit[3:2]: 堡垒 0=无,1=己方,2=对方,3=双方
+#define EVENT_STATUS_OUTPOST_MASK         0x30  // bit[5:4]: 前哨站 0=无,1=己方,2=对方
+#define EVENT_STATUS_CENTRAL_GROUND_SHIFT 0
+#define EVENT_STATUS_FORTRESS_SHIFT       2
+#define EVENT_STATUS_OUTPOST_SHIFT        4
+#define HK_FRAME_SIZE sizeof(MCUDataFrame)  // 接收帧大小 73字节
 #define HK_FRAME_HEADER_SIZE sizeof(HKFrameHeader)   // 帧头大小 9字节
-#define HK_FRAME_DATA_SIZE sizeof(HKGameData)        // 游戏数据大小 81字节
-#define HK_NAV_FRAME_SIZE sizeof(NavigationCommandFrame)  // 导航命令帧大小 26字节
-#define HK_NAV_DATA_SIZE 13         // 导航命令数据大小
+#define HK_FRAME_DATA_SIZE sizeof(HKGameData)        // 游戏数据大小 60字节
+#define HK_NAV_FRAME_SIZE sizeof(NavigationCommandFrame)  // 导航命令帧大小 25字节
+#define HK_NAV_DATA_SIZE 12         // 导航命令数据大小
 
 // ===== 帧大小定义 =====
 #define MCU_FRAME_SIZE 256          // 接收缓冲大小
@@ -197,30 +198,29 @@ struct NavigationCommandData
     uint8_t  at_place;             // 偏移1: 目标点到达状态
     int16_t  vx;                   // 偏移2-3: X方向速度 (mm/s)
     int16_t  vy;                   // 偏移4-5: Y方向速度 (mm/s)
-    int16_t  target_yaw;           // 偏移6-7: 对齐角度时使用的目标角度
+    int16_t  target_yaw;           // 偏移6-7: 对齐角度时使用的目标角度(mm rad)
     uint8_t  motion;               // 偏移8: 0=比赛未开始；1=进攻；2=防御；3=移动
     uint8_t  spin;                 // 偏移9: 0=正常；1=对齐角度；2=上坡；3=下坡；5复活后的虚弱小陀螺 6受攻击加速小陀螺
-    uint8_t  activate_power_rune;  // 偏移10: 激活能量机关
-    uint8_t  exchange_respwan;     // 偏移11: 兑换复活
-    uint8_t  bullet_num;         //买弹，这里会持续2s发同一个数值，对应的是买一次不过应该大概率用不到
+    uint8_t  rune_respwan_flag;    // 偏移10: bit0=激活能量机关, bit1=兑换复活 (默认0)
+    uint8_t  bullet_num;           // 偏移11: 买弹，这里会持续2s发同一个数值，对应的是买一次不过应该大概率用不到
 } __attribute__((packed));
 
-static_assert(sizeof(NavigationCommandData) == 13, "NavigationCommandData must be exactly 13 bytes");
+static_assert(sizeof(NavigationCommandData) == 12, "NavigationCommandData must be exactly 12 bytes");
 
-// ===== 导航命令完整帧 (26 字节) =====
+// ===== 导航命令完整帧 (25 字节) =====
 /**
  * NUC → 下位机 导航命令完整HK协议帧
- * Header(9B) + Data(13B) + CRC16(2B) + Trailer(2B) = 26B
+ * Header(9B) + Data(12B) + CRC16(2B) + Trailer(2B) = 25B
  */
 struct NavigationCommandFrame
 {
     HKFrameHeader header;          // 0-8: 帧头 (9字节)
-    NavigationCommandData data;    // 9-21: 运动指令数据 (13字节)
-    uint16_t packet_crc16;         // 22-23: CRC16校验
-    uint8_t trailer[2];            // 24-25: 帧尾 'K', 'H'
+    NavigationCommandData data;    // 9-20: 运动指令数据 (12字节)
+    uint16_t packet_crc16;         // 21-22: CRC16校验
+    uint8_t trailer[2];            // 23-24: 帧尾 'K', 'H'
 } __attribute__((packed));
 
-static_assert(sizeof(NavigationCommandFrame) == 26, "NavigationCommandFrame must be exactly 26 bytes");
+static_assert(sizeof(NavigationCommandFrame) == 25, "NavigationCommandFrame must be exactly 25 bytes");
 
 // ===== CRC 计算函数 =====
 
