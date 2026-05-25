@@ -329,6 +329,9 @@ public:
     double raw_x = state_->raw_x;
     double raw_y = state_->raw_y;
 
+    raw_x-=0.08;
+    raw_y+=0.111;
+
     // 始终写入原始坐标
     bb->set("odom.raw_x", raw_x);
     bb->set("odom.raw_y", raw_y);
