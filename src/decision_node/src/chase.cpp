@@ -53,21 +53,6 @@ static DecisionGraph loadDecisionGraph(const std::string& yaml_path)
     {
         YAML::Node root = YAML::LoadFile(yaml_path);
 
-        if (root["areas"])
-        {
-            for (const auto& area_node : root["areas"])
-            {
-                std::vector<std::pair<double, double>> polygon;
-                for (const auto& pt : area_node)
-                {
-                    double x = pt[0].as<double>();
-                    double y = pt[1].as<double>();
-                    polygon.emplace_back(x, y);
-                }
-                graph.areas.push_back(std::move(polygon));
-            }
-        }
-
         if (root["nodes"])
         {
             for (const auto& node : root["nodes"])
@@ -86,13 +71,30 @@ static DecisionGraph loadDecisionGraph(const std::string& yaml_path)
             }
         }
 
-        ROS_INFO("[chase] Loaded %zu areas, %zu nodes and %zu zones from %s",
-                 graph.areas.size(), graph.nodes.size(), graph.zones.size(), yaml_path.c_str());
+        if (root["edges"])
+        {
+            for (const auto& e : root["edges"])
+            {
+                int a = e[0].as<int>();
+                int b = e[1].as<int>();
+                graph.edges.emplace_back(a, b);
+            }
+        }
+
+        ROS_INFO("[chase] Loaded %zu nodes, %zu zones and %zu edges from %s",
+                 graph.nodes.size(), graph.zones.size(), graph.edges.size(), yaml_path.c_str());
     }
     catch (const std::exception& e)
     {
         ROS_ERROR("[chase] Failed to load decision graph: %s", e.what());
     }
+
+    // ---- 从 edges 构建 zone 边界多边形 ----
+    graph = buildZonePolygons(graph);
+
+    // ---- 栅格化 ----
+    graph = rasterizeZones(graph, 0.2);
+
     return graph;
 }
 

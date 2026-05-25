@@ -39,7 +39,7 @@
   <arg name="tf_calib_tgt4_y" default="4"/>
 
   <!-- BehaviorTree XML -->
-  <arg name="bt_xml" default="$(find decision_node)/config/strategy_tree.xml"/>
+  <arg name="bt_xml" default="$(find decision_node)/config/vision_test.xml"/>
 
   <!-- Goal output topic (dstarlite.launch expects /clicked_point) -->
   <arg name="goal_topic" default="/clicked_point"/>
