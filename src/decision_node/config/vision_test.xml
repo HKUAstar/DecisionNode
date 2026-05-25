@@ -1,0 +1,53 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+        <ReactiveSequence name="MainLoop">
+            <Sequence name="UpdateBlackboard">
+                <UpdateRefereeBB />
+                <UpdateNavigationBB />
+                <UpdateVisionBB />
+                <UpdateTimersBB />
+                <UpdateDerivedFlags danger_hp="{danger_hp}" sufficient_bullet="{sufficient_bullet}" />
+                <UpdateOdomBB />
+                <UpdateBulletBB/>
+        </Sequence>
+        <ReactiveFallback name="DecideAction">
+        <Sequence name="GameNotStarted">
+          <IsGameStarted expect_started="false" />
+          <SetAction action="INIT" />
+        </Sequence>
+        <ReactiveFallback name="InGame">
+            <SetAction="VISION"/>
+        </ReactiveFallback>
+
+        <ReactiveFallback name="DecideAction">
+
+        <Sequence>
+          <IsAction value="VISION" />
+          <RecordVisionAnchor />
+          <CalculateVisionYaw />
+          <ReactiveFallback>
+          <Sequence>
+            <CheckArrived />
+            <SetSpinFlag target_spin="4" />
+          </Sequence>
+            <AlwaysSuccess />
+          </ReactiveFallback>
+          <ReactiveFallback>
+            <Sequence>
+              <CheckVisionAnchorDistance max_distance="1.0" />
+              <SetVisionTarget offset_distance="0.4" />
+              <Sequence>
+                <CheckGoalInZone zone_num="1" />
+                <PublishGoalPoint topic="clicked_point" />
+                <AlwaysSuccess />
+              </Sequence>
+              </Sequence>
+            <SetAction action="PATROL" />
+          </ReactiveFallback>
+          <PublishSpin />
+        </Sequence>
+        </ReactiveFallback>
+
+    
+    </BehaviorTree>
+</root>

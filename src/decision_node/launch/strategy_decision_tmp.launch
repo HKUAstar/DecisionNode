@@ -13,8 +13,6 @@
   <arg name="max_bullet" default="750"/>
   <arg name="fixed_supply" default="50"/>
   <arg name="publish_on_change_only" default="false"/>
-  <arg name="occupy_threshold" default="50"/>
-  <arg name="aggressive_threshold" default="50"/>
   <arg name="attack_threshold" default="30"/>
   <arg name="harm_threshold_on" default="50"/>
   <arg name="harm_threshold_off" default="10"/>
@@ -62,8 +60,6 @@
     <param name="max_bullet" value="$(arg max_bullet)"/>
     <param name="fixed_supply" value="$(arg fixed_supply)"/>
     <param name="publish_on_change_only" value="$(arg publish_on_change_only)"/>
-    <param name="occupy_threshold" value="$(arg occupy_threshold)"/>
-    <param name="aggressive_threshold" value="$(arg aggressive_threshold)"/>
     <param name="attack_threshold" value="$(arg attack_threshold)"/>
     <param name="harm_threshold_on" value="$(arg harm_threshold_on)"/>
     <param name="harm_threshold_off" value="$(arg harm_threshold_off)"/>
