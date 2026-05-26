@@ -3581,6 +3581,7 @@ decision_node/CMakeFiles/strategy_node.dir/src/chase.cpp.o: /mnt/d/decision_ws/s
   /usr/include/c++/9/bits/exception.h \
   /usr/include/c++/9/bits/exception_defines.h \
   /usr/include/c++/9/bits/exception_ptr.h \
+  /usr/include/c++/9/bits/fstream.tcc \
   /usr/include/c++/9/bits/functexcept.h \
   /usr/include/c++/9/bits/functional_hash.h \
   /usr/include/c++/9/bits/hash_bytes.h \
@@ -3683,6 +3684,7 @@ decision_node/CMakeFiles/strategy_node.dir/src/chase.cpp.o: /mnt/d/decision_ws/s
   /usr/include/c++/9/ext/numeric_traits.h \
   /usr/include/c++/9/ext/string_conversions.h \
   /usr/include/c++/9/ext/type_traits.h \
+  /usr/include/c++/9/fstream \
   /usr/include/c++/9/functional \
   /usr/include/c++/9/future \
   /usr/include/c++/9/initializer_list \
@@ -3737,6 +3739,130 @@ decision_node/CMakeFiles/strategy_node.dir/src/chase.cpp.o: /mnt/d/decision_ws/s
   /usr/include/log4cxx/log4cxx.h \
   /usr/include/log4cxx/logstring.h \
   /usr/include/math.h \
+  /usr/include/opencv4/opencv2/calib3d.hpp \
+  /usr/include/opencv4/opencv2/core.hpp \
+  /usr/include/opencv4/opencv2/core/affine.hpp \
+  /usr/include/opencv4/opencv2/core/async.hpp \
+  /usr/include/opencv4/opencv2/core/base.hpp \
+  /usr/include/opencv4/opencv2/core/bufferpool.hpp \
+  /usr/include/opencv4/opencv2/core/check.hpp \
+  /usr/include/opencv4/opencv2/core/cuda.hpp \
+  /usr/include/opencv4/opencv2/core/cuda.inl.hpp \
+  /usr/include/opencv4/opencv2/core/cuda_types.hpp \
+  /usr/include/opencv4/opencv2/core/cv_cpu_dispatch.h \
+  /usr/include/opencv4/opencv2/core/cvdef.h \
+  /usr/include/opencv4/opencv2/core/cvstd.hpp \
+  /usr/include/opencv4/opencv2/core/cvstd.inl.hpp \
+  /usr/include/opencv4/opencv2/core/cvstd_wrapper.hpp \
+  /usr/include/opencv4/opencv2/core/fast_math.hpp \
+  /usr/include/opencv4/opencv2/core/hal/interface.h \
+  /usr/include/opencv4/opencv2/core/mat.hpp \
+  /usr/include/opencv4/opencv2/core/mat.inl.hpp \
+  /usr/include/opencv4/opencv2/core/matx.hpp \
+  /usr/include/opencv4/opencv2/core/neon_utils.hpp \
+  /usr/include/opencv4/opencv2/core/operations.hpp \
+  /usr/include/opencv4/opencv2/core/optim.hpp \
+  /usr/include/opencv4/opencv2/core/ovx.hpp \
+  /usr/include/opencv4/opencv2/core/persistence.hpp \
+  /usr/include/opencv4/opencv2/core/saturate.hpp \
+  /usr/include/opencv4/opencv2/core/traits.hpp \
+  /usr/include/opencv4/opencv2/core/types.hpp \
+  /usr/include/opencv4/opencv2/core/utility.hpp \
+  /usr/include/opencv4/opencv2/core/version.hpp \
+  /usr/include/opencv4/opencv2/core/vsx_utils.hpp \
+  /usr/include/opencv4/opencv2/dnn.hpp \
+  /usr/include/opencv4/opencv2/dnn/dict.hpp \
+  /usr/include/opencv4/opencv2/dnn/dnn.hpp \
+  /usr/include/opencv4/opencv2/dnn/dnn.inl.hpp \
+  /usr/include/opencv4/opencv2/dnn/layer.hpp \
+  /usr/include/opencv4/opencv2/dnn/utils/inference_engine.hpp \
+  /usr/include/opencv4/opencv2/dnn/version.hpp \
+  /usr/include/opencv4/opencv2/features2d.hpp \
+  /usr/include/opencv4/opencv2/flann.hpp \
+  /usr/include/opencv4/opencv2/flann/all_indices.h \
+  /usr/include/opencv4/opencv2/flann/allocator.h \
+  /usr/include/opencv4/opencv2/flann/any.h \
+  /usr/include/opencv4/opencv2/flann/autotuned_index.h \
+  /usr/include/opencv4/opencv2/flann/composite_index.h \
+  /usr/include/opencv4/opencv2/flann/config.h \
+  /usr/include/opencv4/opencv2/flann/defines.h \
+  /usr/include/opencv4/opencv2/flann/dist.h \
+  /usr/include/opencv4/opencv2/flann/dynamic_bitset.h \
+  /usr/include/opencv4/opencv2/flann/flann_base.hpp \
+  /usr/include/opencv4/opencv2/flann/general.h \
+  /usr/include/opencv4/opencv2/flann/ground_truth.h \
+  /usr/include/opencv4/opencv2/flann/heap.h \
+  /usr/include/opencv4/opencv2/flann/hierarchical_clustering_index.h \
+  /usr/include/opencv4/opencv2/flann/index_testing.h \
+  /usr/include/opencv4/opencv2/flann/kdtree_index.h \
+  /usr/include/opencv4/opencv2/flann/kdtree_single_index.h \
+  /usr/include/opencv4/opencv2/flann/kmeans_index.h \
+  /usr/include/opencv4/opencv2/flann/linear_index.h \
+  /usr/include/opencv4/opencv2/flann/logger.h \
+  /usr/include/opencv4/opencv2/flann/lsh_index.h \
+  /usr/include/opencv4/opencv2/flann/lsh_table.h \
+  /usr/include/opencv4/opencv2/flann/matrix.h \
+  /usr/include/opencv4/opencv2/flann/miniflann.hpp \
+  /usr/include/opencv4/opencv2/flann/nn_index.h \
+  /usr/include/opencv4/opencv2/flann/params.h \
+  /usr/include/opencv4/opencv2/flann/random.h \
+  /usr/include/opencv4/opencv2/flann/result_set.h \
+  /usr/include/opencv4/opencv2/flann/sampling.h \
+  /usr/include/opencv4/opencv2/flann/saving.h \
+  /usr/include/opencv4/opencv2/flann/timer.h \
+  /usr/include/opencv4/opencv2/highgui.hpp \
+  /usr/include/opencv4/opencv2/imgcodecs.hpp \
+  /usr/include/opencv4/opencv2/imgproc.hpp \
+  /usr/include/opencv4/opencv2/ml.hpp \
+  /usr/include/opencv4/opencv2/ml/ml.inl.hpp \
+  /usr/include/opencv4/opencv2/objdetect.hpp \
+  /usr/include/opencv4/opencv2/objdetect/detection_based_tracker.hpp \
+  /usr/include/opencv4/opencv2/opencv.hpp \
+  /usr/include/opencv4/opencv2/opencv_modules.hpp \
+  /usr/include/opencv4/opencv2/photo.hpp \
+  /usr/include/opencv4/opencv2/shape.hpp \
+  /usr/include/opencv4/opencv2/shape/emdL1.hpp \
+  /usr/include/opencv4/opencv2/shape/hist_cost.hpp \
+  /usr/include/opencv4/opencv2/shape/shape_distance.hpp \
+  /usr/include/opencv4/opencv2/shape/shape_transformer.hpp \
+  /usr/include/opencv4/opencv2/stitching.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/blenders.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/camera.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/exposure_compensate.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/matchers.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/motion_estimators.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/seam_finders.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/util.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/util_inl.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/warpers.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/warpers_inl.hpp \
+  /usr/include/opencv4/opencv2/stitching/warpers.hpp \
+  /usr/include/opencv4/opencv2/superres.hpp \
+  /usr/include/opencv4/opencv2/superres/optical_flow.hpp \
+  /usr/include/opencv4/opencv2/video.hpp \
+  /usr/include/opencv4/opencv2/video/background_segm.hpp \
+  /usr/include/opencv4/opencv2/video/tracking.hpp \
+  /usr/include/opencv4/opencv2/videoio.hpp \
+  /usr/include/opencv4/opencv2/videostab.hpp \
+  /usr/include/opencv4/opencv2/videostab/deblurring.hpp \
+  /usr/include/opencv4/opencv2/videostab/fast_marching.hpp \
+  /usr/include/opencv4/opencv2/videostab/fast_marching_inl.hpp \
+  /usr/include/opencv4/opencv2/videostab/frame_source.hpp \
+  /usr/include/opencv4/opencv2/videostab/global_motion.hpp \
+  /usr/include/opencv4/opencv2/videostab/inpainting.hpp \
+  /usr/include/opencv4/opencv2/videostab/log.hpp \
+  /usr/include/opencv4/opencv2/videostab/motion_core.hpp \
+  /usr/include/opencv4/opencv2/videostab/motion_stabilizing.hpp \
+  /usr/include/opencv4/opencv2/videostab/optical_flow.hpp \
+  /usr/include/opencv4/opencv2/videostab/outlier_rejection.hpp \
+  /usr/include/opencv4/opencv2/videostab/ring_buffer.hpp \
+  /usr/include/opencv4/opencv2/videostab/stabilizer.hpp \
+  /usr/include/opencv4/opencv2/videostab/wobble_suppression.hpp \
+  /usr/include/opencv4/opencv2/viz.hpp \
+  /usr/include/opencv4/opencv2/viz/types.hpp \
+  /usr/include/opencv4/opencv2/viz/viz3d.hpp \
+  /usr/include/opencv4/opencv2/viz/vizcore.hpp \
+  /usr/include/opencv4/opencv2/viz/widgets.hpp \
   /usr/include/pthread.h \
   /usr/include/sched.h \
   /usr/include/stdc-predef.h \
@@ -3839,8 +3965,10 @@ decision_node/CMakeFiles/strategy_node.dir/src/chase.cpp.o: /mnt/d/decision_ws/s
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/9/bits/atomic_word.h \
+  /usr/include/x86_64-linux-gnu/c++/9/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/9/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/9/bits/c++config.h \
+  /usr/include/x86_64-linux-gnu/c++/9/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/9/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/9/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/9/bits/ctype_base.h \
@@ -3890,13 +4018,17 @@ decision_node/CMakeFiles/strategy_node.dir/src/chase.cpp.o: /mnt/d/decision_ws/s
   /usr/include/yaml-cpp/stlemitter.h \
   /usr/include/yaml-cpp/traits.h \
   /usr/include/yaml-cpp/yaml.h \
+  /usr/lib/gcc/x86_64-linux-gnu/9/include/emmintrin.h \
   /usr/lib/gcc/x86_64-linux-gnu/9/include/float.h \
   /usr/lib/gcc/x86_64-linux-gnu/9/include/limits.h \
+  /usr/lib/gcc/x86_64-linux-gnu/9/include/mm_malloc.h \
+  /usr/lib/gcc/x86_64-linux-gnu/9/include/mmintrin.h \
   /usr/lib/gcc/x86_64-linux-gnu/9/include/quadmath.h \
   /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h \
   /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h \
   /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h \
-  /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h
+  /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h \
+  /usr/lib/gcc/x86_64-linux-gnu/9/include/xmmintrin.h
 
 decision_node/CMakeFiles/strategy_node.dir/src/motion_change.cpp.o: /mnt/d/decision_ws/src/decision_node/src/motion_change.cpp \
   /mnt/d/decision_ws/src/decision_node/include/decision_node/motion_change.hpp \
@@ -7824,8 +7956,6 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
   /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h
 
 
-/usr/include/x86_64-linux-gnu/c++/9/bits/c++io.h:
-
 /opt/ros/noetic/include/std_msgs/Int16.h:
 
 /opt/ros/noetic/include/geometry_msgs/Twist.h:
@@ -7841,6 +7971,10 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /opt/ros/noetic/include/std_msgs/Int32.h:
 
 /mnt/d/decision_ws/src/decision_node/include/decision_node/motion_change.hpp:
+
+/usr/lib/gcc/x86_64-linux-gnu/9/include/xmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/9/include/emmintrin.h:
 
 /usr/include/yaml-cpp/parser.h:
 
@@ -7874,13 +8008,139 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/yaml-cpp/dll.h:
 
+/usr/include/x86_64-linux-gnu/c++/9/bits/c++io.h:
+
+/usr/include/opencv4/opencv2/viz/viz3d.hpp:
+
+/usr/include/opencv4/opencv2/viz/types.hpp:
+
+/usr/include/opencv4/opencv2/viz.hpp:
+
+/usr/include/opencv4/opencv2/videostab/stabilizer.hpp:
+
+/usr/include/opencv4/opencv2/videostab/ring_buffer.hpp:
+
+/usr/include/opencv4/opencv2/videostab/outlier_rejection.hpp:
+
+/usr/include/opencv4/opencv2/videostab/inpainting.hpp:
+
+/usr/include/opencv4/opencv2/videostab/frame_source.hpp:
+
+/usr/include/opencv4/opencv2/video/tracking.hpp:
+
+/usr/include/opencv4/opencv2/superres/optical_flow.hpp:
+
+/usr/include/opencv4/opencv2/superres.hpp:
+
+/usr/include/opencv4/opencv2/stitching/detail/warpers_inl.hpp:
+
+/usr/include/opencv4/opencv2/stitching/detail/warpers.hpp:
+
+/usr/include/opencv4/opencv2/stitching/detail/util.hpp:
+
+/usr/include/opencv4/opencv2/stitching/detail/motion_estimators.hpp:
+
+/usr/include/opencv4/opencv2/stitching/detail/exposure_compensate.hpp:
+
+/usr/include/opencv4/opencv2/shape/shape_transformer.hpp:
+
+/usr/include/opencv4/opencv2/shape/hist_cost.hpp:
+
+/usr/include/opencv4/opencv2/shape/emdL1.hpp:
+
+/usr/include/opencv4/opencv2/shape.hpp:
+
+/usr/include/opencv4/opencv2/photo.hpp:
+
+/usr/include/opencv4/opencv2/opencv_modules.hpp:
+
+/usr/include/opencv4/opencv2/objdetect/detection_based_tracker.hpp:
+
+/usr/include/opencv4/opencv2/ml.hpp:
+
+/usr/include/opencv4/opencv2/flann/timer.h:
+
+/usr/include/opencv4/opencv2/flann/saving.h:
+
+/usr/include/opencv4/opencv2/flann/sampling.h:
+
+/usr/include/opencv4/opencv2/flann/result_set.h:
+
+/usr/include/opencv4/opencv2/flann/random.h:
+
+/usr/include/opencv4/opencv2/flann/params.h:
+
+/usr/include/opencv4/opencv2/flann/miniflann.hpp:
+
+/usr/include/opencv4/opencv2/flann/logger.h:
+
+/usr/include/opencv4/opencv2/flann/linear_index.h:
+
+/usr/include/opencv4/opencv2/flann/kmeans_index.h:
+
+/usr/include/opencv4/opencv2/flann/kdtree_single_index.h:
+
+/usr/include/opencv4/opencv2/flann/kdtree_index.h:
+
+/usr/include/opencv4/opencv2/flann/index_testing.h:
+
+/usr/include/opencv4/opencv2/flann/heap.h:
+
+/usr/include/opencv4/opencv2/flann/ground_truth.h:
+
+/usr/include/opencv4/opencv2/flann/flann_base.hpp:
+
+/usr/include/opencv4/opencv2/videostab/fast_marching.hpp:
+
+/usr/include/opencv4/opencv2/flann/dynamic_bitset.h:
+
+/usr/include/opencv4/opencv2/flann/dist.h:
+
+/usr/include/opencv4/opencv2/flann/config.h:
+
+/usr/include/opencv4/opencv2/flann.hpp:
+
+/usr/include/opencv4/opencv2/features2d.hpp:
+
+/usr/include/opencv4/opencv2/dnn/dnn.hpp:
+
+/usr/include/opencv4/opencv2/dnn.hpp:
+
+/usr/include/opencv4/opencv2/core/version.hpp:
+
+/usr/include/opencv4/opencv2/core/traits.hpp:
+
+/usr/include/opencv4/opencv2/core/saturate.hpp:
+
+/usr/include/opencv4/opencv2/core/persistence.hpp:
+
+/usr/include/opencv4/opencv2/core/optim.hpp:
+
+/usr/include/opencv4/opencv2/core/hal/interface.h:
+
+/usr/include/opencv4/opencv2/core/fast_math.hpp:
+
+/usr/include/opencv4/opencv2/core/cvstd_wrapper.hpp:
+
+/usr/include/opencv4/opencv2/core/cvstd.inl.hpp:
+
+/usr/include/opencv4/opencv2/core/check.hpp:
+
+/usr/include/opencv4/opencv2/core/bufferpool.hpp:
+
 /opt/ros/noetic/include/geometry_msgs/Point.h:
+
+/usr/include/opencv4/opencv2/videostab/global_motion.hpp:
+
+/usr/include/opencv4/opencv2/videoio.hpp:
 
 /mnt/d/decision_ws/src/decision_node/src/chase.cpp:
 
 /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h:
+
+/usr/include/opencv4/opencv2/dnn/dnn.inl.hpp:
 
 /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h:
 
@@ -7893,6 +8153,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/x86_64-linux-gnu/c++/9/bits/time_members.h:
 
 /opt/ros/noetic/include/behaviortree_cpp_v3/loggers/abstract_logger.h:
+
+/usr/include/opencv4/opencv2/dnn/utils/inference_engine.hpp:
 
 /usr/include/x86_64-linux-gnu/c++/9/bits/gthr.h:
 
@@ -7926,6 +8188,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
 
+/usr/include/opencv4/opencv2/viz/vizcore.hpp:
+
 /usr/include/x86_64-linux-gnu/bits/unistd_ext.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__FILE.h:
@@ -7955,6 +8219,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/x86_64-linux-gnu/bits/posix1_lim.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathinline.h:
+
+/usr/include/opencv4/opencv2/stitching/detail/matchers.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
 
@@ -8018,6 +8284,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/c++/9/system_error:
 
+/usr/include/opencv4/opencv2/stitching.hpp:
+
 /usr/include/c++/9/stdexcept:
 
 /usr/include/c++/9/new:
@@ -8033,6 +8301,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/c++/9/istream:
 
 /usr/include/c++/9/iosfwd:
+
+/usr/include/opencv4/opencv2/video/background_segm.hpp:
 
 /usr/include/c++/9/ios:
 
@@ -8051,6 +8321,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/c++/9/ext/new_allocator.h:
 
 /usr/include/c++/9/ext/concurrence.h:
+
+/usr/include/opencv4/opencv2/core.hpp:
 
 /usr/include/c++/9/ext/atomicity.h:
 
@@ -8102,6 +8374,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/c++/9/bits/unordered_map.h:
 
+/usr/include/opencv4/opencv2/core/cvstd.hpp:
+
 /usr/include/c++/9/bits/unique_ptr.h:
 
 /usr/include/c++/9/bits/unique_lock.h:
@@ -8112,9 +8386,13 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/c++/9/bits/stl_vector.h:
 
+/usr/include/opencv4/opencv2/core/cvdef.h:
+
 /usr/include/c++/9/bits/stl_set.h:
 
 /usr/include/c++/9/bits/stl_raw_storage_iter.h:
+
+/usr/include/opencv4/opencv2/videostab/deblurring.hpp:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs.h:
 
@@ -8144,6 +8422,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/c++/9/bits/refwrap.h:
 
+/usr/include/opencv4/opencv2/opencv.hpp:
+
 /usr/include/c++/9/bits/range_access.h:
 
 /usr/include/c++/9/bits/quoted_string.h:
@@ -8172,9 +8452,9 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/c++/9/bits/ios_base.h:
 
-/usr/include/c++/9/bits/fstream.tcc:
-
 /usr/include/yaml-cpp/binary.h:
+
+/usr/include/c++/9/bits/fstream.tcc:
 
 /usr/include/c++/9/bits/hashtable.h:
 
@@ -8224,6 +8504,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/version.hpp:
 
+/usr/include/opencv4/opencv2/core/matx.hpp:
+
 /usr/include/boost/utility/identity_type.hpp:
 
 /usr/include/boost/utility/base_from_member.hpp:
@@ -8241,6 +8523,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/type_traits/is_void.hpp:
 
 /usr/include/boost/type_traits/is_signed.hpp:
+
+/usr/include/opencv4/opencv2/highgui.hpp:
 
 /usr/include/c++/9/cstdarg:
 
@@ -8260,6 +8544,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/type_traits/is_member_function_pointer.hpp:
 
+/usr/include/opencv4/opencv2/core/ovx.hpp:
+
 /usr/include/boost/type_traits/is_lvalue_reference.hpp:
 
 /usr/include/boost/type_traits/is_integral.hpp:
@@ -8278,9 +8564,13 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/type_traits/is_convertible.hpp:
 
+/usr/include/opencv4/opencv2/stitching/detail/blenders.hpp:
+
 /usr/include/x86_64-linux-gnu/sys/types.h:
 
 /usr/include/boost/type_traits/is_constructible.hpp:
+
+/usr/include/opencv4/opencv2/flann/composite_index.h:
 
 /usr/include/boost/type_traits/is_complete.hpp:
 
@@ -8301,6 +8591,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/type_traits/has_trivial_destructor.hpp:
 
 /usr/include/yaml-cpp/node/iterator.h:
+
+/usr/include/opencv4/opencv2/imgproc.hpp:
 
 /usr/include/boost/type_traits/has_trivial_copy.hpp:
 
@@ -8336,6 +8628,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/type_traits/detail/is_member_function_pointer_cxx_11.hpp:
 
+/usr/include/opencv4/opencv2/shape/shape_distance.hpp:
+
 /usr/include/boost/type_traits/detail/is_function_cxx_11.hpp:
 
 /usr/include/c++/9/cstdlib:
@@ -8358,6 +8652,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/type_traits/add_volatile.hpp:
 
+/usr/include/opencv4/opencv2/viz/widgets.hpp:
+
 /usr/include/boost/type_traits/add_rvalue_reference.hpp:
 
 /usr/include/boost/type_traits/add_reference.hpp:
@@ -8373,6 +8669,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/unistd.h:
 
 /usr/include/boost/type_index.hpp:
+
+/usr/include/opencv4/opencv2/flann/general.h:
 
 /usr/include/boost/type.hpp:
 
@@ -8391,6 +8689,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/thread/detail/platform_time.hpp:
 
 /usr/include/boost/thread/detail/move.hpp:
+
+/usr/include/opencv4/opencv2/videostab/log.hpp:
 
 /usr/include/boost/system/system_error.hpp:
 
@@ -8464,6 +8764,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/range/range_fwd.hpp:
 
+/usr/include/opencv4/opencv2/flann/nn_index.h:
+
 /usr/include/c++/9/bits/char_traits.h:
 
 /usr/include/boost/range/mutable_iterator.hpp:
@@ -8477,6 +8779,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/range/functions.hpp:
 
 /usr/include/boost/range/end.hpp:
+
+/usr/include/opencv4/opencv2/flann/matrix.h:
 
 /usr/include/boost/range/empty.hpp:
 
@@ -8501,6 +8805,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/range/const_iterator.hpp:
 
 /usr/include/boost/range/config.hpp:
+
+/usr/include/opencv4/opencv2/flann/lsh_index.h:
 
 /usr/include/boost/range/concepts.hpp:
 
@@ -8537,6 +8843,10 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/preprocessor/seq/cat.hpp:
 
 /usr/include/boost/preprocessor/repetition/repeat_from_to.hpp:
+
+/usr/include/opencv4/opencv2/flann/hierarchical_clustering_index.h:
+
+/usr/include/opencv4/opencv2/dnn/layer.hpp:
 
 /usr/include/boost/preprocessor/repetition/repeat.hpp:
 
@@ -8616,6 +8926,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/preprocessor/control/deduce_d.hpp:
 
+/usr/include/opencv4/opencv2/videostab/fast_marching_inl.hpp:
+
 /usr/include/boost/preprocessor/comparison/less_equal.hpp:
 
 /usr/include/boost/preprocessor/cat.hpp:
@@ -8682,6 +8994,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/date_time/year_month_day.hpp:
 
+/usr/include/opencv4/opencv2/videostab.hpp:
+
 /usr/include/boost/mpl/arg.hpp:
 
 /usr/include/boost/mpl/apply_fwd.hpp:
@@ -8709,6 +9023,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/thread/lock_types.hpp:
 
 /usr/include/boost/predef/library/std/dinkumware.h:
+
+/usr/include/opencv4/opencv2/ml/ml.inl.hpp:
 
 /usr/include/boost/move/detail/config_begin.hpp:
 
@@ -8800,6 +9116,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/mpl/logical.hpp:
 
+/usr/lib/gcc/x86_64-linux-gnu/9/include/mmintrin.h:
+
 /usr/include/boost/math/special_functions/fpclassify.hpp:
 
 /usr/include/boost/predef/os/amigaos.h:
@@ -8820,6 +9138,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/mpl/vector/aux_/iterator.hpp:
 
+/usr/lib/gcc/x86_64-linux-gnu/9/include/mm_malloc.h:
+
 /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h:
 
 /usr/include/boost/preprocessor/list/reverse.hpp:
@@ -8837,6 +9157,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/function/detail/prologue.hpp:
 
 /usr/include/boost/function.hpp:
+
+/usr/include/opencv4/opencv2/stitching/detail/camera.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/posix2_lim.h:
 
@@ -8862,9 +9184,13 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/bind/mem_fn_template.hpp:
 
+/usr/include/opencv4/opencv2/videostab/motion_stabilizing.hpp:
+
 /usr/include/boost/date_time/time_system_counted.hpp:
 
 /usr/include/boost/date_time/time_duration.hpp:
+
+/usr/include/opencv4/opencv2/calib3d.hpp:
 
 /usr/include/boost/date_time/time_defs.hpp:
 
@@ -8935,6 +9261,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/date_time/gregorian/greg_weekday.hpp:
 
 /opt/ros/noetic/include/ros/parameter_adapter.h:
+
+/usr/include/opencv4/opencv2/core/cuda.inl.hpp:
 
 /usr/include/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_common.hpp:
 
@@ -9104,6 +9432,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /opt/ros/noetic/include/ros/console_backend.h:
 
+/usr/include/opencv4/opencv2/stitching/detail/util_inl.hpp:
+
 /opt/ros/noetic/include/ros/common.h:
 
 /usr/include/c++/9/ext/numeric_traits.h:
@@ -9268,6 +9598,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /opt/ros/noetic/include/ros/exception.h:
 
+/usr/include/opencv4/opencv2/core/mat.hpp:
+
 /usr/include/boost/thread/pthread/pthread_helpers.hpp:
 
 /usr/include/boost/mpl/aux_/arity_spec.hpp:
@@ -9277,6 +9609,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /opt/ros/noetic/include/ros/message_event.h:
 
 /usr/include/boost/mpl/aux_/arity.hpp:
+
+/usr/include/opencv4/opencv2/flann/all_indices.h:
 
 /usr/include/boost/shared_ptr.hpp:
 
@@ -9320,6 +9654,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /opt/ros/noetic/include/behaviortree_cpp_v3/utils/string_view.hpp:
 
+/usr/include/opencv4/opencv2/core/affine.hpp:
+
 /usr/include/boost/preprocessor/comma_if.hpp:
 
 /usr/include/boost/concept/detail/has_constraints.hpp:
@@ -9336,6 +9672,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/mpl/aux_/config/forwarding.hpp:
 
+/usr/include/opencv4/opencv2/core/cuda.hpp:
+
 /usr/include/boost/mpl/aux_/preprocessed/gcc/plus.hpp:
 
 /mnt/d/decision_ws/src/decision_node/src/base_move.cpp:
@@ -9343,6 +9681,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/x86_64-linux-gnu/bits/fp-fast.h:
 
 /opt/ros/noetic/include/ros/service_callback_helper.h:
+
+/usr/include/opencv4/opencv2/core/cuda_types.hpp:
 
 /opt/ros/noetic/include/ros/topic.h:
 
@@ -9424,6 +9764,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/core/noinit_adaptor.hpp:
 
+/usr/include/opencv4/opencv2/core/operations.hpp:
+
 /opt/ros/noetic/include/behaviortree_cpp_v3/decorators/keep_running_until_failure_node.h:
 
 /usr/include/boost/smart_ptr/bad_weak_ptr.hpp:
@@ -9472,6 +9814,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/mpl/aux_/push_front_impl.hpp:
 
+/usr/include/opencv4/opencv2/core/neon_utils.hpp:
+
 /usr/include/boost/move/utility.hpp:
 
 /opt/ros/noetic/include/ros/console.h:
@@ -9516,6 +9860,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/mpl/aux_/na.hpp:
 
+/usr/include/opencv4/opencv2/flann/allocator.h:
+
 /opt/ros/noetic/include/ros/macros.h:
 
 /usr/include/c++/9/bits/std_function.h:
@@ -9538,7 +9884,11 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/config/abi_suffix.hpp:
 
+/usr/include/opencv4/opencv2/imgcodecs.hpp:
+
 /opt/ros/noetic/include/rosconsole/macros_generated.h:
+
+/usr/include/opencv4/opencv2/core/base.hpp:
 
 /opt/ros/noetic/include/ros/advertise_options.h:
 
@@ -9549,6 +9899,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/array.hpp:
 
 /usr/include/boost/lexical_cast/try_lexical_convert.hpp:
+
+/usr/include/opencv4/opencv2/objdetect.hpp:
 
 /usr/include/boost/chrono/clock_string.hpp:
 
@@ -9566,6 +9918,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/mpl/aux_/config/dependent_nttp.hpp:
 
+/usr/include/opencv4/opencv2/flann/lsh_table.h:
+
 /usr/include/boost/concept/assert.hpp:
 
 /usr/include/boost/date_time/gregorian/greg_ymd.hpp:
@@ -9579,6 +9933,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /opt/ros/noetic/include/behaviortree_cpp_v3/bt_factory.h:
 
 /opt/ros/noetic/include/std_msgs/Bool.h:
+
+/usr/include/opencv4/opencv2/flann/defines.h:
 
 /usr/include/boost/date_time/posix_time/date_duration_operators.hpp:
 
@@ -9596,6 +9952,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/yaml-cpp/node/emit.h:
 
+/usr/include/opencv4/opencv2/stitching/warpers.hpp:
+
 /usr/include/x86_64-linux-gnu/bits/string_fortified.h:
 
 /usr/include/boost/mpl/list/list0.hpp:
@@ -9611,6 +9969,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/ratio/detail/overflow_helpers.hpp:
 
 /usr/include/boost/mpl/list/aux_/clear.hpp:
+
+/usr/include/opencv4/opencv2/core/async.hpp:
 
 /usr/include/boost/predef/architecture/ptx.h:
 
@@ -9698,6 +10058,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/mpl/aux_/config/gpu.hpp:
 
+/usr/include/opencv4/opencv2/core/cv_cpu_dispatch.h:
+
 /usr/include/boost/mpl/aux_/config/has_apply.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/types/error_t.h:
@@ -9733,6 +10095,10 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/stdlib.h:
 
 /usr/include/boost/mpl/limits/arity.hpp:
+
+/usr/include/opencv4/opencv2/videostab/wobble_suppression.hpp:
+
+/usr/include/opencv4/opencv2/videostab/optical_flow.hpp:
 
 /usr/include/boost/mpl/placeholders.hpp:
 
@@ -9789,6 +10155,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/mpl/aux_/iter_apply.hpp:
 
 /usr/include/boost/mpl/sequence_tag_fwd.hpp:
+
+/usr/include/opencv4/opencv2/video.hpp:
 
 /usr/include/boost/range/distance.hpp:
 
@@ -9928,7 +10296,11 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/mpl/aux_/template_arity.hpp:
 
+/usr/include/opencv4/opencv2/flann/autotuned_index.h:
+
 /usr/include/boost/predef/compiler/gcc_xml.h:
+
+/usr/include/opencv4/opencv2/core/utility.hpp:
 
 /usr/include/boost/preprocessor/slot/detail/def.hpp:
 
@@ -10002,6 +10374,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/mpl/distance_fwd.hpp:
 
+/usr/include/opencv4/opencv2/dnn/version.hpp:
+
 /usr/include/c++/9/cwchar:
 
 /usr/include/boost/mpl/aux_/contains_impl.hpp:
@@ -10056,6 +10430,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/mpl/iter_fold_if.hpp:
 
+/usr/include/opencv4/opencv2/stitching/detail/seam_finders.hpp:
+
 /usr/include/boost/preprocessor/slot/detail/shared.hpp:
 
 /usr/include/boost/mpl/lambda.hpp:
@@ -10103,6 +10479,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/preprocessor/config/config.hpp:
 
 /usr/include/boost/mpl/vector/aux_/clear.hpp:
+
+/usr/include/opencv4/opencv2/videostab/motion_core.hpp:
 
 /opt/ros/noetic/include/ros/forwards.h:
 
@@ -10280,6 +10658,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/numeric/conversion/converter_policies.hpp:
 
+/usr/include/opencv4/opencv2/core/types.hpp:
+
 /usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
 
 /usr/include/c++/9/ostream:
@@ -10340,6 +10720,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/predef/architecture/convex.h:
 
+/usr/include/opencv4/opencv2/dnn/dict.hpp:
+
 /usr/include/boost/lexical_cast/detail/lcast_unsigned_converters.hpp:
 
 /usr/include/boost/predef/architecture/mips.h:
@@ -10388,7 +10770,11 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 
 /usr/include/boost/predef/compiler/intel.h:
 
+/usr/include/opencv4/opencv2/flann/any.h:
+
 /usr/include/boost/predef/compiler/kai.h:
+
+/usr/include/opencv4/opencv2/core/vsx_utils.hpp:
 
 /opt/ros/noetic/include/behaviortree_cpp_v3/controls/manual_node.h:
 
@@ -10431,6 +10817,8 @@ decision_node/CMakeFiles/strategy_node.dir/src/strategy_node.cpp.o: /mnt/d/decis
 /usr/include/boost/numeric/conversion/cast.hpp:
 
 /usr/include/boost/predef/hardware/simd/x86.h:
+
+/usr/include/opencv4/opencv2/core/mat.inl.hpp:
 
 /opt/ros/noetic/include/ros/names.h:
 

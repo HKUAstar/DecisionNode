@@ -8,6 +8,7 @@
                 <UpdateTimersBB />
                 <UpdateOdomBB />
                 <UpdateBulletBB/>
+                <RecordLastAction />
         </Sequence>
         <ReactiveFallback name="DecideAction">
         <Sequence name="GameNotStarted">

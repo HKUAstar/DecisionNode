@@ -1343,6 +1343,30 @@ public:
 };
 
 
+class RecordLastAction : public BT::SyncActionNode
+{
+public:
+  RecordLastAction(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    std::string cur_action;
+    try { cur_action = bb->get<std::string>("action"); }
+    catch (...) { return BT::NodeStatus::SUCCESS; }
+
+    // 直接把当前 action 存到 last_action，供下一帧 RecordVisionAnchor 检测切换用
+    bb->set("vision.last_action", cur_action);
+
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
 class RecordVisionAnchor : public BT::SyncActionNode
 {
 public:
@@ -1357,32 +1381,32 @@ public:
   {
     auto bb = config().blackboard;
 
+    // 读当前 action（黑板中的最新值）
     std::string cur_action;
     try { cur_action = bb->get<std::string>("action"); }
     catch (...) { return BT::NodeStatus::FAILURE; }
 
-    if (cur_action != last_action_)
+    // 由 RecordLastAction 在上一帧记录的 action
+    std::string last_action;
+    try { last_action = bb->get<std::string>("vision.last_action"); }
+    catch (...) { last_action.clear(); }
+
+    // 刚从非 VISION 切换到 VISION → 记录锚点
+    if (cur_action == "VISION" && last_action != "VISION")
     {
-      last_action_ = cur_action;
-      if (cur_action == "VISION")
-      {
-        try {
-          double x = bb->get<double>("odom.raw_x");
-          double y = bb->get<double>("odom.raw_y");
-          bb->set("vision.anchor_x", x);
-          bb->set("vision.anchor_y", y);
-          ROS_INFO("[] Anchor set at (%.2f, %.2f)", x, y);
-        } catch (...) {
-          ROS_WARN_THROTTLE(2.0, "[RecordVisionAnchor] Failed to read odom.raw_x/y");
-          return BT::NodeStatus::FAILURE;
-        }
+      try {
+        double x = bb->get<double>("odom.raw_x");
+        double y = bb->get<double>("odom.raw_y");
+        bb->set("vision.anchor_x", x);
+        bb->set("vision.anchor_y", y);
+        ROS_INFO("[RecordVisionAnchor] Anchor set at (%.2f, %.2f)", x, y);
+      } catch (...) {
+        ROS_WARN_THROTTLE(2.0, "[RecordVisionAnchor] Failed to read odom.raw_x/y");
+        return BT::NodeStatus::FAILURE;
       }
     }
     return BT::NodeStatus::SUCCESS;
   }
-
-private:
-  std::string last_action_;
 };
 
 
@@ -1838,6 +1862,7 @@ int main(int argc, char** argv)
 
   factory.registerNodeType<AdvanceCycleIndex>("AdvanceCycleIndex");
 
+  factory.registerNodeType<RecordLastAction>("RecordLastAction");
   factory.registerNodeType<RecordVisionAnchor>("RecordVisionAnchor");
   factory.registerNodeType<CheckVisionAnchorDistance>("CheckVisionAnchorDistance");
   factory.registerNodeType<SetVisionTarget>("SetVisionTarget");

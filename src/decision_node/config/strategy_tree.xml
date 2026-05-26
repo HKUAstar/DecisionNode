@@ -8,6 +8,7 @@
         <UpdateTimersBB />
         <UpdateOdomBB />
         <UpdateBulletBB/>
+        <RecordLastAction />
         <CountInfantryDeaths />
       </Sequence>
 
