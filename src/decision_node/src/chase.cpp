@@ -6,6 +6,7 @@
 #include <ros/package.h>
 #include <geometry_msgs/PointStamped.h>
 #include <yaml-cpp/yaml.h>
+#include <opencv2/opencv.hpp>
 
 #include <vector>
 #include <string>
@@ -415,9 +416,8 @@ private:
 class CheckGoalInZone : public BT::ConditionNode
 {
 public:
-    CheckGoalInZone(const std::string& name, const BT::NodeConfiguration& config,
-                    const DecisionGraph* graph)
-        : BT::ConditionNode(name, config), graph_(graph)
+    CheckGoalInZone(const std::string& name, const BT::NodeConfiguration& config)
+        : BT::ConditionNode(name, config)
     {
     }
 
@@ -448,44 +448,82 @@ public:
         double px = goal.point.x;
         double py = goal.point.y;
 
-        // ---- 3. 判断落在哪个 area 内 ----
-        int area_idx = -1;
-        for (size_t i = 0; i < graph_->areas.size(); ++i)
+        // ---- 3. 加载 PNG 及 YAML 元信息（静态变量，只加载一次） ----
+        static cv::Mat s_map = cv::imread(
+            ros::package::getPath("decision_node") + "/map/RMUC2026_decision_color.png",
+            cv::IMREAD_COLOR);
+        if (s_map.empty())
         {
-            if (pointInPolygon(px, py, graph_->areas[i]))
+            ROS_ERROR_THROTTLE(2.0, "[CheckGoalInZone] Failed to load zone map PNG");
+            return BT::NodeStatus::FAILURE;
+        }
+
+        static bool s_meta_loaded = false;
+        static double s_resolution;
+        static double s_origin_x;
+        static double s_origin_y;
+        if (!s_meta_loaded)
+        {
+            try
             {
-                area_idx = static_cast<int>(i);
-                break;
+                std::string yaml_path = ros::package::getPath("decision_node") +
+                                        "/map/RMUC2026_decision.yaml";
+                YAML::Node root = YAML::LoadFile(yaml_path);
+                s_resolution = root["resolution"].as<double>();
+                s_origin_x   = root["origin"][0].as<double>();
+                s_origin_y   = root["origin"][1].as<double>();
+                s_meta_loaded = true;
+                ROS_INFO("[CheckGoalInZone] Map meta: res=%.5f origin=(%.3f, %.3f)",
+                         s_resolution, s_origin_x, s_origin_y);
+            }
+            catch (const std::exception& e)
+            {
+                ROS_ERROR("[CheckGoalInZone] Failed to load YAML: %s", e.what());
+                return BT::NodeStatus::FAILURE;
             }
         }
 
-        if (area_idx < 0)
+        // ---- 4. 坐标变换：真实世界 (m) → 像素坐标 (row, col) ----
+        int col = static_cast<int>((px - s_origin_x) / s_resolution);
+        int row = static_cast<int>((py - s_origin_y) / s_resolution);
+
+        // 边界检查
+        if (col < 0 || col >= s_map.cols || row < 0 || row >= s_map.rows)
         {
-            ROS_WARN_THROTTLE(2.0, "[CheckGoalInZone] goal (%.2f, %.2f) not in any area", px, py);
+            ROS_WARN_THROTTLE(2.0, "[CheckGoalInZone] goal (%.2f, %.2f) -> pixel (%d, %d) out of bounds",
+                              px, py, col, row);
             return BT::NodeStatus::FAILURE;
         }
 
-        // ---- 4. 检查 zone ----
-        if (area_idx >= static_cast<int>(graph_->zones.size()))
-        {
-            ROS_WARN_THROTTLE(2.0, "[CheckGoalInZone] area %d has no zone data", area_idx);
-            return BT::NodeStatus::FAILURE;
-        }
+        // ---- 5. 读取像素颜色（OpenCV 默认 BGR 顺序） ----
+        cv::Vec3b bgr = s_map.at<cv::Vec3b>(row, col);
+        int b = bgr[0];
+        int g = bgr[1];
+        int r = bgr[2];
 
-        if (graph_->zones[area_idx] == zone_num)
+        // ---- 6. 判断颜色 → zone_id ----
+        int zone_id = -1;
+        if (r > 200 && g < 100 && b < 100)
         {
-            ROS_DEBUG("[CheckGoalInZone] goal (%.2f, %.2f) in area %d, zone=%d MATCH zone_num=%d",
-                      px, py, area_idx, graph_->zones[area_idx], zone_num);
+            zone_id = 0;  // 红色
+        }
+        else if (b > 200 && g < 100 && r < 100)
+        {
+            zone_id = 1;  // 蓝色
+        }
+        // else zone_id = -1
+
+        ROS_DEBUG("[CheckGoalInZone] goal (%.2f, %.2f) -> pixel (%d, %d) RGB(%d,%d,%d) -> zone=%d",
+                  px, py, col, row, r, g, b, zone_id);
+
+        // ---- 7. 比较 zone_id 与 zone_num ----
+        if (zone_id == zone_num)
+        {
             return BT::NodeStatus::SUCCESS;
         }
 
-        ROS_DEBUG("[CheckGoalInZone] goal (%.2f, %.2f) in area %d, zone=%d != zone_num=%d",
-                  px, py, area_idx, graph_->zones[area_idx], zone_num);
         return BT::NodeStatus::FAILURE;
     }
-
-private:
-    const DecisionGraph* graph_;
 };
 
 // ============================================================
@@ -502,11 +540,7 @@ void RegisterChaseNodes(BT::BehaviorTreeFactory& factory,
 
     factory.registerNodeType<CheckRadarStatus>("CheckRadarStatus");
     factory.registerNodeType<CheckOperatorValid>("CheckOperatorValid");
-    factory.registerBuilder<CheckGoalInZone>(
-        "CheckGoalInZone",
-        [graph_ptr](const std::string& name, const BT::NodeConfiguration& config) {
-            return std::make_unique<CheckGoalInZone>(name, config, graph_ptr);
-        });
+    factory.registerNodeType<CheckGoalInZone>("CheckGoalInZone");
     factory.registerNodeType<SetOperatorGoal>("SetOperatorGoal");
 
     factory.registerBuilder<SetChaseGoal>(

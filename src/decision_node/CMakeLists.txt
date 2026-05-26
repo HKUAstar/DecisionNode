@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(OpenCV REQUIRED)
 
 # 自定义消息
 # add_message_files(DIRECTORY msg FILES Decision.msg)
@@ -61,6 +62,7 @@ add_executable(visualize src/visualize.cpp)
 target_link_libraries(strategy_node
     ${catkin_LIBRARIES}
     ${behaviortree_cpp_v3_LIBRARIES}
+    ${OpenCV_LIBS}
     yaml-cpp
 )
 

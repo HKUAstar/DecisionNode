@@ -1,0 +1,76 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+        <ReactiveSequence name="MainLoop">
+            <Sequence name="UpdateBlackboard">
+                <UpdateRefereeBB />
+                <UpdateNavigationBB />
+                <UpdateVisionBB />
+                <UpdateTimersBB />
+                <UpdateOdomBB />
+                <UpdateBulletBB/>
+                <RecordLastAction />
+        </Sequence>
+        <ReactiveFallback name="DecideAction">
+        <Sequence name="GameNotStarted">
+          <IsGameStarted expect_started="false" />
+          <SetAction action="INIT" />
+        </Sequence>
+        <ReactiveFallback name="InGame">
+            <Sequence>
+            <CheckVision key="vision.detected" expected="true" />
+            <SetAction action="VISION"/>
+            </Sequence>
+            <SetAction action="PATROL"/>
+        </ReactiveFallback>
+        </ReactiveFallback>
+
+        <ReactiveFallback name="ExecuteAction">
+
+        <Sequence>
+          <IsAction value="VISION" />
+          <RecordVisionAnchor />
+          <CalculateVisionYaw />
+          <ReactiveFallback>
+            <Sequence>
+              <CheckVisionAnchorDistance max_distance="1.0" />
+              <SetVisionTarget offset_distance="0.4" />
+              <Sequence>
+                <CheckGoalInZone zone_num="1" />
+                <PublishGoalPoint topic="clicked_point" />
+              </Sequence>
+              </Sequence>
+            <SetSpinFlag target_spin="4" />
+          </ReactiveFallback>
+          <PublishSpin />
+        </Sequence>
+
+        <Sequence>
+          <IsAction value="PATROL" />
+           <SetSpinFlag target_spin="0" />
+          <SetMotionFlag target_motion="3" />
+          <Fallback>
+            <Sequence>
+              <CheckAttacked attack_threshold="{attack_threshold}" />
+              <SetMotionFlag target_motion="2" />
+            </Sequence>
+            <AlwaysSuccess />
+          </Fallback>
+          <Fallback>
+            <Sequence>
+              <CheckArrived />
+              <AdvanceCycleIndex ns="patrol" point_count="3" />
+            </Sequence>
+            <AlwaysSuccess />
+          </Fallback>
+          <SetGoalFromParamsCyclic ns="patrol" point_count="3" />
+          <PublishGoalPoint topic="clicked_point" />
+          <PublishMotion />
+          <PublishSpin />
+        </Sequence>
+        </ReactiveFallback>
+
+        
+
+     </ReactiveSequence>
+    </BehaviorTree>
+</root>

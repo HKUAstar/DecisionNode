@@ -221,21 +221,59 @@ public:
     bb->set("ref.out_of_combat", state_->out_of_combat);
     bb->set("ref.projectile_allowance", state_->projectile_allowance);
     bb->set("ref.power_rune_available", state_->power_rune_available);
-    bb->set("ref.enemy_hero_x", state_->enemy_hero_x);
-    bb->set("ref.enemy_hero_y", state_->enemy_hero_y);
-    bb->set("ref.enemy_engineer_x", state_->enemy_engineer_x);
-    bb->set("ref.enemy_engineer_y", state_->enemy_engineer_y);
-    bb->set("ref.enemy_std3_x", state_->enemy_std3_x);
-    bb->set("ref.enemy_std3_y", state_->enemy_std3_y);
-    bb->set("ref.enemy_std4_x", state_->enemy_std4_x);
-    bb->set("ref.enemy_std4_y", state_->enemy_std4_y);
-    bb->set("ref.enemy_sentry_x", state_->enemy_sentry_x);
-    bb->set("ref.enemy_sentry_y", state_->enemy_sentry_y);
+    // 敌方位置：从目标坐标系逆变换到原始坐标系后再存入黑板
+    // 正向: x_tgt = cosθ·x_src - sinθ·y_src + tx
+    // 逆向: x_src =  cosθ·(x_tgt - tx) + sinθ·(y_tgt - ty)
+    //        y_src = -sinθ·(x_tgt - tx) + cosθ·(y_tgt - ty)
+    // -88.88 为无效值，不做转换
+    {
+      bool has_tf = false;
+      double theta = 0.0, tx = 0.0, ty = 0.0;
+      try
+      {
+        theta = bb->get<double>("tf.src_to_tgt.theta");
+        tx    = bb->get<double>("tf.src_to_tgt.tx");
+        ty    = bb->get<double>("tf.src_to_tgt.ty");
+        has_tf = true;
+      }
+      catch (...) { /* TF 参数不存在，直接存原值 */ }
+
+      auto inv_xf = [&](float x_tgt, float y_tgt) -> std::pair<float, float> {
+        if (!has_tf || x_tgt <= -88.87f || y_tgt <= -88.87f)
+          return {x_tgt, y_tgt};
+        double dx = static_cast<double>(x_tgt) - tx;
+        double dy = static_cast<double>(y_tgt) - ty;
+        double cos_t = std::cos(theta);
+        double sin_t = std::sin(theta);
+        return {static_cast<float>( cos_t * dx + sin_t * dy),
+                static_cast<float>(-sin_t * dx + cos_t * dy)};
+      };
+
+      auto eh   = inv_xf(state_->enemy_hero_x,     state_->enemy_hero_y);
+      auto ee   = inv_xf(state_->enemy_engineer_x, state_->enemy_engineer_y);
+      auto e3   = inv_xf(state_->enemy_std3_x,     state_->enemy_std3_y);
+      auto e4   = inv_xf(state_->enemy_std4_x,     state_->enemy_std4_y);
+      auto es   = inv_xf(state_->enemy_sentry_x,   state_->enemy_sentry_y);
+
+      bb->set("ref.enemy_hero_x",     eh.first);
+      bb->set("ref.enemy_hero_y",     eh.second);
+      bb->set("ref.enemy_engineer_x", ee.first);
+      bb->set("ref.enemy_engineer_y", ee.second);
+      bb->set("ref.enemy_std3_x",     e3.first);
+      bb->set("ref.enemy_std3_y",     e3.second);
+      bb->set("ref.enemy_std4_x",     e4.first);
+      bb->set("ref.enemy_std4_y",     e4.second);
+      bb->set("ref.enemy_sentry_x",   es.first);
+      bb->set("ref.enemy_sentry_y",   es.second);
+
+      // 操作手坐标同样做逆变换
+      auto op = inv_xf(state_->operator_x, state_->operator_y);
+      bb->set("ref.operator_x", op.first);
+      bb->set("ref.operator_y", op.second);
+    }
     bb->set("ref.suggested_target", state_->suggested_target);
     bb->set("ref.radar_flags", state_->radar_flags);
     bb->set("ref.enemy_base_HP", state_->enemy_base_HP);
-    bb->set("ref.operator_x", state_->operator_x);
-    bb->set("ref.operator_y", state_->operator_y);
     bb->set("ref.supplement", state_->supplement_resource || state_->supplement_nonresource);
     bb->set("ref.ally_fortress_rfid", state_->ally_fortress_rfid);
     
@@ -287,6 +325,9 @@ public:
     double raw_x = state_->raw_x;
     double raw_y = state_->raw_y;
 
+    raw_x-=0.08;
+    raw_y+=0.111;
+
     // 始终写入原始坐标
     bb->set("odom.raw_x", raw_x);
     bb->set("odom.raw_y", raw_y);
@@ -331,6 +372,7 @@ public:
   CalculateVisionYaw(const std::string& name, const BT::NodeConfiguration& config)
     : BT::SyncActionNode(name, config)
   {
+    yaw_window_.reserve(kWindowSize);
   }
 
   static BT::PortsList providedPorts() { return {}; }
@@ -338,6 +380,22 @@ public:
   BT::NodeStatus tick() override
   {
     auto bb = config().blackboard;
+
+    // ---- 检测 action 切换，刚进入 VISION 时重置滑动窗口 ----
+    std::string cur_action;
+    try { cur_action = bb->get<std::string>("action"); }
+    catch (...) { return BT::NodeStatus::FAILURE; }
+
+    if (cur_action != last_action_)
+    {
+      last_action_ = cur_action;
+      if (cur_action == "VISION")
+      {
+        yaw_window_.clear();
+        window_filled_   = false;
+        stable_initialized_ = false;
+      }
+    }
 
     // 读取当前 gimbal_angle（由 UpdateOdomBB 写入）
     double yaw = 0.0;
@@ -347,53 +405,67 @@ public:
       return BT::NodeStatus::FAILURE;
     }
 
-    // 死区阈值(度) 
+    // ---- 滑动窗口均值（角度感知，处理 ±π 环绕） ----
+    // 将新值压入窗口，维护 sin/cos 累加和
+    {
+      // 如果窗口已满，先减去最旧值的 sin/cos
+      if (window_filled_)
+      {
+        size_t idx = window_index_;
+        sum_sin_ -= std::sin(yaw_window_[idx]);
+        sum_cos_ -= std::cos(yaw_window_[idx]);
+      }
+
+      // 存入新值
+      yaw_window_[window_index_] = yaw;
+      sum_sin_ += std::sin(yaw);
+      sum_cos_ += std::cos(yaw);
+
+      window_index_ = (window_index_ + 1) % kWindowSize;
+      if (!window_filled_ && window_index_ == 0)
+        window_filled_ = true;
+    }
+
+    // 计算当前窗口均值角度
+    double mean_yaw = std::atan2(sum_sin_, sum_cos_);
+
+    // ---- 死区稳定：只有均值偏离 stable 超过阈值才更新 ----
     constexpr double kDeadbandDeg = 2.5;
-    constexpr double kEmaAlpha    = 0.10;   // EMA 平滑系数
     constexpr double kDeadbandRad = kDeadbandDeg * M_PI / 180.0;
 
-    // 1) EMA 低通滤波（角度感知，处理 ±π 环绕）
-    if (ema_initialized_)
-    {
-      double diff = yaw - yaw_ema_;
-      while (diff >  M_PI) diff -= 2.0 * M_PI;
-      while (diff < -M_PI) diff += 2.0 * M_PI;
-      yaw_ema_ += kEmaAlpha * diff;
-      while (yaw_ema_ >  M_PI) yaw_ema_ -= 2.0 * M_PI;
-      while (yaw_ema_ < -M_PI) yaw_ema_ += 2.0 * M_PI;
-    }
-    else
-    {
-      yaw_ema_ = yaw;
-      ema_initialized_ = true;
-    }
-
-    // 2) 死区：只有 EMA 偏离 stable 超过阈值才更新
     if (stable_initialized_)
     {
-      double diff = yaw_ema_ - stable_yaw_;
+      double diff = mean_yaw - stable_yaw_;
       while (diff >  M_PI) diff -= 2.0 * M_PI;
       while (diff < -M_PI) diff += 2.0 * M_PI;
       if (std::abs(diff) > kDeadbandRad)
       {
-        stable_yaw_ = yaw_ema_;
+        stable_yaw_ = mean_yaw;
       }
     }
     else
     {
-      stable_yaw_ = yaw_ema_;
+      stable_yaw_ = mean_yaw;
       stable_initialized_ = true;
     }
 
-    bb->set("odom.yaw_ema",    yaw_ema_);
+    bb->set("odom.yaw_ema",    mean_yaw);
     bb->set("odom.stable_yaw", stable_yaw_);
 
     return BT::NodeStatus::SUCCESS;
   }
 
 private:
-  double yaw_ema_ = 0.0;
-  bool   ema_initialized_ = false;
+  std::string last_action_;
+
+  // 滑动窗口（环形缓冲区）
+  static constexpr size_t kWindowSize = 40;   // 20Hz × 2秒 ≈ 40 个样本
+  std::vector<double> yaw_window_{kWindowSize};
+  size_t window_index_ = 0;
+  bool   window_filled_ = false;
+  double sum_sin_ = 0.0;
+  double sum_cos_ = 0.0;
+
   double stable_yaw_ = 0.0;
   bool   stable_initialized_ = false;
 };
@@ -410,7 +482,16 @@ public:
 
   BT::NodeStatus tick() override
   {
-    config().blackboard->set("vision.target_distance", state_->target_distance);
+    float new_dist = state_->target_distance;
+
+    // 对 vision.target_distance 做简单死区滤波：
+    // 如果新值 < 0.2m，则保持黑板中的旧值不变，避免异常跳变
+    if (new_dist >= 0.2f)
+    {
+      config().blackboard->set("vision.target_distance", new_dist);
+    }
+    // else: 保留黑板中原有的 distance 值，不更新
+
     config().blackboard->set("vision.detected", state_->detected);
     return BT::NodeStatus::SUCCESS;
   }
@@ -1258,6 +1339,30 @@ public:
 };
 
 
+class RecordLastAction : public BT::SyncActionNode
+{
+public:
+  RecordLastAction(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts() { return {}; }
+
+  BT::NodeStatus tick() override
+  {
+    auto bb = config().blackboard;
+    std::string cur_action;
+    try { cur_action = bb->get<std::string>("action"); }
+    catch (...) { return BT::NodeStatus::SUCCESS; }
+
+    // 直接把当前 action 存到 last_action，供下一帧 RecordVisionAnchor 检测切换用
+    bb->set("vision.last_action", cur_action);
+
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
 class RecordVisionAnchor : public BT::SyncActionNode
 {
 public:
@@ -1272,32 +1377,32 @@ public:
   {
     auto bb = config().blackboard;
 
+    // 读当前 action（黑板中的最新值）
     std::string cur_action;
     try { cur_action = bb->get<std::string>("action"); }
     catch (...) { return BT::NodeStatus::FAILURE; }
 
-    if (cur_action != last_action_)
+    // 由 RecordLastAction 在上一帧记录的 action
+    std::string last_action;
+    try { last_action = bb->get<std::string>("vision.last_action"); }
+    catch (...) { last_action.clear(); }
+
+    // 刚从非 VISION 切换到 VISION → 记录锚点
+    if (cur_action == "VISION" && last_action != "VISION")
     {
-      last_action_ = cur_action;
-      if (cur_action == "VISION")
-      {
-        try {
-          double x = bb->get<double>("odom.raw_x");
-          double y = bb->get<double>("odom.raw_y");
-          bb->set("vision.anchor_x", x);
-          bb->set("vision.anchor_y", y);
-          ROS_INFO("[RecordVisionAnchor] Anchor set at (%.2f, %.2f)", x, y);
-        } catch (...) {
-          ROS_WARN_THROTTLE(2.0, "[RecordVisionAnchor] Failed to read odom.raw_x/y");
-          return BT::NodeStatus::FAILURE;
-        }
+      try {
+        double x = bb->get<double>("odom.raw_x");
+        double y = bb->get<double>("odom.raw_y");
+        bb->set("vision.anchor_x", x);
+        bb->set("vision.anchor_y", y);
+        ROS_INFO("[RecordVisionAnchor] Anchor set at (%.2f, %.2f)", x, y);
+      } catch (...) {
+        ROS_WARN_THROTTLE(2.0, "[RecordVisionAnchor] Failed to read odom.raw_x/y");
+        return BT::NodeStatus::FAILURE;
       }
     }
     return BT::NodeStatus::SUCCESS;
   }
-
-private:
-  std::string last_action_;
 };
 
 
@@ -1451,30 +1556,6 @@ public:
     }
 
     auto goal = bb->get<geometry_msgs::PointStamped>("goal.point");
-
-    // ==== 逆 TF 变换：目标坐标系 → 原始坐标系 ====
-    // 正向: x_tgt = cosθ·x_src - sinθ·y_src + tx
-    // 逆向: x_src =  cosθ·(x_tgt - tx) + sinθ·(y_tgt - ty)
-    //        y_src = -sinθ·(x_tgt - tx) + cosθ·(y_tgt - ty)
-    try
-    {
-      double theta = bb->get<double>("tf.src_to_tgt.theta");
-      double tx    = bb->get<double>("tf.src_to_tgt.tx");
-      double ty    = bb->get<double>("tf.src_to_tgt.ty");
-
-      double dx = goal.point.x - tx;
-      double dy = goal.point.y - ty;
-      double cos_t = std::cos(theta);
-      double sin_t = std::sin(theta);
-
-      double x_inv =  cos_t * dx + sin_t * dy;
-      double y_inv = -sin_t * dx + cos_t * dy;
-
-      goal.point.x = x_inv;
-      goal.point.y = y_inv;
-      // goal.point.z, header 不变
-    }
-    catch (...) { /* TF 参数不存在，直接用原值发布 */ }
 
     if (*publish_on_change_only_)
     {
@@ -1771,6 +1852,7 @@ int main(int argc, char** argv)
 
   factory.registerNodeType<AdvanceCycleIndex>("AdvanceCycleIndex");
 
+  factory.registerNodeType<RecordLastAction>("RecordLastAction");
   factory.registerNodeType<RecordVisionAnchor>("RecordVisionAnchor");
   factory.registerNodeType<CheckVisionAnchorDistance>("CheckVisionAnchorDistance");
   factory.registerNodeType<SetVisionTarget>("SetVisionTarget");

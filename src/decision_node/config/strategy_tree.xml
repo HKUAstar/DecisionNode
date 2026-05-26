@@ -8,6 +8,7 @@
         <UpdateTimersBB />
         <UpdateOdomBB />
         <UpdateBulletBB/>
+        <RecordLastAction />
         <CountInfantryDeaths />
       </Sequence>
 
@@ -166,6 +167,15 @@
 
             <ReactiveFallback name="PushActions">
               <Sequence name="AttackOutpost">
+                  <Inverter>
+                  <Sequence>
+                    <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
+                    <Inverter>
+                    <CompareValue key="ref.infantry_dead" threshold="1"/>
+                    </Inverter>
+                  </Sequence>
+                  </Inverter>
+
                 <IsAction value="INIT"/>
                <SetAction action="ATTACK_OUTPOST" />
               </Sequence>
@@ -182,12 +192,20 @@
               </Sequence>
 
               <Sequence name="MaintainAttackOutpost">
+                <Inverter>
+                  <Sequence>
+                    <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
+                    <Inverter>
+                    <CompareValue key="ref.infantry_dead" threshold="1"/>
+                    </Inverter>
+                  </Sequence>
+                </Inverter>
                 <IsAction value="STAY_AT_OUTPOST" />
                 <ReactiveFallback>
                 <WaitForVision duration="10" key="vision.detected" />
                 <Sequence>
-                <SetBBValue key="count.enemy_outpost" type="bool" value="false" />
-                <AlwaysFailure/>
+                  <SetBBValue key="count.enemy_outpost" type="bool" value="false" />
+                  <AlwaysFailure/>
                 </Sequence>
                 </ReactiveFallback>
                 <SetAction action="STAY_AT_OUTPOST" />
@@ -207,6 +225,14 @@
 
               <Sequence>
               <Inverter>
+                  <Sequence>
+                    <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
+                    <Inverter>
+                    <CompareValue key="ref.infantry_dead" threshold="1"/>
+                    </Inverter>
+                  </Sequence>
+                </Inverter>
+              <Inverter>
               <ReactiveFallback>
               <IsAction value="STAY_AT_OUTPOST"/>
               <IsAction value="VISION"/>
@@ -217,7 +243,9 @@
               </Sequence>
 
               <Sequence name="DefendOutpost">
+                <Inverter>
                 <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
+                </Inverter>
                 <SetAction action="DEFEND_OUTPOST"/>
               </Sequence>
 
@@ -609,13 +637,7 @@
         </ReactiveFallback>
         <Sequence>
           <IsAction value="DEADSUPPLY" />
-          <SetSpinFlag target_spin="5" />
-          <PublishSpin />
-        </Sequence>
-        <Sequence>
-          <CheckAttacked/>
-          <SetSpinFlag target_spin="6" />
-          <Wait duration="2.0" />
+          <SetSpinFlag target_spin="0" />
           <PublishSpin />
         </Sequence>
         <Sequence>
