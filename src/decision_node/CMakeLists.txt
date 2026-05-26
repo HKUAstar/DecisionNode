@@ -61,7 +61,7 @@ add_executable(visualize src/visualize.cpp)
 
 target_link_libraries(strategy_node
     ${catkin_LIBRARIES}
-    BT::behaviortree_cpp_v3
+    ${behaviortree_cpp_v3_LIBRARIES}
     ${OpenCV_LIBS}
     yaml-cpp
 )
