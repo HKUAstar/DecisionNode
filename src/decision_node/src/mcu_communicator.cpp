@@ -548,6 +548,19 @@ private:
     
     void processReceivedData(const std::vector<uint8_t>& data)
     {
+        // [DEBUG] 每次收到数据都打印原始字节（前32字节）
+        if (data.size() > 0)
+        {
+            char dbg[160] = {0};
+            int n = 0;
+            size_t show = std::min(data.size(), (size_t)32);
+            n += snprintf(dbg + n, sizeof(dbg) - n, "[RX %zuB] buf_idx=%zu ",
+                          data.size(), frame_buffer_index_);
+            for (size_t i = 0; i < show; i++)
+                n += snprintf(dbg + n, sizeof(dbg) - n, "%02X ", data[i]);
+            ROS_INFO("%s", dbg);
+        }
+
         for (uint8_t byte : data)
         {
             // 寻找HK协议帧头 ('H' = 0x48)
@@ -639,17 +652,17 @@ private:
         memcpy(&frame, frame_buffer_, HK_FRAME_SIZE);
         
         // 添加调试信息：打印接收到的完整帧数据
-        // ROS_INFO("Received frame hex dump (first 40 bytes):");
-        // for (size_t i = 0; i < 40 && i < HK_FRAME_SIZE; i += 16)
-        // {
-        //     char hex_str[100];
-        //     int len = 0;
-        //     for (size_t j = 0; j < 16 && i + j < 40; j++)
-        //     {
-        //         len += sprintf(hex_str + len, "%02X ", frame_buffer_[i + j]);
-        //     }
-        //     ROS_INFO("  [%02d-%02d]: %s", (int)i, (int)i + 15, hex_str);
-        // }
+        ROS_INFO("Received frame hex dump (first 40 bytes):");
+        for (size_t i = 0; i < 40 && i < HK_FRAME_SIZE; i += 16)
+        {
+            char hex_str[100];
+            int len = 0;
+            for (size_t j = 0; j < 16 && i + j < 40; j++)
+            {
+                len += sprintf(hex_str + len, "%02X ", frame_buffer_[i + j]);
+            }
+            ROS_INFO("  [%02d-%02d]: %s", (int)i, (int)i + 15, hex_str);
+        }
         
         // 验证帧头
         if (frame.header.sof[0] != HK_FRAME_SOF_H || frame.header.sof[1] != HK_FRAME_SOF_K)
