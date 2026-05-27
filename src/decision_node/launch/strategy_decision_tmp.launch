@@ -64,6 +64,8 @@
     <param name="harm_threshold_on" value="$(arg harm_threshold_on)"/>
     <param name="harm_threshold_off" value="$(arg harm_threshold_off)"/>
     <param name="bt_xml" value="$(arg bt_xml)"/>
+    <!-- Goal YAML: 目标点坐标数据文件 -->
+    <param name="goal_yaml" value="$(find decision_node)/config/base_case.yaml"/>
 
     <!-- TF Calibration params -->
     <param name="tf_calib/src_pt1_x" value="$(arg tf_calib_src1_x)"/>
