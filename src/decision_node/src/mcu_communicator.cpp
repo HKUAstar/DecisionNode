@@ -20,7 +20,7 @@ public:
     {
         // 读取参数
         nh_.param("serial_port", serial_port_, std::string("/dev/ttyUSB0"));
-        nh_.param("baudrate", serial_baudrate_, 921600);
+        nh_.param("baudrate", serial_baudrate_, 115200);
         
         // 读取导航发布频率 (默认100Hz)
         double nav_frequency = 100.0;

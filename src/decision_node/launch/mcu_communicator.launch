@@ -2,7 +2,7 @@
 <launch>
     <!-- 通讯接口配置 -->
     <arg name="serial_port" default="/dev/ttyUSB0" doc="Serial port device (USART6)"/>
-    <arg name="baudrate" default="921600" doc="Serial port baudrate (921600 bps)"/>
+    <arg name="baudrate" default="115200" doc="Serial port baudrate (921600 bps)"/>
     <arg name="nav_frequency" default="50" doc="Navigation command frequency (Hz, 100ms period)"/>
     <arg name="output" default="screen" doc="Launch output target"/>
     
