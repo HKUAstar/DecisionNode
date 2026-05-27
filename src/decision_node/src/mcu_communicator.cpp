@@ -519,6 +519,7 @@ private:
                 size_t available = serial_.available();
                 if (available > 0)
                 {
+                    ROS_INFO_THROTTLE(1.0, "[RECV] Serial received %zu bytes", available);
                     std::string data = serial_.read(available);
                     std::vector<uint8_t> buffer(data.begin(), data.end());
                     processReceivedData(buffer);
@@ -589,6 +590,9 @@ private:
                 if (frame_buffer_[HK_FRAME_SIZE - 2] == HK_FRAME_TRAILER_K &&
                     frame_buffer_[HK_FRAME_SIZE - 1] == HK_FRAME_TRAILER_H)
                 {
+                    ROS_INFO_THROTTLE(1.0, "[FRAME] Got valid frame: SOF=%02X %02X, type=0x%02X, len=%u",
+                             frame_buffer_[0], frame_buffer_[1],
+                             frame_buffer_[4], (uint16_t)frame_buffer_[2] | ((uint16_t)frame_buffer_[3] << 8));
                     // 解析并发布数据
                     parseAndPublish();
                 }
