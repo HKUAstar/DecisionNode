@@ -1,14 +1,15 @@
 <root BTCPP_format="4">
-  <BehaviorTree ID="Main">
+<BehaviorTree ID="Main">
     <ReactiveSequence name="MainLoop">
       <Sequence name="UpdateBlackboard">
         <UpdateRefereeBB />
         <UpdateNavigationBB />
         <UpdateVisionBB />
         <UpdateTimersBB />
-        <UpdateDerivedFlags danger_hp="{danger_hp}" sufficient_bullet="{sufficient_bullet}" />
         <UpdateOdomBB />
         <UpdateBulletBB/>
+        <RecordLastAction />
+        <CountInfantryDeaths />
       </Sequence>
 
       <ReactiveFallback name="DecideAction">
@@ -22,7 +23,7 @@
             <Sequence name="Respawn">
               <IsSentryDead />
               <ReactiveFallback>
-                <Sequence name="EleDead">
+                <!-- <Sequence name="EleDead">
                   <ReactiveFallback name="CheckElePatrol">
                     <IsAction value="ELEVATED_GROUND_PATROL0" />
                     <IsAction value="ELEVATED_GROUND_PATROL1" />
@@ -30,18 +31,60 @@
                     <IsAction value="ELEVATED_GROUND_PATROL3" />
                   </ReactiveFallback>
                   <SetAction action="ELEDEAD"/>
-                </Sequence>
+                </Sequence> -->
                 <SetAction action="RESPAWN" />
               </ReactiveFallback>
             </Sequence>
           </ReactiveFallback>
           
           <ReactiveFallback name="Alive">
-            <Sequence name="EleDead">
-              <IsAction value="ELEDEAD" />
-              <SetAction action="ELEVATED_GROUND_PATROL3" />
+            <!-- <Sequence name="EleDead"> -->
+              <!-- <IsAction value="ELEDEAD" /> -->
+              <!-- <SetAction action="ELEVATED_GROUND_PATROL3" /> -->
+            <!-- </Sequence> -->
+
+                <Sequence name="OperatorCommand">
+              <CheckOperatorValid/>
+              <Inverter>
+                <IsAction value="OPERATOR_COMMAND" />
+              </Inverter>
+              <SetAction action="OPERATOR_COMMAND" />
+              <ClearCounter counter_key="operator_command_count" />
+              <!-- <ReactiveFallback> -->
+                <!-- <Sequence name="ReturnToOperatorCommand"> -->
+                  <!-- <IsAction value="DOWNSTAIR" /> -->
+                  <!-- <CheckArrived /> -->
+                  <!-- <SetAction action="OPERATOR_COMMAND" /> -->
+                <!-- </Sequence> -->
+                <!-- <Sequence name="DownStairProtection"> -->
+                  <!-- <IsAction value="ELEVATED_GROUND_PATROL3" /> -->
+                  <!-- <CheckArrived /> -->
+                  <!-- <SetAction action="DOWNSTAIR" /> -->
+                <!-- </Sequence> -->
+                <!-- <Sequence > -->
+                  <!-- <IsAction value="DOWNSTAIR" /> -->
+                  <!-- <SetAction action="DOWNSTAIR" /> -->
+                  <!-- <ReactiveFallback name="CheckElePatrol"> -->
+                    <!-- <IsAction value="ELEVATED_GROUND_PATROL0" /> -->
+                    <!-- <IsAction value="ELEVATED_GROUND_PATROL1" /> -->
+                    <!-- <IsAction value="ELEVATED_GROUND_PATROL2" /> -->
+                    <!-- <IsAction value="ELEVATED_GROUND_PATROL3" /> -->
+                  <!-- </ReactiveFallback> -->
+                  <!-- <SetAction action="ELEVATED_GROUND_PATROL3" /> -->
+                <!-- </Sequence> -->
+                <!-- <SetAction action="OPERATOR_COMMAND" /> -->
+              <!-- </ReactiveFallback> -->
             </Sequence>
 
+            <Sequence name="MaintainOperatorCommand">
+              <IsAction value="OPERATOR_COMMAND" />
+              <Inverter>
+              <CheckArrived/>
+              </Inverter>
+              <IncrementCounter counter_key="operator_command_count" threshold="500" />
+              <SetAction action="OPERATOR_COMMAND" />
+            </Sequence>
+            
             <Sequence name="DeadSupply">
               <IsAction value="RESPAWN" />
               <SetAction action="DEADSUPPLY" />
@@ -57,40 +100,59 @@
 
             <ReactiveFallback name="ChooseSupply">
               <Sequence name="Supply">
-                <IsSentryInDanger danger_hp="{danger_hp}" hp_key="ref.remain_hp" />
-                <NotBulletSufficient />
+                <IsSentryInDanger danger_hp="{danger_hp}" hp_key="ref.current_HP" />
                 <SetAction action="SUPPLY" />
               </Sequence>
-              <Fallback name="SupplyBullet">
-                <Sequence name="FreeBullet">
-                  <NotBulletSufficient />
+              <Sequence name="DecideBullet">
+              <NotBulletSufficient/>
                   <ReactiveFallback>
-                  <Sequence>
-                    <CheckVision key="ref.ally_fortress_rfid" expected="true" />
-                    <CompareValue key="count.free_bullet" threshold="0" />
-                  </Sequence>
-                  <Inverter>
-                    <CompareValue key="count.free_bullet" threshold="0" />
-                  </Inverter>
+                    <CheckVision key="ref.ally_fortress_rfid" expected="false" />
+                    <Sequence>
+                      <CheckVision key="ref.ally_fortress_rfid" expected="true" />
+                      <CompareValue key="ref.projectile_allowance_fortress" threshold="1" />
+                    </Sequence>
                   </ReactiveFallback>
+              <ReactiveFallback name="SupplyBullet">
+                <Sequence name="FreeBullet">
+            
+                  <Inverter>
+                    <CompareValue key="count.free_bullet" threshold="1" />
+                  </Inverter>
+        
                   <SetAction action="SUPPLY" />
                 </Sequence>
+
+              <Sequence name="BuyBullet">
+              <IsAction value="GOTO_BUY" />
+              <CheckArrived />
+              <!-- <Wait duration="10.0" /> -->
+              <SetAction action="BUY_BULLET" />
+              <Wait duration="10.0" />
+            
+            </Sequence>
+
+            <!-- <Sequence> -->
+            <!-- <IsAction value="BUY_BULLET"/> -->
+            <!-- <SetAction action="BUY_BULLET"/> -->
+            <!-- </Sequence> -->
+
                 <Sequence name="BuyBullet">
+                  <Inverter>
+                    <ReactiveFallback>
+                      <IsAction value="BUY_BULLET" />
+                    </ReactiveFallback>
+                  </Inverter>
                   <NotBulletSufficient/>
                   <Inverter>
                     <CompareValue key="ref.remaining_gold_coin" threshold="200" />
                   </Inverter>
                   <SetAction action="GOTO_BUY" />
                 </Sequence>
-              </Fallback>
-            </ReactiveFallback>
+              </ReactiveFallback>
+              </Sequence>
 
-            <Sequence name="BuyBullet">
-              <IsAction value="GOTO_BUY" />
-              <CheckArrived />
-              <SetAction action="BUY_BULLET" />
-              <Wait duration="2.0" />
-            </Sequence>
+            </ReactiveFallback>
+            
 
             <Sequence name="MaintainSupply">
               <IsAction value="SUPPLY" />
@@ -100,84 +162,146 @@
               <SetAction action="SUPPLY" />
             </Sequence>
             
-            <Sequence name="OperatorCommand">
-              <!-- <云台手指令> -->
-              <Inverter>
-                <IsAction value="OPERATOR_COMMAND" />
-              </Inverter>
-              <SetAction action="OPERATOR_COMMAND" />
-              <ClearCounter counter_key="operator_command_count" />
-              <ReactiveFallback>
-                <Sequence name="ReturnToOperatorCommand">
-                  <IsAction value="DOWNSTAIR" />
-                  <CheckArrived />
-                  <SetAction action="OPERATOR_COMMAND" />
-                </Sequence>
-                <Sequence name="DownStairProtection">
-                  <IsAction value="ELEVATED_GROUND_PATROL3" />
-                  <CheckArrived />
-                  <SetAction action="DOWNSTAIR" />
-                </Sequence>
-                <Sequence >
-                  <IsAction value="DOWNSTAIR" />
-                  <SetAction action="DOWNSTAIR" />
-                  <ReactiveFallback name="CheckElePatrol">
-                    <IsAction value="ELEVATED_GROUND_PATROL0" />
-                    <IsAction value="ELEVATED_GROUND_PATROL1" />
-                    <IsAction value="ELEVATED_GROUND_PATROL2" />
-                    <IsAction value="ELEVATED_GROUND_PATROL3" />
-                  </ReactiveFallback>
-                  <SetAction action="ELEVATED_GROUND_PATROL3" />
-                </Sequence>
-                <SetAction action="OPERATOR_COMMAND" />
-              </ReactiveFallback>
-            </Sequence>
-
-            <Sequence name="MaintainOperatorCommand">
-              <IsAction value="OPERATOR_COMMAND" />
-              <CompareValue key="operator_command_count" threshold="500" />
-              <SetAction action="OPERATOR_COMMAND" />
-            </Sequence>
+            
 
 
             <ReactiveFallback name="PushActions">
-              <Sequence name="StopWhenFindEnemy">
-                <CheckVision key="vision.detected" expected="true" />
-                <SetAction action="VISION" />
+              <Sequence name="AttackOutpost">
+                  <Inverter>
+                  <Sequence>
+                    <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
+                    <Inverter>
+                    <CompareValue key="ref.infantry_dead" threshold="1"/>
+                    </Inverter>
+                  </Sequence>
+                  </Inverter>
+
+                <IsAction value="INIT"/>
+               <SetAction action="ATTACK_OUTPOST" />
               </Sequence>
 
               <Sequence name="DefendHome">
                 <CompareValue key="ref.ally_base_HP" threshold="1000" />
-                <SetAction action="DEFEND_HOME" />
+                <SetAction action="DEFEND_FORTRESS" />
+              </Sequence>
+
+              <Sequence name="StayAtOutpost">
+              <IsAction value="ATTACK_OUTPOST" />
+              <CheckArrived/>
+              <SetAction action="STAY_AT_OUTPOST"/>
+              </Sequence>
+
+              <Sequence name="MaintainAttackOutpost">
+                <Inverter>
+                  <Sequence>
+                    <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
+                    <Inverter>
+                    <CompareValue key="ref.infantry_dead" threshold="1"/>
+                    </Inverter>
+                  </Sequence>
+                </Inverter>
+                <IsAction value="STAY_AT_OUTPOST" />
+                <ReactiveFallback>
+                <WaitForVision duration="10" key="vision.detected" />
+                <Sequence>
+                  <SetBBValue key="count.enemy_outpost" type="bool" value="false" />
+                  <AlwaysFailure/>
+                </Sequence>
+                </ReactiveFallback>
+                <SetAction action="STAY_AT_OUTPOST" />
+              </Sequence>
+
+
+              <Sequence name="StopWhenFindEnemy">
+                <CheckVision key="vision.detected" expected="true" />
+                <Inverter>
+                <ReactiveFallback>
+                <IsAction value="STAY_AT_FORTRESS"/>
+                <IsAction value="STAY_AT_OUTPOST"/>
+                </ReactiveFallback>
+                </Inverter>
+                <SetAction action="VISION" />
+              </Sequence>
+
+              <Sequence>
+              <Inverter>
+                  <Sequence>
+                    <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
+                    <Inverter>
+                    <CompareValue key="ref.infantry_dead" threshold="1"/>
+                    </Inverter>
+                  </Sequence>
+                </Inverter>
+              <Inverter>
+              <ReactiveFallback>
+              <IsAction value="STAY_AT_OUTPOST"/>
+              <IsAction value="VISION"/>
+              </ReactiveFallback>
+              </Inverter>
+              <CheckVision key="count.enemy_outpost" expected="true" />
+              <SetAction action="ATTACK_OUTPOST"/>
+              </Sequence>
+
+              <Sequence name="DefendOutpost">
+                <Inverter>
+                <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
+                </Inverter>
+                <SetAction action="DEFEND_OUTPOST"/>
+              </Sequence>
+
+              <Sequence name="DefendFortress">
+              <Inverter>
+                <CompareValue key="ref.infantry_dead" threshold="1"/>
+              </Inverter>
+                <SetAction action="DEFEND_FORTRESS"/>
+              </Sequence>
+
+              <Sequence>
+              <IsAction value="DEFEND_FORTRESS" />
+              <CheckArrived/>
+              <SetAction action="UP_FORTRESS"/>
+              </Sequence>
+
+              <Sequence>
+              <IsAction value="UP_FORTRESS" />
+              <CheckArrived/>
+              <SetAction action="STAY_AT_FORTRESS"/>
+              </Sequence>
+
+              <Sequence name="MaintainUpFortress">
+                <IsAction value="UP_FORTRESS" />
+                <SetAction action="UP_FORTRESS"/>
+              </Sequence>
+
+              <Sequence name="MaintainFortress">
+                <IsAction value="STAY_AT_FORTRESS" />
+                <WaitForVision duration="10" key="vision.detected" />
+                <SetAction action="STAY_AT_FORTRESS"/>
               </Sequence>
 
               <ReactiveFallback name="Attack">
-                <Sequence name="AttackOutpost">
-                 <!-- <前哨站血量判断> -->
-                 <SetAction action="ATTACK_OUTPOST" />
-                </Sequence>
 
                 <ReactiveFallback name="Moving">
-                  <Sequence name="ChaseEnemy">
-                    <CheckRadarStatus />
-                    <Inverter>
-                      <IsAction="UPSTAIR" />
+                  <!-- <Sequence name="ChaseEnemy"> -->
+                    <!-- <CheckRadarStatus /> -->
+                    <!-- <Inverter> -->
+                      <!-- <IsAction="UPSTAIR" /> -->
                       <!-- <IsAction="BASE_ALIGN" /> -->
-                      <IsAction="DOWNSTAIR" />
-                      <IsAction="ELEVATED_GROUND_PATROL0" />
-                      <IsAction="ELEVATED_GROUND_PATROL1" />
-                      <IsAction="ELEVATED_GROUND_PATROL2" />
-                      <IsAction="ELEVATED_GROUND_PATROL3" />
-                    </Inverter>
-                    <SetAction action="CHASE_ENEMY" />
-                  </Sequence>
+                      <!-- <IsAction="DOWNSTAIR" /> -->
+                      <!-- <IsAction="ELEVATED_GROUND_PATROL0" /> -->
+                      <!-- <IsAction="ELEVATED_GROUND_PATROL1" /> -->
+                      <!-- <IsAction="ELEVATED_GROUND_PATROL2" /> -->
+                      <!-- <IsAction="ELEVATED_GROUND_PATROL3" /> -->
+                    <!-- </Inverter> -->
+                    <!-- <SetAction action="CHASE_ENEMY" /> -->
+                  <!-- </Sequence> -->
                 
 
                   <ReactiveFallback name="NormalActions">
-                    <Sequence name="DefendRampLaunch">
-                     <CheckIntStatus key="ref.launch_ramp_elevated_ground" expected="1" />
-                     <SetAction action="DEFEND_RAMP_LAUNCH" />
-                    </Sequence>
+                    <!-- <Sequence name="DefendRampLaunch"> -->
+                     <!-- <CheckIntStatus key="ref.launch_ramp_elevated_ground" expected="1" /> -->
+                     <!-- <SetAction action="DEFEND_RAMP_LAUNCH" /> -->
+                    <!-- </Sequence> -->
 
                     <!-- <Sequence name="AlignAtStair">
                       <IsAction value="DEFEND_RAMP_LAUNCH" />
@@ -185,76 +309,76 @@
                       <SetAction action="BASE_ALIGN" />
                     </Sequence> -->
 
-                    <Sequence name="GoUp">
-                      <IsAction value="DEFEND_RAMP_LAUNCH" />
-                      <CheckArrived />
+                    <!-- <Sequence name="GoUp"> -->
+                      <!-- <IsAction value="DEFEND_RAMP_LAUNCH" /> -->
+                      <!-- <CheckArrived /> -->
                       <!-- <CompareYaw /> -->
-                      <SetAction action="UPSTAIR" />
-                    </Sequence>
+                      <!-- <SetAction action="UPSTAIR" /> -->
+                    <!-- </Sequence> -->
 
-                    <Sequence name="GoIntoElePatrol">
-                      <IsAction value="UPSTAIR" />
-                      <CheckArrived />
-                      <SetAction action="ELEVATED_GROUND_PATROL0" />
-                    </Sequence>
+                    <!-- <Sequence name="GoIntoElePatrol"> -->
+                      <!-- <IsAction value="UPSTAIR" /> -->
+                      <!-- <CheckArrived /> -->
+                      <!-- <SetAction action="ELEVATED_GROUND_PATROL0" /> -->
+                    <!-- </Sequence> -->
 
-                    <Sequence name="ElevatedGroundPatrol">
-                      <ReactiveFallback name="CheckElePatrol">
-                        <IsAction value="ELEVATED_GROUND_PATROL0" />
-                        <IsAction value="ELEVATED_GROUND_PATROL1" />
-                        <IsAction value="ELEVATED_GROUND_PATROL2" />
-                        <IsAction value="ELEVATED_GROUND_PATROL3" />
-                      </ReactiveFallback>
-                      <ReactiveFallback name="ExecuteElePatrol">
-                        <Sequence name="ElevatedGroundPatrol1">
-                          <IsAction value="ELEVATED_GROUND_PATROL0" />
-                          <CheckArrived />
-                          <SetAction action="ELEVATED_GROUND_PATROL1" />
-                        </Sequence>
+                    <!-- <Sequence name="ElevatedGroundPatrol"> -->
+                      <!-- <ReactiveFallback name="CheckElePatrol"> -->
+                        <!-- <IsAction value="ELEVATED_GROUND_PATROL0" /> -->
+                        <!-- <IsAction value="ELEVATED_GROUND_PATROL1" /> -->
+                        <!-- <IsAction value="ELEVATED_GROUND_PATROL2" /> -->
+                        <!-- <IsAction value="ELEVATED_GROUND_PATROL3" /> -->
+                      <!-- </ReactiveFallback> -->
+                      <!-- <ReactiveFallback name="ExecuteElePatrol"> -->
+                        <!-- <Sequence name="ElevatedGroundPatrol1"> -->
+                          <!-- <IsAction value="ELEVATED_GROUND_PATROL0" /> -->
+                          <!-- <CheckArrived /> -->
+                          <!-- <SetAction action="ELEVATED_GROUND_PATROL1" /> -->
+                        <!-- </Sequence> -->
 
-                        <Sequence name="ELEVATED_GROUND_PATROL2">
-                          <IsAction value="ELEVATED_GROUND_PATROL1" />
-                          <CheckArrived />
-                        <SetAction action="ELEVATED_GROUND_PATROL2" />
-                        </Sequence>
+                        <!-- <Sequence name="ELEVATED_GROUND_PATROL2"> -->
+                          <!-- <IsAction value="ELEVATED_GROUND_PATROL1" /> -->
+                          <!-- <CheckArrived /> -->
+                          <!-- <SetAction action="ELEVATED_GROUND_PATROL2" /> -->
+                        <!-- </Sequence> -->
 
-                        <Sequence name="ELEVATED_GROUND_PATROL3">
-                          <IsAction value="ELEVATED_GROUND_PATROL2" />
-                          <CheckArrived />
-                        <SetAction action="ELEVATED_GROUND_PATROL3" />
-                        </Sequence>
-                      </ReactiveFallback>
-                    </Sequence>
+                        <!-- <Sequence name="ELEVATED_GROUND_PATROL3"> -->
+                          <!-- <IsAction value="ELEVATED_GROUND_PATROL2" /> -->
+                          <!-- <CheckArrived /> -->
+                          <!-- <SetAction action="ELEVATED_GROUND_PATROL3" /> -->
+                        <!-- </Sequence> -->
+                      <!-- </ReactiveFallback> -->
+                    <!-- </Sequence> -->
 
-                    <Sequence name="DownStair">
-                      <IsAction value="ELEVATED_GROUND_PATROLL0" />
-                      <CheckArrived />
-                      <SetAction action="DOWNSTAIR" />
-                    </Sequence>
+                    <!-- <Sequence name="DownStair"> -->
+                      <!-- <IsAction value="ELEVATED_GROUND_PATROLL0" /> -->
+                      <!-- <CheckArrived /> -->
+                      <!-- <SetAction action="DOWNSTAIR" /> -->
+                    <!-- </Sequence> -->
 
                   
-                    <Sequence name="MaintainGoToStair">
-                      <IsAction value="GOTOSTAIR" />
-                      <SetAction action="GOTOSTAIR" />
-                    </Sequence>
+                    <!-- <Sequence name="MaintainGoToStair"> -->
+                      <!-- <IsAction value="GOTOSTAIR" /> -->
+                      <!-- <SetAction action="GOTOSTAIR" /> -->
+                    <!-- </Sequence> -->
 
-                    <Sequence name="MaintainBaseAlign">
-                      <IsAction value="BASE_ALIGN" />
-                      <SetAction action="BASE_ALIGN" />
-                    </Sequence>
+                    <!-- <Sequence name="MaintainBaseAlign"> -->
+                      <!-- <IsAction value="BASE_ALIGN" /> -->
+                      <!-- <SetAction action="BASE_ALIGN" /> -->
+                    <!-- </Sequence> -->
 
-                    <Sequence name="MaintainUpstair">
-                      <IsAction value="UPSTAIR" />
-                      <SetAction action="UPSTAIR" />
-                    </Sequence>
+                    <!-- <Sequence name="MaintainUpstair"> -->
+                      <!-- <IsAction value="UPSTAIR" /> -->
+                      <!-- <SetAction action="UPSTAIR" /> -->
+                    <!-- </Sequence> -->
 
-                    <Sequence name="MaintainDownstair">
-                      <Inverter>
-                        <CheckArrived />
-                      </Inverter>
-                      <IsAction value="DOWNSTAIR" />
-                      <SetAction action="DOWNSTAIR" />
-                    </Sequence>
+                    <!-- <Sequence name="MaintainDownstair"> -->
+                      <!-- <Inverter> -->
+                        <!-- <CheckArrived /> -->
+                      <!-- </Inverter> -->
+                      <!-- <IsAction value="DOWNSTAIR" /> -->
+                      <!-- <SetAction action="DOWNSTAIR" /> -->
+                    <!-- </Sequence> -->
 
                     <!-- Default state -->
                     <Sequence name="Patrol">
@@ -278,7 +402,7 @@
         <Sequence>
           <ReactiveFallback>
             <IsAction value="RESPAWN" />
-            <IsAction value="ELEDEAD" />
+            <!-- <IsAction value="ELEDEAD" /> -->
           </ReactiveFallback>
           <ClearGoal />
         </Sequence>
@@ -294,13 +418,7 @@
         <Sequence>
           <IsAction value="SUPPLY" />
           <SetGoalFromParams ns="supply" />
-          <ReactiveFallback name="MotionControl">
-            <Sequence>
-              <IntenseHarm threshold_activate="100" threshold_deactivate="50" />
-              <SetMotionFlag target_motion="2" />
-            </Sequence>
-            <SetMotionFlag target_motion="3" />
-          </ReactiveFallback>
+          <SetMotionFlag target_motion="3" />
           <PublishGoalPoint topic="clicked_point" />
           <PublishMotion />
         </Sequence>
@@ -325,28 +443,54 @@
 
         <Sequence>
           <IsAction value="OPERATOR_COMMAND" />
-          <!-- <读指令,publish/> -->
+          <SetOperatorGoal />
+          <PublishGoalPoint topic="clicked_point" />
         </Sequence>
 
         <Sequence>
           <IsAction value="VISION" />
-          <SetSpinFlag target_spin="4" />
-          <ReactiveFallback name="MotionControl">
+          <RecordVisionAnchor />
+          <CalculateVisionYaw />
+          <ReactiveFallback>
+          <Sequence>
+            <CheckArrived />
+            <SetSpinFlag target_spin="4" />
+          </Sequence>
+            <AlwaysSuccess />
+          </ReactiveFallback>
+          <ReactiveFallback>
             <Sequence>
-              <IntenseHarm threshold_activate="100" threshold_deactivate="50" />
-              <SetMotionFlag target_motion="2" />
-            </Sequence>
-            <SetMotionFlag target_motion="1" />
+              <CheckVisionAnchorDistance max_distance="1.0" />
+              <SetVisionTarget offset_distance="0.4" />
+              <Sequence>
+                <CheckGoalInZone zone_num="1" />
+                <PublishGoalPoint topic="clicked_point" />
+                <AlwaysSuccess />
+              </Sequence>
+              </Sequence>
+            <SetAction action="PATROL" />
           </ReactiveFallback>
           <PublishSpin />
         </Sequence>
 
         <Sequence>
-          <IsAction value="DEFEND_HOME"/>
-          <SetGoalFromParams ns="defend_home" />
+          <IsAction value="DEFEND_FORTRESS"/>
+          <SetGoalFromParams ns="defend_fortress" />
+          <SetMotionFlag target_motion="3" />
           <PublishGoalPoint topic="clicked_point" />
+          <PublishMotion/>
         </Sequence>
 
+        <Sequence>
+        <IsAction value="STAY_AT_FORTRESS"/>
+        <SetMotionFlag target_motion="1" />
+        <SetSpinFlag target_spin="4" />
+        <PublishMotion/>
+        <PublishSpin/>
+        </Sequence>
+
+
+        
         <Sequence>
           <IsAction value="ATTACK_OUTPOST"/>
           <SetGoalFromParams ns="attack_outpost" />
@@ -356,20 +500,28 @@
         </Sequence>
 
         <Sequence>
-          <IsAction value="CHASE_ENEMY"/>
-          <SetChaseGoal zone_num="1" />
-          <SetMotionFlag target_motion="3" />
-          <PublishGoalPoint topic="clicked_point" />
-          <PublishMotion />
+        <IsAction value="STAY_AT_OUTPOST"/>
+        <SetMotionFlag target_motion="3"/>
+        <SetSpinFlag target_spin="4" />
+        <PublishSpin/>
+        <PublishMotion/>
         </Sequence>
 
-        <Sequence>
-          <IsAction value="DEFEND_RAMP_LAUNCH" />
-          <SetMotionFlag target_motion="3" />
-          <SetGoalFromParams ns="defend_ramp_launch" />
-          <PublishGoalPoint topic="clicked_point" />
-          <PublishMotion />
-        </Sequence>
+        <!-- <Sequence> -->
+          <!-- <IsAction value="CHASE_ENEMY"/> -->
+          <!-- <SetChaseGoal zone_num="1" /> -->
+          <!-- <SetMotionFlag target_motion="3" /> -->
+          <!-- <PublishGoalPoint topic="clicked_point" /> -->
+          <!-- <PublishMotion /> -->
+        <!-- </Sequence> -->
+
+        <!-- <Sequence> -->
+          <!-- <IsAction value="DEFEND_RAMP_LAUNCH" /> -->
+          <!-- <SetMotionFlag target_motion="3" /> -->
+          <!-- <SetGoalFromParams ns="defend_ramp_launch" /> -->
+          <!-- <PublishGoalPoint topic="clicked_point" /> -->
+          <!-- <PublishMotion /> -->
+        <!-- </Sequence> -->
 
         <!-- <Sequence name="ExecBaseAlign">
           <IsAction value="BASE_ALIGN" />
@@ -391,58 +543,58 @@
           <PublishTargetYaw />
         </Sequence> -->
 
-        <Sequence name="ExecUpstair">
-          <IsAction value="UPSTAIR" />
+        <!-- <Sequence name="ExecUpstair"> -->
+          <!-- <IsAction value="UPSTAIR" /> -->
           <!-- <ResetServerYawFlag /> -->
-          <SetGoalFromParams ns="upstair" />
-          <SetSpinFlag target_spin="2" />
-          <SetMotionFlag target_motion="3" />
-          <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
-          <PublishMotion />
-        </Sequence>
+          <!-- <SetGoalFromParams ns="upstair" /> -->
+          <!-- <SetSpinFlag target_spin="2" /> -->
+          <!-- <SetMotionFlag target_motion="3" /> -->
+          <!-- <PublishGoalPoint topic="clicked_point" /> -->
+          <!-- <PublishSpin /> -->
+          <!-- <PublishMotion /> -->
+        <!-- </Sequence> -->
 
-        <Sequence>
-          <IsAction value="ELEVATED_GROUND_PATROL0"/>
-          <SetGoalFromParams ns="elevated_ground_patrol0" />
-          <SetMotionFlag target_motion="3" />
-          <PublishGoalPoint topic="clicked_point" />
-          <PublishMotion />
-        </Sequence>
+        <!-- <Sequence> -->
+          <!-- <IsAction value="ELEVATED_GROUND_PATROL0"/> -->
+          <!-- <SetGoalFromParams ns="elevated_ground_patrol0" /> -->
+          <!-- <SetMotionFlag target_motion="3" /> -->
+          <!-- <PublishGoalPoint topic="clicked_point" /> -->
+          <!-- <PublishMotion /> -->
+        <!-- </Sequence> -->
 
-        <Sequence>
-          <IsAction value="ELEVATED_GROUND_PATROL1"/>
-          <SetGoalFromParams ns="elevated_ground_patrol1" />
-          <SetMotionFlag target_motion="3" />
-          <PublishGoalPoint topic="clicked_point" />
-          <PublishMotion />
-        </Sequence>
+        <!-- <Sequence> -->
+          <!-- <IsAction value="ELEVATED_GROUND_PATROL1"/> -->
+          <!-- <SetGoalFromParams ns="elevated_ground_patrol1" /> -->
+          <!-- <SetMotionFlag target_motion="3" /> -->
+          <!-- <PublishGoalPoint topic="clicked_point" /> -->
+          <!-- <PublishMotion /> -->
+        <!-- </Sequence> -->
 
-        <Sequence>
-          <IsAction value="ELEVATED_GROUND_PATROL2"/>
-          <SetGoalFromParams ns="elevated_ground_patrol2" />
-          <SetMotionFlag target_motion="3" />
-          <PublishGoalPoint topic="clicked_point" />
-          <PublishMotion />
-        </Sequence>
+        <!-- <Sequence> -->
+          <!-- <IsAction value="ELEVATED_GROUND_PATROL2"/> -->
+          <!-- <SetGoalFromParams ns="elevated_ground_patrol2" /> -->
+          <!-- <SetMotionFlag target_motion="3" /> -->
+          <!-- <PublishGoalPoint topic="clicked_point" /> -->
+          <!-- <PublishMotion /> -->
+        <!-- </Sequence> -->
 
-        <Sequence>
-          <IsAction value="ELEVATED_GROUND_PATROL3"/>
-          <SetGoalFromParams ns="elevated_ground_patrol3" />
-          <SetMotionFlag target_motion="3" />
-          <PublishGoalPoint topic="clicked_point" />
-          <PublishMotion />
-        </Sequence>
+        <!-- <Sequence> -->
+          <!-- <IsAction value="ELEVATED_GROUND_PATROL3"/> -->
+          <!-- <SetGoalFromParams ns="elevated_ground_patrol3" /> -->
+          <!-- <SetMotionFlag target_motion="3" /> -->
+          <!-- <PublishGoalPoint topic="clicked_point" /> -->
+          <!-- <PublishMotion /> -->
+        <!-- </Sequence> -->
 
-        <Sequence>
-          <IsAction value="DOWNSTAIR"/>
-          <SetGoalFromParams ns="downstair" />
-          <SetSpinFlag target_spin="3" />
-          <SetMotionFlag target_motion="3" />
-          <PublishGoalPoint topic="clicked_point" />
-          <PublishSpin />
-          <PublishMotion />
-        </Sequence>
+        <!-- <Sequence> -->
+          <!-- <IsAction value="DOWNSTAIR"/> -->
+          <!-- <SetGoalFromParams ns="downstair" /> -->
+          <!-- <SetSpinFlag target_spin="3" /> -->
+          <!-- <SetMotionFlag target_motion="3" /> -->
+          <!-- <PublishGoalPoint topic="clicked_point" /> -->
+          <!-- <PublishSpin /> -->
+          <!-- <PublishMotion /> -->
+        <!-- </Sequence> -->
 
 
         <Sequence>
@@ -458,42 +610,52 @@
           <Fallback>
             <Sequence>
               <CheckArrived />
-              <AdvanceCycleIndex ns="patrol" point_count="2" />
+              <AdvanceCycleIndex ns="patrol" point_count="3" />
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
-          <SetGoalFromParamsCyclic ns="patrol" point_count="2" />
+          <SetGoalFromParamsCyclic ns="patrol" point_count="3" />
           <PublishGoalPoint topic="clicked_point" />
           <PublishMotion />
         </Sequence>
       </ReactiveFallback>
 
       <Sequence name="ResetValue">
-        <Sequence name="FreeBullet">
-          <!-- <CheckIntStatus key="ref.supplement" expected="1" /> -->
-          <CheckVision key="ref.supplement" expected="true" />
-          <SetBBValue key="count.free_bullet" type="int" value="0" />
-        </Sequence>
-        <Sequence name="Bullet">
-          <Inverter>
-            <IsAction value="BUY_BULLET" />
-          </Inverter>
-          <SetBBValue key="bullet_num" type="int" value="0" />
-         <PublishBulletNum />
-        </Sequence>
-        <Sequence name="Spin">
-          <Inverter>
-            <ReactiveFallback>
-              <IsAction value="UPSTAIR" />
-              <!-- <IsAction value="BASE_ALIGN" /> -->
-              <IsAction value="DOWNSTAIR" />
-              <IsAction value="VISION" />
-            </ReactiveFallback>
-          </Inverter>
+        <Fallback>
+          <Sequence name="FreeBullet">
+            <CheckVision key="ref.supplement" expected="true" />
+            <SetBBValue key="count.free_bullet" type="int" value="0" />
+          </Sequence>
+          <AlwaysSuccess />
+        </Fallback>
+        <Fallback>
+          <Sequence name="Bullet">
+            <Inverter>
+              <IsAction value="BUY_BULLET" />
+            </Inverter>
+            <SetBBValue key="bullet_num" type="int" value="0" />
+            <PublishBulletNum />
+          </Sequence>
+          <AlwaysSuccess />
+        </Fallback>
+      </Sequence>
+
+      <ReactiveFallback name="SpinControl">
+        <ReactiveFallback>
+        <IsAction value="VISION"/>
+        <IsAction value="STAY_AT_FORTRESS"/>
+        <IsAction value="STAY_AT_OUTPOST"/>
+        </ReactiveFallback>
+        <Sequence>
+          <IsAction value="DEADSUPPLY" />
           <SetSpinFlag target_spin="0" />
           <PublishSpin />
         </Sequence>
-      </Sequence>
+        <Sequence>
+        <SetSpinFlag target_spin="0" />
+        <PublishSpin />
+        </Sequence>
+      </ReactiveFallback>
     </ReactiveSequence>
   </BehaviorTree>
 </root>

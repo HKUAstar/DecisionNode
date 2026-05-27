@@ -43,13 +43,16 @@
               <!-- <SetAction action="ELEVATED_GROUND_PATROL3" /> -->
             <!-- </Sequence> -->
 
-                <Sequence name="OperatorCommand">
+                <!-- <Sequence name="OperatorCommand">
               <CheckOperatorValid/>
               <Inverter>
                 <IsAction value="OPERATOR_COMMAND" />
               </Inverter>
               <SetAction action="OPERATOR_COMMAND" />
-              <ClearCounter counter_key="operator_command_count" />
+              <ClearCounter counter_key="operator_command_count" /> -->
+
+
+
               <!-- <ReactiveFallback> -->
                 <!-- <Sequence name="ReturnToOperatorCommand"> -->
                   <!-- <IsAction value="DOWNSTAIR" /> -->
@@ -74,16 +77,17 @@
                 <!-- </Sequence> -->
                 <!-- <SetAction action="OPERATOR_COMMAND" /> -->
               <!-- </ReactiveFallback> -->
-            </Sequence>
 
-            <Sequence name="MaintainOperatorCommand">
+            <!-- </Sequence> -->
+
+            <!-- <Sequence name="MaintainOperatorCommand">
               <IsAction value="OPERATOR_COMMAND" />
               <Inverter>
               <CheckArrived/>
               </Inverter>
               <IncrementCounter counter_key="operator_command_count" threshold="500" />
               <SetAction action="OPERATOR_COMMAND" />
-            </Sequence>
+            </Sequence> -->
             
             <Sequence name="DeadSupply">
               <IsAction value="RESPAWN" />
@@ -251,6 +255,12 @@
 
               <Sequence name="DefendFortress">
               <Inverter>
+                <ReactiveFallback>
+                <IsAction value="DEFEND_FORTRESS" />
+                <IsAction value="STAY_AT_FORTRESS" />
+                </ReactiveFallback>
+              </Inverter>
+              <Inverter>
                 <CompareValue key="ref.infantry_dead" threshold="1"/>
               </Inverter>
                 <SetAction action="DEFEND_FORTRESS"/>
@@ -259,7 +269,18 @@
               <Sequence>
               <IsAction value="DEFEND_FORTRESS" />
               <CheckArrived/>
+              <SetAction action="UP_FORTRESS"/>
+              </Sequence>
+
+              <Sequence>
+              <IsAction value="UP_FORTRESS" />
+              <CheckArrived/>
               <SetAction action="STAY_AT_FORTRESS"/>
+              </Sequence>
+
+              <Sequence name="MaintainUpFortress">
+                <IsAction value="UP_FORTRESS" />
+                <SetAction action="UP_FORTRESS"/>
               </Sequence>
 
               <Sequence name="MaintainFortress">
@@ -438,34 +459,24 @@
 
         <Sequence>
           <IsAction value="VISION" />
-          <RecordVisionAnchor />
-          <CalculateVisionYaw />
-          <ReactiveFallback>
-          <Sequence>
-            <CheckArrived />
-            <SetSpinFlag target_spin="4" />
-          </Sequence>
-            <AlwaysSuccess />
-          </ReactiveFallback>
-          <ReactiveFallback>
-            <Sequence>
-              <CheckVisionAnchorDistance max_distance="1.0" />
-              <SetVisionTarget offset_distance="0.4" />
-              <Sequence>
-                <CheckGoalInZone zone_num="1" />
-                <PublishGoalPoint topic="clicked_point" />
-                <AlwaysSuccess />
-              </Sequence>
-              </Sequence>
-            <SetAction action="PATROL" />
-          </ReactiveFallback>
-          <PublishSpin />
+          <SetSpinFlag target_spin="4" />
+          <PublishSpin/>
         </Sequence>
 
         <Sequence>
           <IsAction value="DEFEND_FORTRESS"/>
           <SetGoalFromParams ns="defend_fortress" />
           <SetMotionFlag target_motion="3" />
+          <PublishGoalPoint topic="clicked_point" />
+          <PublishMotion/>
+        </Sequence>
+
+        <Sequence>
+          <IsAction value="UP_FORTRESS"/>
+          <SetGoalFromParams ns="defend_fortress" />
+          <SetMotionFlag target_motion="3" />
+          <SetSpinFlag target_spin="2" />
+          <PublishSpin/>
           <PublishGoalPoint topic="clicked_point" />
           <PublishMotion/>
         </Sequence>
@@ -494,6 +505,16 @@
         <SetSpinFlag target_spin="4" />
         <PublishSpin/>
         <PublishMotion/>
+        </Sequence>
+
+        <Sequence>
+        <IsAction value="DEFEND_OUTPOST"/>
+        <SetMotionFlag target_motion="3"/>
+        <SetSpinFlag target_spin="0" />
+        <SetGoalFromParams ns="defend_outpost" />
+        <PublishSpin/>
+        <PublishMotion/>
+        <PublishGoalPoint topic="clicked_point" />
         </Sequence>
 
         <!-- <Sequence> -->
@@ -634,6 +655,7 @@
         <IsAction value="VISION"/>
         <IsAction value="STAY_AT_FORTRESS"/>
         <IsAction value="STAY_AT_OUTPOST"/>
+        <IsAction value="UP_FORTRESS"/>
         </ReactiveFallback>
         <Sequence>
           <IsAction value="DEADSUPPLY" />
