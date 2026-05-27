@@ -69,6 +69,8 @@ public:
         pub_vision_target_distance_ = nh_.advertise<std_msgs::Float32>("/vision/target_distance", 1);
         pub_ally_base_rfid_ = nh_.advertise<std_msgs::Bool>("/referee/ally_base_rfid", 1);
         pub_ally_fortress_rfid_ = nh_.advertise<std_msgs::Bool>("ally_fortress_rfid", 1);
+        pub_supplement_resource_ = nh_.advertise<std_msgs::Bool>("/referee/supplement_resource", 1);
+        pub_supplement_nonresource_ = nh_.advertise<std_msgs::Bool>("/referee/supplement_nonresource", 1);
         pub_operator_ = nh_.advertise<geometry_msgs::Point>("/referee/operator", 1);
         
     
@@ -164,6 +166,8 @@ private:
     ros::Publisher pub_ally_outpost_hp_;
     ros::Publisher pub_ally_base_rfid_;
     ros::Publisher pub_ally_fortress_rfid_;
+    ros::Publisher pub_supplement_resource_;
+    ros::Publisher pub_supplement_nonresource_;
     ros::Publisher pub_operator_;
     
     ros::Subscriber sub_dstar_status_;
@@ -834,6 +838,12 @@ private:
             
             msg_bool.data = bz & BOOL_ZIP_ALLY_FORTRESS_RFID;
             pub_ally_fortress_rfid_.publish(msg_bool);
+
+            msg_bool.data = bz & BOOL_ZIP_SUPPLEMENT_RESOURCE;
+            pub_supplement_resource_.publish(msg_bool);
+
+            msg_bool.data = bz & BOOL_ZIP_SUPPLEMENT_NONRES;
+            pub_supplement_nonresource_.publish(msg_bool);
         }
         
         // target_distance (cm -> m)
