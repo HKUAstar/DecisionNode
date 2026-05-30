@@ -15,16 +15,16 @@
 class MCUCommunicator
 {
 public:
-    MCUCommunicator() : nh_("~"), serial_port_(""), serial_baudrate_(921600), 
+    MCUCommunicator() : nh_("~"), serial_port_(""), serial_baudrate_(115200), 
                        tx_buffer_index_(0), frame_buffer_index_(0)
     {
         // 读取参数
         nh_.param("serial_port", serial_port_, std::string("/dev/ttyUSB0"));
         nh_.param("baudrate", serial_baudrate_, 115200);
         
-        // 读取导航发布频率 (默认100Hz)
-        double nav_frequency = 100.0;
-        nh_.param("nav_frequency", nav_frequency, 100.0);
+        // 读取导航发布频率 (默认50Hz)
+        double nav_frequency = 50.0;
+        nh_.param("nav_frequency", nav_frequency, 50.0);
         double nav_period = 1.0 / nav_frequency;  // 转换为周期(秒)
         
         pub_yaw_angle_ = nh_.advertise<std_msgs::Float32>("/mcu/yaw_angle", 1);
@@ -350,7 +350,7 @@ private:
             vx *=2.0f;  // 上坡时加倍速度
             vy *=2.0f;
         }
-        
+
         current_nav_vx_ = vx;
         current_nav_vy_ = vy;
         

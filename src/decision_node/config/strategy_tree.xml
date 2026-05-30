@@ -38,56 +38,6 @@
           </ReactiveFallback>
           
           <ReactiveFallback name="Alive">
-            <!-- <Sequence name="EleDead"> -->
-              <!-- <IsAction value="ELEDEAD" /> -->
-              <!-- <SetAction action="ELEVATED_GROUND_PATROL3" /> -->
-            <!-- </Sequence> -->
-
-                <!-- <Sequence name="OperatorCommand">
-              <CheckOperatorValid/>
-              <Inverter>
-                <IsAction value="OPERATOR_COMMAND" />
-              </Inverter>
-              <SetAction action="OPERATOR_COMMAND" />
-              <ClearCounter counter_key="operator_command_count" /> -->
-
-
-
-              <!-- <ReactiveFallback> -->
-                <!-- <Sequence name="ReturnToOperatorCommand"> -->
-                  <!-- <IsAction value="DOWNSTAIR" /> -->
-                  <!-- <CheckArrived /> -->
-                  <!-- <SetAction action="OPERATOR_COMMAND" /> -->
-                <!-- </Sequence> -->
-                <!-- <Sequence name="DownStairProtection"> -->
-                  <!-- <IsAction value="ELEVATED_GROUND_PATROL3" /> -->
-                  <!-- <CheckArrived /> -->
-                  <!-- <SetAction action="DOWNSTAIR" /> -->
-                <!-- </Sequence> -->
-                <!-- <Sequence > -->
-                  <!-- <IsAction value="DOWNSTAIR" /> -->
-                  <!-- <SetAction action="DOWNSTAIR" /> -->
-                  <!-- <ReactiveFallback name="CheckElePatrol"> -->
-                    <!-- <IsAction value="ELEVATED_GROUND_PATROL0" /> -->
-                    <!-- <IsAction value="ELEVATED_GROUND_PATROL1" /> -->
-                    <!-- <IsAction value="ELEVATED_GROUND_PATROL2" /> -->
-                    <!-- <IsAction value="ELEVATED_GROUND_PATROL3" /> -->
-                  <!-- </ReactiveFallback> -->
-                  <!-- <SetAction action="ELEVATED_GROUND_PATROL3" /> -->
-                <!-- </Sequence> -->
-                <!-- <SetAction action="OPERATOR_COMMAND" /> -->
-              <!-- </ReactiveFallback> -->
-
-            <!-- </Sequence> -->
-
-            <!-- <Sequence name="MaintainOperatorCommand">
-              <IsAction value="OPERATOR_COMMAND" />
-              <Inverter>
-              <CheckArrived/>
-              </Inverter>
-              <IncrementCounter counter_key="operator_command_count" threshold="500" />
-              <SetAction action="OPERATOR_COMMAND" />
-            </Sequence> -->
             
             <Sequence name="DeadSupply">
               <IsAction value="RESPAWN" />
@@ -126,32 +76,32 @@
                   <SetAction action="SUPPLY" />
                 </Sequence>
 
-              <Sequence name="BuyBullet">
-              <IsAction value="GOTO_BUY" />
-              <CheckArrived />
+              <!-- <Sequence name="BuyBullet"> -->
+              <!-- <IsAction value="GOTO_BUY" /> -->
+              <!-- <CheckArrived /> -->
               <!-- <Wait duration="10.0" /> -->
-              <SetAction action="BUY_BULLET" />
-              <Wait duration="10.0" />
+              <!-- <SetAction action="BUY_BULLET" /> -->
+              <!-- <Wait duration="10.0" /> -->
             
-            </Sequence>
+            <!-- </Sequence> -->
 
             <!-- <Sequence> -->
             <!-- <IsAction value="BUY_BULLET"/> -->
             <!-- <SetAction action="BUY_BULLET"/> -->
             <!-- </Sequence> -->
 
-                <Sequence name="BuyBullet">
-                  <Inverter>
-                    <ReactiveFallback>
-                      <IsAction value="BUY_BULLET" />
-                    </ReactiveFallback>
-                  </Inverter>
-                  <NotBulletSufficient/>
-                  <Inverter>
-                    <CompareValue key="ref.remaining_gold_coin" threshold="200" />
-                  </Inverter>
-                  <SetAction action="GOTO_BUY" />
-                </Sequence>
+                <!-- <Sequence name="BuyBullet"> -->
+                  <!-- <Inverter> -->
+                    <!-- <ReactiveFallback> -->
+                      <!-- <IsAction value="BUY_BULLET" /> -->
+                    <!-- </ReactiveFallback> -->
+                  <!-- </Inverter> -->
+                  <!-- <NotBulletSufficient/> -->
+                  <!-- <Inverter> -->
+                    <!-- <CompareValue key="ref.remaining_gold_coin" threshold="200" /> -->
+                  <!-- </Inverter> -->
+                  <!-- <SetAction action="GOTO_BUY" /> -->
+                <!-- </Sequence> -->
               </ReactiveFallback>
               </Sequence>
 
@@ -170,124 +120,124 @@
 
 
             <ReactiveFallback name="PushActions">
-              <Sequence name="AttackOutpost">
-                  <Inverter>
-                  <Sequence>
-                    <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
-                    <Inverter>
-                    <CompareValue key="ref.infantry_dead" threshold="1"/>
-                    </Inverter>
-                  </Sequence>
-                  </Inverter>
+              <!-- <Sequence name="AttackOutpost"> -->
+                  <!-- <Inverter> -->
+                  <!-- <Sequence> -->
+                    <!-- <CompareValue key= "ref.ally_outpost_HP" threshold="1"/> -->
+                    <!-- <Inverter> -->
+                    <!-- <CompareValue key="ref.infantry_dead" threshold="1"/> -->
+                    <!-- </Inverter> -->
+                  <!-- </Sequence> -->
+                  <!-- </Inverter> -->
 
-                <IsAction value="INIT"/>
-               <SetAction action="ATTACK_OUTPOST" />
-              </Sequence>
+                <!-- <IsAction value="INIT"/> -->
+               <!-- <SetAction action="ATTACK_OUTPOST" /> -->
+              <!-- </Sequence> -->
 
-              <Sequence name="DefendHome">
-                <CompareValue key="ref.ally_base_HP" threshold="1000" />
-                <SetAction action="DEFEND_FORTRESS" />
-              </Sequence>
+              <!-- <Sequence name="DefendHome"> -->
+                <!-- <CompareValue key="ref.ally_base_HP" threshold="1000" /> -->
+                <!-- <SetAction action="DEFEND_FORTRESS" /> -->
+              <!-- </Sequence> -->
 
-              <Sequence name="StayAtOutpost">
-              <IsAction value="ATTACK_OUTPOST" />
-              <CheckArrived/>
-              <SetAction action="STAY_AT_OUTPOST"/>
-              </Sequence>
+              <!-- <Sequence name="StayAtOutpost"> -->
+              <!-- <IsAction value="ATTACK_OUTPOST" /> -->
+              <!-- <CheckArrived/> -->
+              <!-- <SetAction action="STAY_AT_OUTPOST"/> -->
+              <!-- </Sequence> -->
 
-              <Sequence name="MaintainAttackOutpost">
-                <Inverter>
-                  <Sequence>
-                    <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
-                    <Inverter>
-                    <CompareValue key="ref.infantry_dead" threshold="1"/>
-                    </Inverter>
-                  </Sequence>
-                </Inverter>
-                <IsAction value="STAY_AT_OUTPOST" />
-                <ReactiveFallback>
-                <WaitForVision duration="10" key="vision.detected" />
-                <Sequence>
-                  <SetBBValue key="count.enemy_outpost" type="bool" value="false" />
-                  <AlwaysFailure/>
-                </Sequence>
-                </ReactiveFallback>
-                <SetAction action="STAY_AT_OUTPOST" />
-              </Sequence>
+              <!-- <Sequence name="MaintainAttackOutpost"> -->
+                <!-- <Inverter> -->
+                  <!-- <Sequence> -->
+                    <!-- <CompareValue key= "ref.ally_outpost_HP" threshold="1"/> -->
+                    <!-- <Inverter> -->
+                    <!-- <CompareValue key="ref.infantry_dead" threshold="1"/> -->
+                    <!-- </Inverter> -->
+                  <!-- </Sequence> -->
+                <!-- </Inverter> -->
+                <!-- <IsAction value="STAY_AT_OUTPOST" /> -->
+                <!-- <ReactiveFallback> -->
+                <!-- <WaitForVision duration="10" key="vision.detected" /> -->
+                <!-- <Sequence> -->
+                  <!-- <SetBBValue key="count.enemy_outpost" type="bool" value="false" /> -->
+                  <!-- <AlwaysFailure/> -->
+                <!-- </Sequence> -->
+                <!-- </ReactiveFallback> -->
+                <!-- <SetAction action="STAY_AT_OUTPOST" /> -->
+              <!-- </Sequence> -->
 
 
-              <Sequence name="StopWhenFindEnemy">
-                <CheckVision key="vision.detected" expected="true" />
-                <Inverter>
-                <ReactiveFallback>
-                <IsAction value="STAY_AT_FORTRESS"/>
-                <IsAction value="STAY_AT_OUTPOST"/>
-                </ReactiveFallback>
-                </Inverter>
-                <SetAction action="VISION" />
-              </Sequence>
+              <!-- <Sequence name="StopWhenFindEnemy"> -->
+                <!-- <CheckVision key="vision.detected" expected="true" /> -->
+                <!-- <Inverter> -->
+                <!-- <ReactiveFallback> -->
+                <!-- <IsAction value="STAY_AT_FORTRESS"/> -->
+                <!-- <IsAction value="STAY_AT_OUTPOST"/> -->
+                <!-- </ReactiveFallback> -->
+                <!-- </Inverter> -->
+                <!-- <SetAction action="VISION" /> -->
+              <!-- </Sequence> -->
 
-              <Sequence>
-              <Inverter>
-                  <Sequence>
-                    <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
-                    <Inverter>
-                    <CompareValue key="ref.infantry_dead" threshold="1"/>
-                    </Inverter>
-                  </Sequence>
-                </Inverter>
-              <Inverter>
-              <ReactiveFallback>
-              <IsAction value="STAY_AT_OUTPOST"/>
-              <IsAction value="VISION"/>
-              </ReactiveFallback>
-              </Inverter>
-              <CheckVision key="count.enemy_outpost" expected="true" />
-              <SetAction action="ATTACK_OUTPOST"/>
-              </Sequence>
+              <!-- <Sequence> -->
+              <!-- <Inverter> -->
+                  <!-- <Sequence> -->
+                    <!-- <CompareValue key= "ref.ally_outpost_HP" threshold="1"/> -->
+                    <!-- <Inverter> -->
+                    <!-- <CompareValue key="ref.infantry_dead" threshold="1"/> -->
+                    <!-- </Inverter> -->
+                  <!-- </Sequence> -->
+                <!-- </Inverter> -->
+              <!-- <Inverter> -->
+              <!-- <ReactiveFallback> -->
+              <!-- <IsAction value="STAY_AT_OUTPOST"/> -->
+              <!-- <IsAction value="VISION"/> -->
+              <!-- </ReactiveFallback> -->
+              <!-- </Inverter> -->
+              <!-- <CheckVision key="count.enemy_outpost" expected="true" /> -->
+              <!-- <SetAction action="ATTACK_OUTPOST"/> -->
+              <!-- </Sequence> -->
 
-              <Sequence name="DefendOutpost">
-                <Inverter>
-                <CompareValue key= "ref.ally_outpost_HP" threshold="1"/>
-                </Inverter>
-                <SetAction action="DEFEND_OUTPOST"/>
-              </Sequence>
+              <!-- <Sequence name="DefendOutpost"> -->
+                <!-- <Inverter> -->
+                <!-- <CompareValue key= "ref.ally_outpost_HP" threshold="1"/> -->
+                <!-- </Inverter> -->
+                <!-- <SetAction action="DEFEND_OUTPOST"/> -->
+              <!-- </Sequence> -->
 
-              <Sequence name="DefendFortress">
-              <Inverter>
-                <ReactiveFallback>
-                <IsAction value="DEFEND_FORTRESS" />
-                <IsAction value="STAY_AT_FORTRESS" />
-                </ReactiveFallback>
-              </Inverter>
-              <Inverter>
-                <CompareValue key="ref.infantry_dead" threshold="1"/>
-              </Inverter>
-                <SetAction action="DEFEND_FORTRESS"/>
-              </Sequence>
+              <!-- <Sequence name="DefendFortress"> -->
+              <!-- <Inverter> -->
+                <!-- <ReactiveFallback> -->
+                <!-- <IsAction value="DEFEND_FORTRESS" /> -->
+                <!-- <IsAction value="STAY_AT_FORTRESS" /> -->
+                <!-- </ReactiveFallback> -->
+              <!-- </Inverter> -->
+              <!-- <Inverter> -->
+                <!-- <CompareValue key="ref.infantry_dead" threshold="1"/> -->
+              <!-- </Inverter> -->
+                <!-- <SetAction action="DEFEND_FORTRESS"/> -->
+              <!-- </Sequence> -->
 
-              <Sequence>
-              <IsAction value="DEFEND_FORTRESS" />
-              <CheckArrived/>
-              <SetAction action="UP_FORTRESS"/>
-              </Sequence>
+              <!-- <Sequence> -->
+              <!-- <IsAction value="DEFEND_FORTRESS" /> -->
+              <!-- <CheckArrived/> -->
+              <!-- <SetAction action="UP_FORTRESS"/> -->
+              <!-- </Sequence> -->
 
-              <Sequence>
-              <IsAction value="UP_FORTRESS" />
-              <CheckArrived/>
-              <SetAction action="STAY_AT_FORTRESS"/>
-              </Sequence>
+              <!-- <Sequence> -->
+              <!-- <IsAction value="UP_FORTRESS" /> -->
+              <!-- <CheckArrived/> -->
+              <!-- <SetAction action="STAY_AT_FORTRESS"/> -->
+              <!-- </Sequence> -->
 
-              <Sequence name="MaintainUpFortress">
-                <IsAction value="UP_FORTRESS" />
-                <SetAction action="UP_FORTRESS"/>
-              </Sequence>
+              <!-- <Sequence name="MaintainUpFortress"> -->
+                <!-- <IsAction value="UP_FORTRESS" /> -->
+                <!-- <SetAction action="UP_FORTRESS"/> -->
+              <!-- </Sequence> -->
 
-              <Sequence name="MaintainFortress">
-                <IsAction value="STAY_AT_FORTRESS" />
-                <WaitForVision duration="10" key="vision.detected" />
-                <SetAction action="STAY_AT_FORTRESS"/>
-              </Sequence>
+              <!-- <Sequence name="MaintainFortress"> -->
+                <!-- <IsAction value="STAY_AT_FORTRESS" /> -->
+                <!-- <WaitForVision duration="10" key="vision.detected" /> -->
+                <!-- <SetAction action="STAY_AT_FORTRESS"/> -->
+              <!-- </Sequence> -->
 
               <ReactiveFallback name="Attack">
 
@@ -494,14 +444,14 @@
         <Sequence>
           <IsAction value="ATTACK_OUTPOST"/>
           <SetGoalFromParams ns="attack_outpost" />
-          <SetMotionFlag target_motion="1" />
+          <SetMotionFlag target_motion="3" />
           <PublishGoalPoint topic="clicked_point" />
           <PublishMotion />
         </Sequence>
 
         <Sequence>
         <IsAction value="STAY_AT_OUTPOST"/>
-        <SetMotionFlag target_motion="3"/>
+        <SetMotionFlag target_motion="1"/>
         <SetSpinFlag target_spin="4" />
         <PublishSpin/>
         <PublishMotion/>
@@ -619,12 +569,14 @@
           </Fallback>
           <Fallback>
             <Sequence>
+              <Wait duration="5.0" />
               <CheckArrived />
-              <AdvanceCycleIndex ns="patrol" point_count="3" />
+              <Wait duration="5.0" />
+              <AdvanceCycleIndex ns="patrol" point_count="2" />
             </Sequence>
             <AlwaysSuccess />
           </Fallback>
-          <SetGoalFromParamsCyclic ns="patrol" point_count="3" />
+          <SetGoalFromParamsCyclic ns="patrol" point_count="2" />
           <PublishGoalPoint topic="clicked_point" />
           <PublishMotion />
         </Sequence>

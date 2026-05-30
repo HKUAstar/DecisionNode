@@ -13,7 +13,7 @@
   <arg name="max_bullet" default="750"/>
   <arg name="fixed_supply" default="50"/>
   <arg name="publish_on_change_only" default="false"/>
-  <arg name="attack_threshold" default="30"/>
+  <arg name="attack_threshold" default="1"/>
   <arg name="harm_threshold_on" default="50"/>
   <arg name="harm_threshold_off" default="10"/>
 
@@ -39,7 +39,9 @@
   <arg name="tf_calib_tgt4_y" default="4"/>
 
   <!-- BehaviorTree XML -->
-  <arg name="bt_xml" default="$(find decision_node)/config/strategy_tree.xml"/>
+  <arg name="bt_xml" default=""/>
+  <!-- <arg name="goal_yaml" default=""/> -->
+  <arg name="goal_yaml" default=""/>
 
   <!-- Goal output topic (dstarlite.launch expects /clicked_point) -->
   <arg name="goal_topic" default="/clicked_point"/>
@@ -65,7 +67,7 @@
     <param name="harm_threshold_off" value="$(arg harm_threshold_off)"/>
     <param name="bt_xml" value="$(arg bt_xml)"/>
     <!-- Goal YAML: 目标点坐标数据文件 -->
-    <param name="goal_yaml" value="$(find decision_node)/config/base_case.yaml"/>
+    <param name="goal_yaml" value="$(arg goal_yaml)"/>
 
     <!-- TF Calibration params -->
     <param name="tf_calib/src_pt1_x" value="$(arg tf_calib_src1_x)"/>
